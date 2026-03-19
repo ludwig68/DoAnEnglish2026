@@ -5,7 +5,13 @@ export default {
     "./src/**/*.{vue,js,ts,jsx,tsx}", // Dòng này rất quan trọng
   ],
   theme: {
-    extend: {},
+    extend: {
+      theme: {
+  extend: {
+    colors: { primary: '#7AE582' }
+  },
+},
+    },
   },
   plugins: [],
 }
