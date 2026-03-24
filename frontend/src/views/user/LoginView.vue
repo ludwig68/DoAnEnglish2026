@@ -54,7 +54,7 @@
       </form>
 
       <p class="mt-6 text-center text-xs text-slate-500">
-        Chưa có tài học? <router-link to="/register" class="font-bold text-[#16a34a] hover:underline">Đăng ký miễn phí</router-link>
+        Chưa có tài khoản? <router-link to="/register" class="font-bold text-[#16a34a] hover:underline">Đăng ký miễn phí</router-link>
       </p>
     </div>
   </div>
@@ -63,6 +63,8 @@
 <script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { apiFetch } from '../../utils/api'
+import { setAuthSession } from '../../utils/auth'
 
 const router = useRouter()
 const showPassword = ref(false)
@@ -79,20 +81,24 @@ const handleLogin = async () => {
   errorMessage.value = ''
   
   try {
-    const response = await fetch('http://localhost/DoAnEnglish2026/backend/api/auth/login.php', {
+    const response = await apiFetch('auth/login.php', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(loginData.value)
     })
     
     const result = await response.json()
     
     if (result.status === 'success') {
-      // Lưu thông tin vào LocalStorage để Header nhận diện đã đăng nhập
-      localStorage.setItem('user', JSON.stringify(result.user))
-      // Chuyển hướng
-      router.push(result.user.role === 'admin' ? '/admin' : '/')
-      window.location.reload() // Để App.vue cập nhật trạng thái ngay lập tức
+      setAuthSession({
+        token: result.token,
+        user: result.user
+      })
+      
+      if (result.user.role === 'admin') {
+        router.push('/admin')
+      } else {
+        router.push('/user/dashboard')
+      }
     } else {
       errorMessage.value = result.message
     }

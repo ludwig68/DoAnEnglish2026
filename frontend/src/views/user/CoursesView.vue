@@ -17,13 +17,13 @@
             <ul class="space-y-2">
               <li v-for="cat in categories" :key="cat.id">
                 <button 
-                  @click="activeCategory = cat.id"
+                  @click="activeCategory = Number(cat.id)"
                   class="w-full text-left px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 flex items-center justify-between"
-                  :class="activeCategory === cat.id 
+                  :class="activeCategory === Number(cat.id) 
                     ? 'bg-emerald-50 text-[#16a34a] border border-emerald-200' 
                     : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 border border-transparent'">
                   {{ cat.name }}
-                  <i v-if="activeCategory === cat.id" class="fa-solid fa-check text-xs"></i>
+                  <i v-if="activeCategory === Number(cat.id)" class="fa-solid fa-check text-xs"></i>
                 </button>
               </li>
             </ul>
@@ -40,25 +40,38 @@
               <span class="text-xs text-slate-500 font-medium">Sắp xếp:</span>
               <select class="text-sm bg-slate-50 border border-slate-200 rounded-lg px-3 py-1.5 focus:outline-none focus:border-[#7AE582] text-slate-700 font-medium">
                 <option>Mới nhất</option>
-                <option>Học viên nhiều nhất</option>
-                <option>Đánh giá cao nhất</option>
+                <option>Nhiều học viên nhất</option>
+                <option>Miễn phí trước</option>
               </select>
             </div>
           </div>
 
-          <div v-if="filteredCourses.length > 0" class="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
+          <div v-if="isLoading" class="bg-white rounded-2xl border border-slate-200 py-20 text-center shadow-sm">
+            <div class="w-16 h-16 rounded-full border-4 border-emerald-100 border-t-[#16a34a] animate-spin mx-auto mb-4"></div>
+            <p class="text-sm text-slate-500">Đang tải danh sách khóa học...</p>
+          </div>
+
+          <div v-else-if="errorMessage" class="bg-white rounded-2xl border border-red-200 py-10 px-6 text-center shadow-sm">
+            <h3 class="text-lg font-bold text-slate-700 mb-2">Không tải được khóa học</h3>
+            <p class="text-sm text-slate-500 mb-4">{{ errorMessage }}</p>
+            <button @click="fetchCoursesData" class="px-4 py-2 rounded-xl bg-[#7AE582] text-slate-900 font-bold">
+              Thử lại
+            </button>
+          </div>
+
+          <div v-else-if="filteredCourses.length > 0" class="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
             
             <div v-for="course in filteredCourses" :key="course.id" 
                  class="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border border-slate-200 group flex flex-col relative">
               
               <div class="absolute top-3 left-3 z-10 flex gap-2">
-                <span v-if="course.isFree" class="bg-gradient-to-r from-[#7AE582] to-[#54CC6D] text-slate-900 px-3 py-1 rounded-full text-xs font-bold shadow-sm">
+                <span v-if="course.is_free" class="bg-gradient-to-r from-[#7AE582] to-[#54CC6D] text-slate-900 px-3 py-1 rounded-full text-xs font-bold shadow-sm">
                   Miễn phí
                 </span>
               </div>
 
               <div class="relative overflow-hidden aspect-video">
-                <img :src="course.imageUrl" :alt="course.name" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
+                <img :src="course.image_url" :alt="course.title" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
                 <div class="absolute bottom-2 right-2 bg-slate-900/80 backdrop-blur px-2 py-1 rounded-md text-[0.65rem] font-bold text-white uppercase tracking-wider">
                   Level {{ course.level }}
                 </div>
@@ -66,21 +79,27 @@
 
               <div class="p-5 flex flex-col flex-1">
                 <div class="text-[0.65rem] font-bold text-[#16a34a] uppercase tracking-widest mb-1">
-                  {{ getCategoryName(course.categoryId) }}
+                  {{ getCategoryName(course.category_id) }}
                 </div>
                 <h4 class="text-lg font-bold text-slate-800 mb-2 line-clamp-2 group-hover:text-[#16a34a] transition leading-tight">
-                  {{ course.name }}
+                  {{ course.title }}
                 </h4>
                 <p class="text-xs text-slate-500 mb-5 line-clamp-2 flex-1">
                   {{ course.description }}
                 </p>
                 
-                <div class="pt-4 border-t border-slate-100 flex items-center justify-between mt-auto">
-                  <span class="text-xs font-medium text-slate-400 flex items-center gap-1.5">
-                    <i class="fa-solid fa-users"></i> {{ course.students_count }} học viên
-                  </span>
+                <div class="pt-4 border-t border-slate-100 flex items-center justify-between mt-auto gap-4">
+                  <div class="text-xs text-slate-400">
+                    <span class="font-medium flex items-center gap-1.5">
+                      <i class="fa-solid fa-users"></i> {{ course.students_count }} học viên
+                    </span>
+                    <span class="block mt-1">{{ course.lesson_count }} bài học</span>
+                    <span class="block mt-1 font-bold text-slate-700">
+                      {{ course.is_free ? 'Miễn phí' : `${formatPrice(course.fee)} VNĐ` }}
+                    </span>
+                  </div>
                   <router-link :to="'/course/' + course.id" class="text-xs font-bold text-slate-900 bg-slate-100 border border-slate-200 px-4 py-2 rounded-xl group-hover:bg-[#7AE582] group-hover:border-[#7AE582] transition shadow-sm">
-                    Vào học
+                    Chi tiết
                   </router-link>
                 </div>
               </div>
@@ -105,39 +124,64 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
+import { apiFetch } from '../../utils/api'
 
-// --- DỮ LIỆU MÔ PHỎNG (Sẽ gọi API từ PHP sau) ---
+const activeCategory = ref(0)
+const categories = ref([])
+const courses = ref([])
+const isLoading = ref(true)
+const errorMessage = ref('')
 
-const activeCategory = ref(0) // 0 là "Tất cả"
+const normalizeCourse = (course) => ({
+  ...course,
+  id: Number(course.id),
+  category_id: Number(course.category_id ?? course.categoryId ?? 0),
+  title: course.title ?? course.name ?? '',
+  description: course.description ?? '',
+  image_url: course.image_url ?? course.imageUrl ?? 'https://placehold.co/800x450/e2e8f0/64748b?text=Course',
+  level: course.level ?? 'N/A',
+  fee: Number(course.fee ?? 0),
+  students_count: Number(course.students_count ?? 0),
+  lesson_count: Number(course.lesson_count ?? 0),
+  is_free: Boolean(course.is_free ?? course.isFree ?? Number(course.fee ?? 0) === 0)
+})
 
-const categories = ref([
-  { id: 0, name: 'Tất cả khóa học' },
-  { id: 1, name: 'Tiếng Anh Giao Tiếp' },
-  { id: 2, name: 'Luyện thi IELTS' },
-  { id: 3, name: 'Luyện thi TOEIC' },
-  { id: 4, name: 'Ngữ pháp cơ bản' }
-])
+const fetchCoursesData = async () => {
+  isLoading.value = true
+  errorMessage.value = ''
 
-const courses = ref([
-  { id: 1, categoryId: 1, name: "Giao tiếp cho người mất gốc", description: "Lấy lại nền tảng phát âm và tự tin giao tiếp cơ bản.", imageUrl: "https://placehold.co/600x400/dbeafe/3b82f6?text=Giao+Tiep", level: "A1", students_count: 1250, isFree: true },
-  { id: 2, categoryId: 1, name: "Tiếng Anh Giao tiếp Văn phòng", description: "Ứng dụng trong môi trường công sở, viết email, họp hành.", imageUrl: "https://placehold.co/600x400/e0e7ff/6366f1?text=Van+Phong", level: "A2", students_count: 850, isFree: true },
-  { id: 3, categoryId: 3, name: "Luyện thi TOEIC 650+ Cấp Tốc", description: "Giải đề thực chiến, mẹo tránh bẫy Part 5, 6, 7.", imageUrl: "https://placehold.co/600x400/dcfce7/22c55e?text=TOEIC", level: "B1", students_count: 3420, isFree: true },
-  { id: 4, categoryId: 2, name: "IELTS Masterclass 7.0 (Writing & Speaking)", description: "Nâng band điểm chuyên sâu cho 2 kỹ năng khó nhất.", imageUrl: "https://placehold.co/600x400/fef08a/eab308?text=IELTS", level: "B2", students_count: 890, isFree: false },
-  { id: 5, categoryId: 4, name: "12 Thì Tiếng Anh Trọn Bộ", description: "Học hiểu bản chất, không học vẹt, nhớ trọn đời 12 thì.", imageUrl: "https://placehold.co/600x400/ffedd5/f97316?text=Ngu+Phap", level: "A1", students_count: 5210, isFree: true }
-])
+  try {
+    const response = await apiFetch('public/courses.php')
+    const result = await response.json()
+    
+    if (result.status === 'success') {
+      categories.value = result.categories
+      courses.value = result.courses.map(normalizeCourse)
+    } else {
+      errorMessage.value = result.message || 'Máy chủ không trả về dữ liệu hợp lệ.'
+    }
+  } catch (error) {
+    console.error("Lỗi tải dữ liệu khóa học:", error)
+    errorMessage.value = 'Không thể kết nối tới máy chủ.'
+  } finally {
+    isLoading.value = false
+  }
+}
 
-// --- XỬ LÝ LOGIC ---
+onMounted(() => {
+  fetchCoursesData()
+})
 
-// Helper: Lấy tên danh mục dựa vào ID
 const getCategoryName = (id) => {
-  const cat = categories.value.find(c => c.id === id)
+  const cat = categories.value.find(c => Number(c.id) === Number(id))
   return cat ? cat.name : 'Chưa phân loại'
 }
 
-// Lọc khóa học theo danh mục được chọn
 const filteredCourses = computed(() => {
   if (activeCategory.value === 0) return courses.value
-  return courses.value.filter(course => course.categoryId === activeCategory.value)
+  return courses.value.filter(course => course.category_id === activeCategory.value)
 })
+
+const formatPrice = (price) => new Intl.NumberFormat('vi-VN').format(price)
 </script>

@@ -32,6 +32,9 @@
                     <router-link v-if="userRole === 'admin'" to="/admin" class="hidden sm:inline-flex items-center justify-center h-10 gap-2 px-4 rounded-full border border-slate-300 text-slate-700 hover:border-[#7AE582] hover:text-[#7AE582] transition">
                         <i class="fa-solid fa-gauge-high text-sm"></i> Dashboard
                     </router-link>
+                    <router-link v-else to="/user/dashboard" class="hidden sm:inline-flex items-center justify-center h-10 gap-2 px-4 rounded-full border border-slate-300 text-slate-700 hover:border-[#7AE582] hover:text-[#16a34a] transition">
+                        <i class="fa-solid fa-play text-sm"></i> Vào học
+                    </router-link>
                     <span class="hidden sm:inline-flex items-center justify-center h-10 gap-2 px-4 rounded-full bg-slate-100 border border-slate-300 text-slate-700 font-medium">
                         <i class="fa-solid fa-user text-slate-500"></i> {{ username }}
                     </span>
@@ -52,9 +55,9 @@
         </div>
     </nav>
 
-    <main class="flex-1 w-full max-w-6xl mx-auto">
-        <router-view></router-view>
-    </main>
+    <main :class="['flex-1 w-full', isDashboard ? '' : 'max-w-6xl mx-auto']">
+    <router-view></router-view>
+</main>
 
     <footer v-if="!isDashboard" class="border-t border-slate-200 bg-white mt-8">
         <div class="max-w-6xl mx-auto px-4 py-8 grid gap-6 md:grid-cols-4 text-xs text-slate-600">
@@ -64,7 +67,7 @@
                     <span class="font-semibold tracking-wide text-sm text-slate-800">English Learning</span>
                 </div>
                 <p class="text-[0.75rem] leading-relaxed">
-                    Hệ thống học tiếng Anh miễn phí với từ vựng, flashcard, bài luyện tập nghe – nhìn – điền từ. Phù hợp cho người mới bắt đầu đến luyện thi.
+                    Hệ thống học tiếng Anh miễn phí với từ vựng, flashcard, bài luyện tập nghe - nhìn - điền từ. Phù hợp cho người mới bắt đầu đến luyện thi.
                 </p>
             </div>
 
@@ -120,18 +123,18 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { authSession, clearAuthSession } from './utils/auth'
 
 const route = useRoute()
 const router = useRouter()
 
-// 1. Quản lý trạng thái hiển thị
-const isDashboard = computed(() => route.path.startsWith('/user/dashboard'))
-const isLoggedIn = ref(false) // Đổi thành true để test giao diện đã đăng nhập
-const userRole = ref('student')
-const username = ref('Học viên VIP')
+const isDashboard = computed(() => route.path.startsWith('/user/dashboard') || route.path.startsWith('/admin'))
+const currentUser = computed(() => authSession.value?.user ?? null)
+const isLoggedIn = computed(() => Boolean(currentUser.value))
+const userRole = computed(() => currentUser.value?.role ?? '')
+const username = computed(() => currentUser.value?.full_name ?? '')
 const currentYear = new Date().getFullYear()
 
-// 2. Xử lý tìm kiếm
 const searchQuery = ref('')
 const handleSearch = () => {
     if (searchQuery.value.trim()) {
@@ -139,9 +142,8 @@ const handleSearch = () => {
     }
 }
 
-// 3. Xử lý Đăng xuất
 const logout = () => {
-    isLoggedIn.value = false
-    router.push('/')
+    clearAuthSession()
+    router.push('/login')
 }
 </script>
