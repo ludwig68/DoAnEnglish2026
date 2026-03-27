@@ -59,6 +59,29 @@
     <router-view></router-view>
 </main>
 
+    <div v-if="!isDashboard" class="fixed bottom-5 right-5 z-40 flex flex-col items-end gap-3">
+        <a
+            href="https://zalo.me/0364132169"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="group flex items-center gap-3 rounded-full bg-white px-3 py-3 text-slate-700 shadow-lg shadow-slate-900/10 ring-1 ring-slate-200 transition hover:-translate-y-0.5 hover:bg-sky-50 hover:text-sky-700 hover:ring-sky-200"
+        >
+            <span class="flex h-10 w-10 items-center justify-center rounded-full bg-sky-500 text-xs font-black uppercase tracking-wide text-white shadow-sm">
+                Zalo
+            </span>
+        </a>
+
+        <a
+            href="tel:+84364132169"
+            class="group flex items-center gap-3 rounded-full bg-[#7AE582] px-3 py-3 text-slate-900 shadow-lg shadow-emerald-200/70 transition hover:-translate-y-0.5 hover:bg-emerald-300"
+            aria-label="Gọi hotline"
+        >
+            <span class="flex h-10 w-10 items-center justify-center rounded-full bg-white/80 text-base">
+                <i class="fa-solid fa-phone-volume"></i>
+            </span>
+        </a>
+    </div>
+
     <footer v-if="!isDashboard" class="border-t border-slate-200 bg-white mt-8">
         <div class="max-w-6xl mx-auto px-4 py-8 grid gap-6 md:grid-cols-4 text-xs text-slate-600">
             <div class="md:col-span-1">

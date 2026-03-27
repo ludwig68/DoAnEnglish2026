@@ -6,6 +6,8 @@ import CoursesView from '../views/user/CoursesView.vue'
 import AboutView from '../views/user/AboutView.vue'
 import CourseDetailView from '../views/user/CourseDetailView.vue'
 import UserDashboard from '../views/user/UserDashboard.vue'
+import SupportView from '../views/user/SupportView.vue'
+import ContactView from '../views/user/ContactView.vue'
 import AdminLayout from '../views/admin/AdminLayout.vue'
 import AdminOverview from '../views/admin/AdminOverview.vue'
 import UserManagerView from '../views/admin/UserManagerView.vue'
@@ -20,6 +22,8 @@ const router = createRouter({
     { path: '/user/dashboard', name: 'user-dashboard', component: UserDashboard },
     { path: '/courses', name: 'courses', component: CoursesView },
     { path: '/about', name: 'about', component: AboutView },
+    { path: '/support', name: 'support', component: SupportView },
+    { path: '/contact', name: 'contact', component: ContactView },
     {
       path: '/admin',
       component: AdminLayout,
