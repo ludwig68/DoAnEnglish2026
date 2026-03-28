@@ -1,11 +1,8 @@
 <template>
   <div class="h-full flex flex-col p-6 animate__animated animate__fadeIn">
-    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
-      <div>
-        <h1 class="text-2xl font-black text-slate-800 tracking-tight">Quản lý khóa học</h1>
-        <p class="text-sm text-slate-500 mt-1">Theo dõi danh sách khóa học, danh mục, lộ trình và học phí.</p>
-      </div>
-
+    <div
+      class="flex flex-col md:flex-row justify-end items-start md:items-center mb-6 gap-4"
+    >
       <button
         @click="openModal('add')"
         class="px-5 py-2.5 rounded-xl text-white font-bold flex items-center gap-2 shadow-lg shadow-emerald-200 hover:-translate-y-0.5 transition-all duration-300"
@@ -15,13 +12,17 @@
       </button>
     </div>
 
-    <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 mb-6 flex flex-col lg:flex-row gap-4">
+    <div
+      class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 mb-6 flex flex-col lg:flex-row gap-4"
+    >
       <div class="relative flex-1">
-        <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+        <i
+          class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
+        ></i>
         <input
           v-model="searchQuery"
           type="text"
-          placeholder="Tim theo ten khoa hoc hoac trinh do..."
+          placeholder="Tìm theo tên khóa học hoặc trình độ..."
           class="w-full pl-11 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#7AE582] transition-all"
         />
       </div>
@@ -31,7 +32,11 @@
         class="bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#7AE582] text-slate-700 font-medium min-w-[180px]"
       >
         <option value="all">Tất cả danh mục</option>
-        <option v-for="category in categories" :key="category.id" :value="String(category.id)">
+        <option
+          v-for="category in categories"
+          :key="category.id"
+          :value="String(category.id)"
+        >
           {{ category.name }}
         </option>
       </select>
@@ -46,10 +51,17 @@
       </select>
     </div>
 
-    <div class="bg-white rounded-2xl shadow-sm border border-slate-100 flex-1 overflow-hidden flex flex-col">
-      <div v-if="isLoading" class="flex-1 flex items-center justify-center text-slate-500">
+    <div
+      class="bg-white rounded-2xl shadow-sm border border-slate-100 flex-1 overflow-hidden flex flex-col"
+    >
+      <div
+        v-if="isLoading"
+        class="flex-1 flex items-center justify-center text-slate-500"
+      >
         <div class="text-center">
-          <div class="mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-4 border-emerald-100 border-t-[#16a34a]"></div>
+          <div
+            class="mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-4 border-emerald-100 border-t-[#16a34a]"
+          ></div>
           <p>Đang tải danh sách khóa học...</p>
         </div>
       </div>
@@ -57,7 +69,9 @@
       <div v-else class="overflow-x-auto flex-1 custom-scrollbar">
         <table class="w-full text-left border-collapse">
           <thead>
-            <tr class="bg-slate-50/80 border-b border-slate-100 text-xs uppercase tracking-wider text-slate-500 font-bold">
+            <tr
+              class="bg-slate-50/80 border-b border-slate-100 text-xs uppercase tracking-wider text-slate-500 font-bold"
+            >
               <th class="px-6 py-4">Khóa học</th>
               <th class="px-6 py-4">Danh mục</th>
               <th class="px-6 py-4">Học phí</th>
@@ -67,18 +81,22 @@
             </tr>
           </thead>
           <tbody class="divide-y divide-slate-50 text-sm text-slate-700">
-            <tr v-for="course in filteredCourses" :key="course.id" class="hover:bg-slate-50/50 transition-colors group">
+            <tr
+              v-for="course in filteredCourses"
+              :key="course.id"
+              class="hover:bg-slate-50/50 transition-colors group"
+            >
               <td class="px-6 py-4">
                 <div class="flex items-center gap-4">
                   <img
                     :src="course.image_url || fallbackImage"
                     :alt="course.title"
                     class="h-14 w-20 rounded-xl border border-slate-200 object-cover shrink-0"
-                  >
+                  />
                   <div>
                     <p class="font-bold text-slate-800">{{ course.title }}</p>
                     <p class="text-xs text-slate-500 mt-1">
-                      {{ course.level || 'Chưa có trình độ' }}
+                      {{ course.level || "Chưa có trình độ" }}
                       <span class="mx-1">•</span>
                       {{ course.lesson_count }} bài học
                       <span class="mx-1">•</span>
@@ -88,24 +106,30 @@
                 </div>
               </td>
               <td class="px-6 py-4 text-slate-600 font-medium">
-                {{ course.category_name || 'Chưa phân loại' }}
+                {{ course.category_name || "Chưa phân loại" }}
               </td>
               <td class="px-6 py-4 text-slate-600 font-medium">
                 {{ formatCurrency(course.fee) }}
               </td>
               <td class="px-6 py-4">
                 <span
-                  :class="course.is_featured ? 'bg-emerald-100 text-emerald-700 border-emerald-200' : 'bg-slate-100 text-slate-600 border-slate-200'"
+                  :class="
+                    course.is_featured
+                      ? 'bg-emerald-100 text-emerald-700 border-emerald-200'
+                      : 'bg-slate-100 text-slate-600 border-slate-200'
+                  "
                   class="px-2.5 py-1 rounded-md text-[0.65rem] font-bold uppercase tracking-wider border"
                 >
-                  {{ course.is_featured ? 'Nổi bật' : 'Thường' }}
+                  {{ course.is_featured ? "Nổi bật" : "Thường" }}
                 </span>
               </td>
               <td class="px-6 py-4 text-slate-500 font-medium">
                 {{ course.created_at }}
               </td>
               <td class="px-6 py-4 text-right">
-                <div class="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                <div
+                  class="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                >
                   <button
                     @click="openModal('edit', course)"
                     class="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white flex items-center justify-center transition-colors"
@@ -126,7 +150,9 @@
 
             <tr v-if="filteredCourses.length === 0">
               <td colspan="6" class="px-6 py-12 text-center text-slate-500">
-                <i class="fa-regular fa-folder-open text-4xl mb-3 text-slate-300"></i>
+                <i
+                  class="fa-regular fa-folder-open text-4xl mb-3 text-slate-300"
+                ></i>
                 <p>Không tìm thấy khóa học nào phù hợp.</p>
               </td>
             </tr>
@@ -134,28 +160,47 @@
         </table>
       </div>
 
-      <div class="px-6 py-4 border-t border-slate-100 bg-slate-50/50 flex items-center justify-between text-sm text-slate-500">
+      <div
+        class="px-6 py-4 border-t border-slate-100 bg-slate-50/50 flex items-center justify-between text-sm text-slate-500"
+      >
         <span> Tổng: {{ filteredCourses.length }} khóa học</span>
         <span>{{ featuredCount }} khóa học nổi bật</span>
       </div>
     </div>
 
-    <div v-if="isModalOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate__animated animate__fadeIn animate__faster">
-      <div class="bg-white rounded-2xl shadow-2xl w-full max-w-4xl overflow-hidden animate__animated animate__zoomIn animate__faster">
-        <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+    <div
+      v-if="isModalOpen"
+      class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate__animated animate__fadeIn animate__faster"
+    >
+      <div
+        class="bg-white rounded-2xl shadow-2xl w-full max-w-4xl overflow-hidden animate__animated animate__zoomIn animate__faster"
+      >
+        <div
+          class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50"
+        >
           <h3 class="text-lg font-bold text-slate-800">
-            {{ modalMode === 'add' ? 'Thêm khóa học mới' : 'Chỉnh sửa khóa học' }}
+            {{
+              modalMode === "add" ? "Thêm khóa học mới" : "Chỉnh sửa khóa học"
+            }}
           </h3>
-          <button @click="closeModal" class="text-slate-400 hover:text-red-500 transition">
+          <button
+            @click="closeModal"
+            class="text-slate-400 hover:text-red-500 transition"
+          >
             <i class="fa-solid fa-xmark text-xl"></i>
           </button>
         </div>
 
         <form @submit.prevent="saveCourse" class="p-6 space-y-5">
-          <div class="grid grid-cols-1 gap-5 lg:grid-cols-[minmax(0,1fr)_320px]">
+          <div
+            class="grid grid-cols-1 gap-5 lg:grid-cols-[minmax(0,1fr)_320px]"
+          >
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div class="md:col-span-2">
-                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Ten khoa hoc</label>
+                <label
+                  class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1"
+                  >Tên khóa học</label
+                >
                 <input
                   v-model="formData.title"
                   type="text"
@@ -165,33 +210,50 @@
               </div>
 
               <div>
-                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Danh muc</label>
+                <label
+                  class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1"
+                  >Danh mục</label
+                >
                 <select
                   v-model="formData.category_id"
                   class="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#7AE582]"
                 >
                   <option value="">Chưa chọn</option>
-                  <option v-for="category in categories" :key="category.id" :value="String(category.id)">
+                  <option
+                    v-for="category in categories"
+                    :key="category.id"
+                    :value="String(category.id)"
+                  >
                     {{ category.name }}
                   </option>
                 </select>
               </div>
 
               <div>
-                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Lộ trình học</label>
+                <label
+                  class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1"
+                  >Lộ trình học</label
+                >
                 <select
                   v-model="formData.path_id"
                   class="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#7AE582]"
                 >
                   <option value="">Chưa chọn</option>
-                  <option v-for="path in learningPaths" :key="path.id" :value="String(path.id)">
+                  <option
+                    v-for="path in learningPaths"
+                    :key="path.id"
+                    :value="String(path.id)"
+                  >
                     {{ path.title }}
                   </option>
                 </select>
               </div>
 
               <div>
-                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Trình độ</label>
+                <label
+                  class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1"
+                  >Trình độ</label
+                >
                 <input
                   v-model="formData.level"
                   type="text"
@@ -201,7 +263,10 @@
               </div>
 
               <div>
-                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Học phí</label>
+                <label
+                  class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1"
+                  >Học phí</label
+                >
                 <input
                   v-model="formData.fee"
                   type="number"
@@ -212,7 +277,10 @@
               </div>
 
               <div class="md:col-span-2">
-                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Mô tả</label>
+                <label
+                  class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1"
+                  >Mô tả</label
+                >
                 <textarea
                   v-model="formData.description"
                   rows="5"
@@ -222,15 +290,27 @@
               </div>
             </div>
 
-            <div class="rounded-[1.5rem] border border-slate-200 bg-slate-50 p-4 space-y-4">
+            <div
+              class="rounded-[1.5rem] border border-slate-200 bg-slate-50 p-4 space-y-4"
+            >
               <div>
-                <p class="text-xs font-bold uppercase tracking-[0.18em] text-slate-400">Ảnh khóa học</p>
-                <div class="mt-3 inline-flex rounded-full bg-white p-1 shadow-sm">
+                <p
+                  class="text-xs font-bold uppercase tracking-[0.18em] text-slate-400"
+                >
+                  Ảnh khóa học
+                </p>
+                <div
+                  class="mt-3 inline-flex rounded-full bg-white p-1 shadow-sm"
+                >
                   <button
                     type="button"
                     @click="setImageMode('url')"
                     class="rounded-full px-4 py-2 text-sm font-semibold transition"
-                    :class="imageMode === 'url' ? 'bg-[#7AE582] text-slate-900' : 'text-slate-600'"
+                    :class="
+                      imageMode === 'url'
+                        ? 'bg-[#7AE582] text-slate-900'
+                        : 'text-slate-600'
+                    "
                   >
                     Ảnh URL
                   </button>
@@ -238,7 +318,11 @@
                     type="button"
                     @click="setImageMode('upload')"
                     class="rounded-full px-4 py-2 text-sm font-semibold transition"
-                    :class="imageMode === 'upload' ? 'bg-[#7AE582] text-slate-900' : 'text-slate-600'"
+                    :class="
+                      imageMode === 'upload'
+                        ? 'bg-[#7AE582] text-slate-900'
+                        : 'text-slate-600'
+                    "
                   >
                     Tải ảnh lên
                   </button>
@@ -246,18 +330,26 @@
               </div>
 
               <div v-if="imageMode === 'url'">
-                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Đường dẫn ảnh</label>
+                <label
+                  class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1"
+                  >Đường dẫn ảnh</label
+                >
                 <input
                   v-model="formData.image_url"
                   type="text"
                   placeholder="https://..."
                   class="w-full px-4 py-2.5 rounded-xl bg-white border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#7AE582]"
                 />
-                <p class="mt-2 text-xs text-slate-500">Bạn có thể dán ảnh từ website khác vào đây.</p>
+                <p class="mt-2 text-xs text-slate-500">
+                  Bạn có thể dán ảnh từ website khác vào đây.
+                </p>
               </div>
 
               <div v-else class="space-y-3">
-                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Chọn tập tin ảnh</label>
+                <label
+                  class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1"
+                  >Chọn tập tin ảnh</label
+                >
                 <input
                   type="file"
                   accept="image/png,image/jpeg,image/jpg,image/webp,image/gif"
@@ -283,24 +375,40 @@
                     Xóa ảnh
                   </button>
                 </div>
-                <p class="text-xs text-slate-500">Chấp nhận JPG, JPEG, PNG, WEBP, GIF. ối đa 5MB.</p>
+                <p class="text-xs text-slate-500">
+                  Chấp nhận JPG, JPEG, PNG, WEBP, GIF. ối đa 5MB.
+                </p>
               </div>
 
-              <div class="rounded-[1.25rem] border border-slate-200 bg-white p-3">
-                <p class="text-xs font-bold uppercase tracking-[0.18em] text-slate-400">Xem trước</p>
+              <div
+                class="rounded-[1.25rem] border border-slate-200 bg-white p-3"
+              >
+                <p
+                  class="text-xs font-bold uppercase tracking-[0.18em] text-slate-400"
+                >
+                  Xem trước
+                </p>
                 <img
                   :src="previewImageUrl"
                   alt="Xem trước ảnh khóa học"
                   class="mt-3 h-40 w-full rounded-xl border border-slate-200 object-cover"
-                >
-                <p class="mt-2 text-xs text-slate-500 break-all">{{ formData.image_url || 'Chưa có ảnh được chọn.' }}</p>
+                />
+                <p class="mt-2 text-xs text-slate-500 break-all">
+                  {{ formData.image_url || "Chưa có ảnh được chọn." }}
+                </p>
               </div>
             </div>
           </div>
 
-          <label class="inline-flex items-center gap-3 rounded-xl bg-slate-50 px-4 py-3 text-sm font-medium text-slate-700">
-            <input v-model="formData.is_featured" type="checkbox" class="h-4 w-4 rounded border-slate-300 text-[#16a34a] focus:ring-[#7AE582]">
-            Danh dau la khoa hoc noi bat
+          <label
+            class="inline-flex items-center gap-3 rounded-xl bg-slate-50 px-4 py-3 text-sm font-medium text-slate-700"
+          >
+            <input
+              v-model="formData.is_featured"
+              type="checkbox"
+              class="h-4 w-4 rounded border-slate-300 text-[#16a34a] focus:ring-[#7AE582]"
+            />
+            Đánh dấu nếu đây là khóa học nổi bật (sẽ được ưu tiên hiển thị trên trang chủ)
           </label>
 
           <div class="pt-4 flex justify-end gap-3 mt-6">
@@ -309,14 +417,14 @@
               @click="closeModal"
               class="px-5 py-2.5 rounded-xl font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 transition"
             >
-              Huy bo
+              Hủy bỏ
             </button>
             <button
               type="submit"
               :disabled="isUploadingImage"
               class="px-5 py-2.5 rounded-xl font-bold text-slate-900 bg-[#7AE582] hover:bg-emerald-300 transition shadow-md disabled:opacity-60"
             >
-              {{ modalMode === 'add' ? 'Tạo khóa học' : 'Lưu thay đổi' }}
+              {{ modalMode === "add" ? "Tạo khóa học" : "Lưu thay đổi" }}
             </button>
           </div>
         </form>
@@ -428,7 +536,9 @@ const filteredCourses = computed(() => {
     const matchQuery =
       !query ||
       course.title.toLowerCase().includes(query) ||
-      String(course.level || "").toLowerCase().includes(query);
+      String(course.level || "")
+        .toLowerCase()
+        .includes(query);
 
     const matchCategory =
       filterCategory.value === "all" ||
@@ -443,7 +553,9 @@ const filteredCourses = computed(() => {
   });
 });
 
-const featuredCount = computed(() => courses.value.filter((course) => course.is_featured).length);
+const featuredCount = computed(
+  () => courses.value.filter((course) => course.is_featured).length,
+);
 
 const previewImageUrl = computed(() => {
   if (imageMode.value === "upload" && selectedImageObjectUrl.value) {

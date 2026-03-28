@@ -156,17 +156,20 @@ const navSections = [
       {
         label: "Quản lý danh mục khóa học",
         icon: "fa-solid fa-layer-group",
+        to: "/admin/categories",
         description: "Sắp xếp khóa học theo danh mục, cấp độ và nhóm nội dung.",
       },
       {
         label: "Quản lý lộ trình học",
         icon: "fa-solid fa-route",
+        to: "/admin/learning-paths",
         description:
           "Thiết lập lộ trình học theo mục tiêu và trình độ của học viên.",
       },
       {
         label: "Quản lý bài tập",
         icon: "fa-solid fa-file-pen",
+    
         description: "Quản lý bài tập, quiz và tiến độ hoàn thành.",
       },
       {
@@ -182,11 +185,13 @@ const navSections = [
       {
         label: "Quản lý đăng ký tư vấn",
         icon: "fa-solid fa-headset",
+        to: "/admin/consultations",
         description: "Theo dõi danh sách đăng ký tư vấn và quá trình xử lý.",
       },
       {
         label: "Quản lý liên hệ",
         icon: "fa-solid fa-comments",
+        to: "/admin/contacts",
         description: "Tiếp nhận và phản hồi các yêu cầu liên hệ từ website.",
       },
       {
@@ -218,6 +223,11 @@ const routeMetaMap = {
     title: "Quản lý khóa học",
     description:
       "Quản lý thông tin khóa học, danh mục, lộ trình và học phí.",
+  },
+  '/admin/categories': {
+    title: "Quản lý danh mục khóa học",
+    description:
+      "Sắp xếp khóa học theo danh mục, cấp độ và nhóm nội dung.",
   },
 };
 

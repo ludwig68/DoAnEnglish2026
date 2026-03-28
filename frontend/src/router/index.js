@@ -12,6 +12,9 @@ import AdminLayout from '../views/admin/AdminLayout.vue'
 import AdminOverview from '../views/admin/AdminOverview.vue'
 import UserManagerView from '../views/admin/UserManagerView.vue'
 import CourseManager from '../views/admin/CourseManager.vue'
+import CategoryManager from '../views/admin/CategoryManager.vue'
+import LearningPathManager from '../views/admin/LearningPathManager.vue'
+import ConsultationManager from '../views/admin/ConsultationManager.vue'
 import { clearAuthSession, getCurrentUser } from '../utils/auth'
 
 const router = createRouter({
@@ -43,6 +46,21 @@ const router = createRouter({
           path: 'courses',
           name: 'admin-courses',
           component: CourseManager
+        },
+        {
+          path: 'categories',
+          name: 'admin-categories',
+          component: CategoryManager
+        },
+        {
+          path: 'learning-paths',
+          name: 'admin-learning-paths',
+          component: LearningPathManager
+        },
+        {
+          path: 'consultations',
+          name: 'admin-consultations',
+          component: ConsultationManager
         }
       ]
     },
