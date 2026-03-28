@@ -123,7 +123,7 @@
             <div>
                 <h3 class="text-[0.8rem] font-semibold text-slate-800 mb-2">Bản đồ</h3>
                 <div class="h-32 sm:h-40 rounded-lg overflow-hidden border border-slate-200 bg-slate-100 flex items-center justify-center">
-                    <span class="text-slate-400 text-xs">Bản đồ sẽ hiển thị ở đây</span>
+                    <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3919.9544104258935!2d106.67525717589443!3d10.737997189408455!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x31752f62a90e5dbd%3A0x674d5126513db295!2zVHLGsOG7nW5nIMSQ4bqhaSBo4buNYyBDw7RuZyBuZ2jhu4cgU8OgaSBHw7Ju!5e0!3m2!1svi!2s!4v1774721804211!5m2!1svi!2s" width="400" height="300" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
                 </div>
             </div>
         </div>

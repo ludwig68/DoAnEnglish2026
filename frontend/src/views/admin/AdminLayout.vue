@@ -133,7 +133,7 @@ const navSections = [
         label: "Trang tổng quan",
         icon: "fa-solid fa-chart-pie",
         to: "/admin",
-        description: "Xem nhanh tình hình hoạt động và các khu vực quản lý.",
+        description: "Xem nhanh tình hình hoạt động và thống kê.",
       },
       {
         label: "Quản lý tài khoản",
@@ -198,11 +198,6 @@ const navSections = [
         label: "Quản lý nội dung trang web",
         icon: "fa-solid fa-window-maximize",
         description: "Cập nhật nội dung hiển thị cho các trang trên website.",
-      },
-      {
-        label: "Quản lý thống kê",
-        icon: "fa-solid fa-chart-column",
-        description: "Theo dõi số liệu hoạt động và hiệu quả của hệ thống.",
       },
     ],
   },
