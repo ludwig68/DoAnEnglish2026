@@ -11,6 +11,7 @@ import ContactView from '../views/user/ContactView.vue'
 import AdminLayout from '../views/admin/AdminLayout.vue'
 import AdminOverview from '../views/admin/AdminOverview.vue'
 import UserManagerView from '../views/admin/UserManagerView.vue'
+import CourseManager from '../views/admin/CourseManager.vue'
 import { clearAuthSession, getCurrentUser } from '../utils/auth'
 
 const router = createRouter({
@@ -37,6 +38,11 @@ const router = createRouter({
           path: 'users',
           name: 'admin-users',
           component: UserManagerView
+        },
+        {
+          path: 'courses',
+          name: 'admin-courses',
+          component: CourseManager
         }
       ]
     },
