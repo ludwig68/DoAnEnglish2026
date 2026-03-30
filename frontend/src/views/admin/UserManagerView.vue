@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="h-full flex flex-col p-6 animate__animated animate__fadeIn">
     <div
       class="flex flex-col md:flex-row justify-end items-end md:items-center mb-6 gap-4"
@@ -278,6 +278,7 @@ import { ref, computed, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { apiFetch } from "../../utils/api";
 import { clearAuthSession } from "../../utils/auth";
+import { openConfirm } from "../../utils/confirm";
 
 const router = useRouter();
 
@@ -393,29 +394,34 @@ const saveUser = async () => {
 };
 
 const confirmDelete = async (user) => {
-  if (
-    confirm(`Bạn có chắc chắn muốn xóa tài khoản của ${user.full_name} không?`)
-  ) {
-    try {
-      const response = await apiFetch(`${API_PATH}?id=${user.id}`, {
-        method: "DELETE",
-      });
+  const confirmed = await openConfirm({
+    title: "Xóa tài khoản",
+    message: `Bạn có chắc chắn muốn xóa tài khoản của ${user.full_name} không?`,
+    confirmText: "Xóa tài khoản",
+    cancelText: "Không xóa",
+    tone: "danger",
+  });
+  if (!confirmed) return;
 
-      if (response.status === 401 || response.status === 403) {
-        redirectToLogin();
-        return;
-      }
+  try {
+    const response = await apiFetch(`${API_PATH}?id=${user.id}`, {
+      method: "DELETE",
+    });
 
-      const result = await response.json();
-
-      if (result.status === "success") {
-        loadUsers();
-      } else {
-        alert("Lỗi: " + result.message);
-      }
-    } catch (error) {
-      alert("Không thể kết nối với máy chủ!");
+    if (response.status === 401 || response.status === 403) {
+      redirectToLogin();
+      return;
     }
+
+    const result = await response.json();
+
+    if (result.status === "success") {
+      loadUsers();
+    } else {
+      alert("Lỗi: " + result.message);
+    }
+  } catch (error) {
+    alert("Không thể kết nối với máy chủ!");
   }
 };
 
@@ -449,3 +455,5 @@ const getRoleBadgeClass = (role) => {
   border-radius: 10px;
 }
 </style>
+
+

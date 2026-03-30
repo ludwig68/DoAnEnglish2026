@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="space-y-6 p-4 md:p-6">
     <div v-if="isLoading" class="flex min-h-[420px] items-center justify-center rounded-[2rem] bg-white">
       <div class="text-center text-slate-500">
@@ -28,10 +28,10 @@
 
             <div class="mt-6 flex flex-wrap gap-3">
               <router-link
-                to="/admin/users"
+                to="/"
                 class="inline-flex items-center gap-2 rounded-full bg-[#7AE582] px-5 py-3 text-sm font-bold text-slate-900 transition hover:bg-emerald-300"
               >
-                Mở quản lý tài khoản <i class="fa-solid fa-arrow-right"></i>
+                Mở trang chủ <i class="fa-solid fa-arrow-right"></i>
               </router-link>
               <span class="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-5 py-3 text-sm font-bold text-slate-600 shadow-sm">
                 <i class="fa-solid fa-clock"></i> {{ syncLabel }}
@@ -329,3 +329,4 @@ onMounted(() => {
   loadDashboard()
 })
 </script>
+

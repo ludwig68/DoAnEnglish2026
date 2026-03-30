@@ -1,94 +1,148 @@
 <?php
+
 header("Access-Control-Allow-Origin: *");
-header("Content-Type: application/json; charset=UTF-8");
-header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE");
+header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With");
+header("Content-Type: application/json; charset=UTF-8");
 
-// Kết nối Database
-$host = "localhost";
-$user = "root";
-$pass = "";
-$db   = "learning_english";
-
-$conn = new mysqli($host, $user, $pass, $db);
-if ($conn->connect_error) {
-    die(json_encode(["status" => "error", "message" => "Kết nối thất bại"]));
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    http_response_code(200);
+    exit;
 }
-$conn->set_charset("utf8mb4");
+
+require_once __DIR__ . '/../../config/db.php';
+require_once __DIR__ . '/../../utils/Validator.php';
+require_once __DIR__ . '/../../utils/JwtHelper.php';
+
+JwtHelper::requireAuth('admin');
 
 $method = $_SERVER['REQUEST_METHOD'];
+$payload = json_decode(file_get_contents("php://input"), true) ?? [];
 
-switch ($method) {
-    // 1. READ: Lấy danh sách lộ trình học
-    case 'GET':
-        $sql = "SELECT * FROM learning_paths ORDER BY id DESC";
-        $result = $conn->query($sql);
-        $paths = [];
-        while($row = $result->fetch_assoc()) {
-            $paths[] = $row;
-        }
-        echo json_encode([
-            "status" => "success", 
-            "data" => $paths
-        ]);
-        break;
-
-    // 2. CREATE: Thêm lộ trình mới
-    case 'POST':
-        $data = json_decode(file_get_contents("php://input"));
-        if(!empty($data->title) && !empty($data->target_audience)) {
-            $title = $conn->real_escape_string($data->title);
-            $description = !empty($data->description) ? $conn->real_escape_string($data->description) : "";
-            $target_audience = $conn->real_escape_string($data->target_audience);
-            
-            $sql = "INSERT INTO learning_paths (title, description, target_audience) VALUES ('$title', '$description', '$target_audience')";
-            if($conn->query($sql)) {
-                echo json_encode(["status" => "success", "message" => "Thêm lộ trình học thành công"]);
-            } else {
-                echo json_encode(["status" => "error", "message" => "Lỗi CSDL: " . $conn->error]);
-            }
-        } else {
-            echo json_encode(["status" => "error", "message" => "Vui lòng nhập Tên lộ trình và Đối tượng mục tiêu"]);
-        }
-        break;
-
-    // 3. UPDATE: Cập nhật lộ trình
-    case 'PUT':
-        $data = json_decode(file_get_contents("php://input"));
-        $id = isset($_GET['id']) ? (int)$_GET['id'] : (!empty($data->id) ? (int)$data->id : 0);
-
-        if($id > 0 && !empty($data->title) && !empty($data->target_audience)) {
-            $title = $conn->real_escape_string($data->title);
-            $description = !empty($data->description) ? $conn->real_escape_string($data->description) : "";
-            $target_audience = $conn->real_escape_string($data->target_audience);
-            
-            $sql = "UPDATE learning_paths SET title='$title', description='$description', target_audience='$target_audience' WHERE id=$id";
-            if($conn->query($sql)) {
-                echo json_encode(["status" => "success", "message" => "Cập nhật thành công"]);
-            } else {
-                echo json_encode(["status" => "error", "message" => "Lỗi cập nhật CSDL"]);
-            }
-        } else {
-            echo json_encode(["status" => "error", "message" => "Thiếu thông tin cập nhật bắt buộc"]);
-        }
-        break;
-
-    // 4. DELETE: Xóa lộ trình
-    case 'DELETE':
-        $id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
-        
-        if($id > 0) {
-            $sql = "DELETE FROM learning_paths WHERE id=$id";
-            if($conn->query($sql)) {
-                echo json_encode(["status" => "success", "message" => "Xóa thành công"]);
-            } else {
-                echo json_encode(["status" => "error", "message" => "Lỗi xóa CSDL (có thể do lộ trình này đang có khóa học)"]);
-            }
-        } else {
-            echo json_encode(["status" => "error", "message" => "Không tìm thấy ID để xóa"]);
-        }
-        break;
+function learningPathsResponse(int $statusCode, array $payload): void
+{
+    http_response_code($statusCode);
+    echo json_encode($payload);
+    exit;
 }
 
-$conn->close();
-?>
+function validateLearningPathPayload(array $data): array
+{
+    $title = trim((string) ($data['title'] ?? ''));
+    $description = trim((string) ($data['description'] ?? ''));
+    $targetAudience = trim((string) ($data['target_audience'] ?? ''));
+
+    $titleCheck = Validator::checkStringLength($title, 3, 255);
+    if ($titleCheck !== true) {
+        return ['error' => 'Ten lo trinh phai tu 3 den 255 ky tu.'];
+    }
+
+    $audienceCheck = Validator::checkStringLength($targetAudience, 3, 255);
+    if ($audienceCheck !== true) {
+        return ['error' => 'Doi tuong muc tieu phai tu 3 den 255 ky tu.'];
+    }
+
+    if ($description !== '') {
+        $descriptionCheck = Validator::checkStringLength($description, 10, 5000);
+        if ($descriptionCheck !== true) {
+            return ['error' => 'Mo ta lo trinh phai tu 10 den 5000 ky tu neu co nhap.'];
+        }
+    }
+
+    return [
+        'data' => [
+            'title' => $title,
+            'description' => $description !== '' ? $description : null,
+            'target_audience' => $targetAudience,
+        ],
+    ];
+}
+
+try {
+    switch ($method) {
+        case 'GET':
+            $stmt = $pdo->query("
+                SELECT id, title, description, target_audience, DATE_FORMAT(created_at, '%d/%m/%Y') AS created_at
+                FROM learning_paths
+                ORDER BY id DESC
+            ");
+            learningPathsResponse(200, ['status' => 'success', 'data' => $stmt->fetchAll()]);
+
+        case 'POST':
+            $validated = validateLearningPathPayload($payload);
+            if (isset($validated['error'])) {
+                learningPathsResponse(422, ['status' => 'error', 'message' => $validated['error']]);
+            }
+
+            $data = $validated['data'];
+            $stmt = $pdo->prepare("
+                INSERT INTO learning_paths (title, description, target_audience)
+                VALUES (?, ?, ?)
+            ");
+            $stmt->execute([
+                $data['title'],
+                $data['description'],
+                $data['target_audience'],
+            ]);
+
+            learningPathsResponse(200, ['status' => 'success', 'message' => 'Them lo trinh hoc thanh cong.']);
+
+        case 'PUT':
+            $id = isset($_GET['id']) ? (int) $_GET['id'] : (int) ($payload['id'] ?? 0);
+            if ($id <= 0) {
+                learningPathsResponse(422, ['status' => 'error', 'message' => 'ID lo trinh khong hop le.']);
+            }
+
+            $validated = validateLearningPathPayload($payload);
+            if (isset($validated['error'])) {
+                learningPathsResponse(422, ['status' => 'error', 'message' => $validated['error']]);
+            }
+
+            $existsStmt = $pdo->prepare("SELECT COUNT(*) FROM learning_paths WHERE id = ?");
+            $existsStmt->execute([$id]);
+            if ((int) $existsStmt->fetchColumn() === 0) {
+                learningPathsResponse(404, ['status' => 'error', 'message' => 'Lo trinh hoc khong ton tai.']);
+            }
+
+            $data = $validated['data'];
+            $stmt = $pdo->prepare("
+                UPDATE learning_paths
+                SET title = ?, description = ?, target_audience = ?
+                WHERE id = ?
+            ");
+            $stmt->execute([
+                $data['title'],
+                $data['description'],
+                $data['target_audience'],
+                $id,
+            ]);
+
+            learningPathsResponse(200, ['status' => 'success', 'message' => 'Cap nhat lo trinh hoc thanh cong.']);
+
+        case 'DELETE':
+            $id = isset($_GET['id']) ? (int) $_GET['id'] : 0;
+            if ($id <= 0) {
+                learningPathsResponse(422, ['status' => 'error', 'message' => 'ID lo trinh khong hop le.']);
+            }
+
+            $existsStmt = $pdo->prepare("SELECT COUNT(*) FROM learning_paths WHERE id = ?");
+            $existsStmt->execute([$id]);
+            if ((int) $existsStmt->fetchColumn() === 0) {
+                learningPathsResponse(404, ['status' => 'error', 'message' => 'Lo trinh hoc khong ton tai.']);
+            }
+
+            $stmt = $pdo->prepare("DELETE FROM learning_paths WHERE id = ?");
+            $stmt->execute([$id]);
+
+            learningPathsResponse(200, ['status' => 'success', 'message' => 'Xoa lo trinh hoc thanh cong.']);
+
+        default:
+            learningPathsResponse(405, ['status' => 'error', 'message' => 'Method Not Allowed']);
+    }
+} catch (PDOException $exception) {
+    $message = $exception->getCode() === '23000'
+        ? 'Khong the xoa lo trinh nay vi dang co khoa hoc lien ket.'
+        : 'Loi Database: ' . $exception->getMessage();
+
+    learningPathsResponse(500, ['status' => 'error', 'message' => $message]);
+}

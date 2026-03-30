@@ -57,7 +57,7 @@ class JwtHelper
         $parts = explode('.', $token);
 
         if (count($parts) !== 3) {
-            throw new InvalidArgumentException('Token không hợp lệ.');
+            throw new InvalidArgumentException('Token khong hop le.');
         }
 
         [$encodedHeader, $encodedPayload, $encodedSignature] = $parts;
@@ -68,17 +68,17 @@ class JwtHelper
         );
 
         if (!hash_equals($expectedSignature, $encodedSignature)) {
-            throw new InvalidArgumentException('Token không hợp lệ.');
+            throw new InvalidArgumentException('Token khong hop le.');
         }
 
         $payload = json_decode(self::base64UrlDecode($encodedPayload), true);
 
         if (!is_array($payload)) {
-            throw new InvalidArgumentException('Token không hợp lệ.');
+            throw new InvalidArgumentException('Token khong hop le.');
         }
 
         if (!empty($payload['exp']) && time() >= (int) $payload['exp']) {
-            throw new InvalidArgumentException('Phiên đăng nhập đã hết hạn.');
+            throw new InvalidArgumentException('Phien dang nhap da het han.');
         }
 
         return $payload;
@@ -105,7 +105,7 @@ class JwtHelper
         $token = self::getBearerToken();
 
         if (!$token) {
-            self::abort(401, 'Bạn cần đăng nhập để tiếp tục.');
+            self::abort(401, 'Ban can dang nhap de tiep tuc.');
         }
 
         try {
@@ -114,11 +114,41 @@ class JwtHelper
             self::abort(401, $exception->getMessage());
         }
 
-        if ($requiredRole !== null && (($payload['role'] ?? null) !== $requiredRole)) {
-            self::abort(403, 'Bạn không có quyền truy cập tài nguyên này.');
+        $userId = (int) ($payload['sub'] ?? 0);
+        if ($userId <= 0) {
+            self::abort(401, 'Token khong hop le.');
         }
 
-        return $payload;
+        require __DIR__ . '/../config/db.php';
+
+        $stmt = $pdo->prepare("
+            SELECT id, full_name, email, role, status
+            FROM users
+            WHERE id = ?
+            LIMIT 1
+        ");
+        $stmt->execute([$userId]);
+        $user = $stmt->fetch();
+
+        if (!$user) {
+            self::abort(401, 'Tai khoan khong con ton tai.');
+        }
+
+        if (($user['status'] ?? 'blocked') !== 'active') {
+            self::abort(403, 'Tai khoan cua ban hien dang bi khoa.');
+        }
+
+        if ($requiredRole !== null && (($user['role'] ?? null) !== $requiredRole)) {
+            self::abort(403, 'Ban khong co quyen truy cap tai nguyen nay.');
+        }
+
+        return array_merge($payload, [
+            'sub' => (int) $user['id'],
+            'full_name' => $user['full_name'],
+            'email' => $user['email'],
+            'role' => $user['role'],
+            'status' => $user['status'],
+        ]);
     }
 
     private static function abort(int $statusCode, string $message): void

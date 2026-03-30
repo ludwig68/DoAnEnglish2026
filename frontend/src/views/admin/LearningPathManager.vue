@@ -56,7 +56,7 @@
                 </span>
               </td>
               <td class="px-6 py-4 text-slate-500">
-                 <p class="line-clamp-2" :title="path.description">{{ path.description || "Chưa có mô tả" }}</p>
+                <p class="line-clamp-2" :title="path.description">{{ path.description || "Chưa có mô tả" }}</p>
               </td>
               <td class="px-6 py-4 text-slate-500 font-medium">{{ path.created_at }}</td>
               <td class="px-6 py-4 text-right">
@@ -90,7 +90,7 @@
       </div>
 
       <div class="px-6 py-4 border-t border-slate-100 bg-slate-50/50 flex items-center justify-between text-sm text-slate-500">
-        <span> Tổng: {{ filteredPaths.length }} lộ trình</span>
+        <span>Tổng: {{ filteredPaths.length }} lộ trình</span>
       </div>
     </div>
 
@@ -131,7 +131,7 @@
                 v-model="formData.target_audience"
                 type="text"
                 required
-                placeholder="VD: Người đi làm, Sinh viên năm cuối"
+                placeholder="VD: Người đi làm, sinh viên năm cuối"
                 class="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#7AE582]"
               />
             </div>
@@ -175,6 +175,7 @@ import { computed, onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 import { apiFetch } from "../../utils/api";
 import { clearAuthSession } from "../../utils/auth";
+import { openConfirm } from "../../utils/confirm";
 
 const router = useRouter();
 
@@ -188,11 +189,11 @@ const formData = ref({
   id: null,
   title: "",
   description: "",
-  target_audience: ""
+  target_audience: "",
 });
 
-// Chỉnh sửa đường dẫn gọi PHP file (tương tự như categories)
-const API_PATH = "admin/learning_paths.php"; 
+// Chỉnh lại đường dẫn gọi PHP file, tương tự categories.
+const API_PATH = "admin/learning_paths.php";
 
 const redirectToLogin = () => {
   clearAuthSession();
@@ -204,7 +205,7 @@ const resetForm = () => {
     id: null,
     title: "",
     description: "",
-    target_audience: ""
+    target_audience: "",
   };
 };
 
@@ -226,7 +227,7 @@ const loadPaths = async () => {
       alert("Lỗi: " + result.message);
     }
   } catch (error) {
-    alert("Không thể kết nối với máy chủ!");
+    alert("Không thể kết nối tới máy chủ!");
   } finally {
     isLoading.value = false;
   }
@@ -240,7 +241,7 @@ const filteredPaths = computed(() => {
   return paths.value.filter((path) => {
     const query = searchQuery.value.toLowerCase().trim();
     if (!query) return true;
-    
+
     return (
       (path.title && path.title.toLowerCase().includes(query)) ||
       (path.description && path.description.toLowerCase().includes(query)) ||
@@ -273,14 +274,14 @@ const closeModal = () => {
 
 const validateForm = () => {
   const title = formData.value.title.trim();
-  const target_audience = formData.value.target_audience.trim();
+  const targetAudience = formData.value.target_audience.trim();
 
   if (title.length < 3 || title.length > 255) {
     alert("Tên lộ trình phải từ 3 đến 255 ký tự.");
     return false;
   }
-  
-  if (target_audience.length < 3 || target_audience.length > 255) {
+
+  if (targetAudience.length < 3 || targetAudience.length > 255) {
     alert("Đối tượng mục tiêu phải từ 3 đến 255 ký tự.");
     return false;
   }
@@ -292,7 +293,7 @@ const savePath = async () => {
   if (!validateForm()) return;
 
   const method = modalMode.value === "add" ? "POST" : "PUT";
-  
+
   try {
     const response = await apiFetch(API_PATH, {
       method,
@@ -313,31 +314,38 @@ const savePath = async () => {
       alert("Lỗi: " + result.message);
     }
   } catch (error) {
-    alert("Không thể kết nối với máy chủ!");
+    alert("Không thể kết nối tới máy chủ!");
   }
 };
 
 const confirmDelete = async (path) => {
-  if (confirm(`Bạn có chắc chắn muốn xóa lộ trình "${path.title}" không? Khóa học thuộc lộ trình này có thể bị mất liên kết.`)) {
-    try {
-      const response = await apiFetch(`${API_PATH}?id=${path.id}`, {
-        method: "DELETE",
-      });
+  const confirmed = await openConfirm({
+    title: "Xóa lộ trình học",
+    message: `Bạn có chắc chắn muốn xóa lộ trình "${path.title}" không? Các khóa học thuộc lộ trình này có thể bị mất liên kết.`,
+    confirmText: "Xóa lộ trình",
+    cancelText: "Không xóa",
+    tone: "danger",
+  });
+  if (!confirmed) return;
 
-      if (response.status === 401 || response.status === 403) {
-        redirectToLogin();
-        return;
-      }
+  try {
+    const response = await apiFetch(`${API_PATH}?id=${path.id}`, {
+      method: "DELETE",
+    });
 
-      const result = await response.json();
-      if (result.status === "success") {
-        loadPaths();
-      } else {
-        alert("Lỗi: " + result.message);
-      }
-    } catch (error) {
-      alert("Không thể kết nối với máy chủ!");
+    if (response.status === 401 || response.status === 403) {
+      redirectToLogin();
+      return;
     }
+
+    const result = await response.json();
+    if (result.status === "success") {
+      loadPaths();
+    } else {
+      alert("Lỗi: " + result.message);
+    }
+  } catch (error) {
+    alert("Không thể kết nối tới máy chủ!");
   }
 };
 </script>
@@ -355,11 +363,12 @@ const confirmDelete = async (path) => {
   background: #cbd5e1;
   border-radius: 10px;
 }
-/* Giới hạn hiển thị mô tả quá dài */
+
+/* Giới hạn hiển thị mô tả quá dài. */
 .line-clamp-2 {
   display: -webkit-box;
   -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;  
+  -webkit-box-orient: vertical;
   overflow: hidden;
 }
 </style>

@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="h-full flex flex-col p-6 animate__animated animate__fadeIn">
     <div
       class="flex flex-col md:flex-row justify-end items-start md:items-center mb-6 gap-4"
@@ -133,14 +133,14 @@
                   <button
                     @click="openModal('edit', course)"
                     class="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white flex items-center justify-center transition-colors"
-                    title="Chinh sua"
+                    title="Chỉnh sửa"
                   >
                     <i class="fa-solid fa-pen text-xs"></i>
                   </button>
                   <button
                     @click="confirmDelete(course)"
                     class="w-8 h-8 rounded-lg bg-red-50 text-red-600 hover:bg-red-600 hover:text-white flex items-center justify-center transition-colors"
-                    title="Xoa"
+                    title="Xóa"
                   >
                     <i class="fa-solid fa-trash-can text-xs"></i>
                   </button>
@@ -376,7 +376,7 @@
                   </button>
                 </div>
                 <p class="text-xs text-slate-500">
-                  Chấp nhận JPG, JPEG, PNG, WEBP, GIF. ối đa 5MB.
+                  Chấp nhận JPG, JPEG, PNG, WEBP, GIF. Tối đa 5MB.
                 </p>
               </div>
 
@@ -438,6 +438,7 @@ import { computed, onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 import { apiFetch } from "../../utils/api";
 import { clearAuthSession } from "../../utils/auth";
+import { openConfirm } from "../../utils/confirm";
 
 const router = useRouter();
 
@@ -517,10 +518,10 @@ const loadCourses = async () => {
       categories.value = result.data.categories || [];
       learningPaths.value = result.data.paths || [];
     } else {
-      alert("Loi: " + result.message);
+      alert("Lỗi: " + result.message);
     }
   } catch (error) {
-    alert("Khong the ket noi voi may chu!");
+    alert("Không thể kết nối với máy chủ!");
   } finally {
     isLoading.value = false;
   }
@@ -741,26 +742,33 @@ const saveCourse = async () => {
 };
 
 const confirmDelete = async (course) => {
-  if (confirm(`Bạn có chắc chắn muốn xóa khóa học "${course.title}" không?`)) {
-    try {
-      const response = await apiFetch(`${API_PATH}?id=${course.id}`, {
-        method: "DELETE",
-      });
+  const confirmed = await openConfirm({
+    title: "Xóa khóa học",
+    message: `Bạn có chắc chắn muốn xóa khóa học "${course.title}" không?`,
+    confirmText: "Xóa khóa học",
+    cancelText: "Không xóa",
+    tone: "danger",
+  });
+  if (!confirmed) return;
 
-      if (response.status === 401 || response.status === 403) {
-        redirectToLogin();
-        return;
-      }
+  try {
+    const response = await apiFetch(`${API_PATH}?id=${course.id}`, {
+      method: "DELETE",
+    });
 
-      const result = await response.json();
-      if (result.status === "success") {
-        loadCourses();
-      } else {
-        alert("Lỗi: " + result.message);
-      }
-    } catch (error) {
-      alert("Không thể kết nối với máy chủ!");
+    if (response.status === 401 || response.status === 403) {
+      redirectToLogin();
+      return;
     }
+
+    const result = await response.json();
+    if (result.status === "success") {
+      loadCourses();
+    } else {
+      alert("Lỗi: " + result.message);
+    }
+  } catch (error) {
+    alert("Không thể kết nối với máy chủ!");
   }
 };
 
@@ -786,3 +794,5 @@ const formatCurrency = (value) =>
   border-radius: 10px;
 }
 </style>
+
+

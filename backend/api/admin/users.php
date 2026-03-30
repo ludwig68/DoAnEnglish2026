@@ -1,5 +1,4 @@
 <?php
-// backend/api/admin/users.php
 
 header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
@@ -16,78 +15,238 @@ require_once __DIR__ . '/../../utils/Validator.php';
 require_once __DIR__ . '/../../utils/JwtHelper.php';
 
 $method = $_SERVER['REQUEST_METHOD'];
-$data = json_decode(file_get_contents("php://input"), true);
+$payload = json_decode(file_get_contents("php://input"), true) ?? [];
 $authUser = JwtHelper::requireAuth('admin');
+
+function usersResponse(int $statusCode, array $payload): void
+{
+    http_response_code($statusCode);
+    echo json_encode($payload);
+    exit;
+}
+
+function validateUserPayload(PDO $pdo, array $data, bool $isCreate, int $excludeId = 0): array
+{
+    $fullName = trim((string) ($data['full_name'] ?? ''));
+    $email = trim((string) ($data['email'] ?? ''));
+    $password = (string) ($data['password'] ?? '');
+    $role = trim((string) ($data['role'] ?? 'student'));
+    $status = trim((string) ($data['status'] ?? 'active'));
+
+    $nameCheck = Validator::checkStringLength($fullName, 2, 100);
+    if ($nameCheck !== true) {
+        return ['error' => 'Ho ten phai tu 2 den 100 ky tu.'];
+    }
+
+    if (filter_var($email, FILTER_VALIDATE_EMAIL) === false) {
+        return ['error' => 'Email khong hop le.'];
+    }
+
+    $allowedRoles = ['student', 'instructor', 'admin'];
+    if (!in_array($role, $allowedRoles, true)) {
+        return ['error' => 'Vai tro khong hop le.'];
+    }
+
+    $allowedStatuses = ['active', 'blocked'];
+    if (!in_array($status, $allowedStatuses, true)) {
+        return ['error' => 'Trang thai khong hop le.'];
+    }
+
+    if ($isCreate || $password !== '') {
+        $passwordCheck = Validator::checkStringLength($password, 6, 255);
+        if ($passwordCheck !== true) {
+            return ['error' => 'Mat khau phai tu 6 den 255 ky tu.'];
+        }
+    }
+
+    $duplicateStmt = $pdo->prepare("
+        SELECT COUNT(*)
+        FROM users
+        WHERE email = ?
+          AND id <> ?
+    ");
+    $duplicateStmt->execute([$email, $excludeId]);
+    if ((int) $duplicateStmt->fetchColumn() > 0) {
+        return ['error' => 'Email da ton tai.'];
+    }
+
+    return [
+        'data' => [
+            'full_name' => $fullName,
+            'email' => $email,
+            'password' => $password,
+            'role' => $role,
+            'status' => $status,
+        ],
+    ];
+}
+
+function countActiveAdmins(PDO $pdo, ?int $excludeId = null): int
+{
+    if ($excludeId === null) {
+        $stmt = $pdo->query("
+            SELECT COUNT(*)
+            FROM users
+            WHERE role = 'admin' AND status = 'active'
+        ");
+
+        return (int) $stmt->fetchColumn();
+    }
+
+    $stmt = $pdo->prepare("
+        SELECT COUNT(*)
+        FROM users
+        WHERE role = 'admin'
+          AND status = 'active'
+          AND id <> ?
+    ");
+    $stmt->execute([$excludeId]);
+
+    return (int) $stmt->fetchColumn();
+}
 
 try {
     switch ($method) {
         case 'GET':
-            $stmt = $pdo->query("SELECT id, full_name, email, role, status, DATE_FORMAT(created_at, '%d/%m/%Y') as created_at FROM users ORDER BY id DESC");
-            $users = $stmt->fetchAll();
-            echo json_encode(['status' => 'success', 'data' => $users]);
-            break;
+            $stmt = $pdo->query("
+                SELECT id, full_name, email, role, status, DATE_FORMAT(created_at, '%d/%m/%Y') AS created_at
+                FROM users
+                ORDER BY id DESC
+            ");
+            usersResponse(200, ['status' => 'success', 'data' => $stmt->fetchAll()]);
 
         case 'POST':
-            $full_name = $data['full_name'] ?? '';
-            $email = $data['email'] ?? '';
-            $password = $data['password'] ?? '';
-            $role = $data['role'] ?? 'student';
-            $status = $data['status'] ?? 'active';
-
-            $stmtCheck = $pdo->prepare("SELECT id FROM users WHERE email = ?");
-            $stmtCheck->execute([$email]);
-            if ($stmtCheck->fetch()) {
-                echo json_encode(['status' => 'error', 'message' => 'Email đã tồn tại!']);
-                exit;
+            $validated = validateUserPayload($pdo, $payload, true);
+            if (isset($validated['error'])) {
+                usersResponse(422, ['status' => 'error', 'message' => $validated['error']]);
             }
 
-            $hash = password_hash($password, PASSWORD_DEFAULT);
-            $stmt = $pdo->prepare("INSERT INTO users (full_name, email, password, role, status) VALUES (?, ?, ?, ?, ?)");
-            $stmt->execute([$full_name, $email, $hash, $role, $status]);
+            $data = $validated['data'];
+            $hash = password_hash($data['password'], PASSWORD_DEFAULT);
 
-            echo json_encode(['status' => 'success', 'message' => 'Tạo tài khoản thành công!']);
-            break;
+            $stmt = $pdo->prepare("
+                INSERT INTO users (full_name, email, password, role, status)
+                VALUES (?, ?, ?, ?, ?)
+            ");
+            $stmt->execute([
+                $data['full_name'],
+                $data['email'],
+                $hash,
+                $data['role'],
+                $data['status'],
+            ]);
+
+            usersResponse(200, ['status' => 'success', 'message' => 'Tao tai khoan thanh cong.']);
 
         case 'PUT':
-            $id = $data['id'] ?? 0;
-            $full_name = $data['full_name'] ?? '';
-            $role = $data['role'] ?? 'student';
-            $status = $data['status'] ?? 'active';
-
-            if (!empty($data['password'])) {
-                $hash = password_hash($data['password'], PASSWORD_DEFAULT);
-                $stmt = $pdo->prepare("UPDATE users SET full_name = ?, password = ?, role = ?, status = ? WHERE id = ?");
-                $stmt->execute([$full_name, $hash, $role, $status, $id]);
-            } else {
-                $stmt = $pdo->prepare("UPDATE users SET full_name = ?, role = ?, status = ? WHERE id = ?");
-                $stmt->execute([$full_name, $role, $status, $id]);
+            $id = isset($_GET['id']) ? (int) $_GET['id'] : (int) ($payload['id'] ?? 0);
+            if ($id <= 0) {
+                usersResponse(422, ['status' => 'error', 'message' => 'ID nguoi dung khong hop le.']);
             }
 
-            echo json_encode(['status' => 'success', 'message' => 'Cập nhật thông tin thành công!']);
-            break;
+            $userStmt = $pdo->prepare("
+                SELECT id, role, status
+                FROM users
+                WHERE id = ?
+                LIMIT 1
+            ");
+            $userStmt->execute([$id]);
+            $existingUser = $userStmt->fetch();
+            if (!$existingUser) {
+                usersResponse(404, ['status' => 'error', 'message' => 'Nguoi dung khong ton tai.']);
+            }
+
+            $validated = validateUserPayload($pdo, $payload, false, $id);
+            if (isset($validated['error'])) {
+                usersResponse(422, ['status' => 'error', 'message' => $validated['error']]);
+            }
+
+            $data = $validated['data'];
+            $isSelf = $id === (int) ($authUser['sub'] ?? 0);
+
+            if (
+                $existingUser['role'] === 'admin'
+                && $existingUser['status'] === 'active'
+                && ($data['role'] !== 'admin' || $data['status'] !== 'active')
+                && countActiveAdmins($pdo, $id) === 0
+            ) {
+                usersResponse(422, ['status' => 'error', 'message' => 'He thong phai con it nhat 1 admin dang hoat dong.']);
+            }
+
+            if ($isSelf && ($data['role'] !== 'admin' || $data['status'] !== 'active')) {
+                usersResponse(422, ['status' => 'error', 'message' => 'Khong the tu ha quyen hoac tu khoa tai khoan dang dang nhap.']);
+            }
+
+            if ($data['password'] !== '') {
+                $hash = password_hash($data['password'], PASSWORD_DEFAULT);
+                $stmt = $pdo->prepare("
+                    UPDATE users
+                    SET full_name = ?, email = ?, password = ?, role = ?, status = ?
+                    WHERE id = ?
+                ");
+                $stmt->execute([
+                    $data['full_name'],
+                    $data['email'],
+                    $hash,
+                    $data['role'],
+                    $data['status'],
+                    $id,
+                ]);
+            } else {
+                $stmt = $pdo->prepare("
+                    UPDATE users
+                    SET full_name = ?, email = ?, role = ?, status = ?
+                    WHERE id = ?
+                ");
+                $stmt->execute([
+                    $data['full_name'],
+                    $data['email'],
+                    $data['role'],
+                    $data['status'],
+                    $id,
+                ]);
+            }
+
+            usersResponse(200, ['status' => 'success', 'message' => 'Cap nhat thong tin thanh cong.']);
 
         case 'DELETE':
-            $id = (int) ($_GET['id'] ?? 0);
+            $id = isset($_GET['id']) ? (int) $_GET['id'] : 0;
+            if ($id <= 0) {
+                usersResponse(422, ['status' => 'error', 'message' => 'ID nguoi dung khong hop le.']);
+            }
 
             if ($id === (int) ($authUser['sub'] ?? 0)) {
-                http_response_code(400);
-                echo json_encode(['status' => 'error', 'message' => 'Không thể tự xóa tài khoản đang đăng nhập.']);
-                exit;
+                usersResponse(422, ['status' => 'error', 'message' => 'Khong the tu xoa tai khoan dang dang nhap.']);
+            }
+
+            $userStmt = $pdo->prepare("
+                SELECT id, role, status
+                FROM users
+                WHERE id = ?
+                LIMIT 1
+            ");
+            $userStmt->execute([$id]);
+            $existingUser = $userStmt->fetch();
+            if (!$existingUser) {
+                usersResponse(404, ['status' => 'error', 'message' => 'Nguoi dung khong ton tai.']);
+            }
+
+            if (
+                $existingUser['role'] === 'admin'
+                && $existingUser['status'] === 'active'
+                && countActiveAdmins($pdo, $id) === 0
+            ) {
+                usersResponse(422, ['status' => 'error', 'message' => 'Khong the xoa admin dang hoat dong cuoi cung.']);
             }
 
             $stmt = $pdo->prepare("DELETE FROM users WHERE id = ?");
             $stmt->execute([$id]);
 
-            echo json_encode(['status' => 'success', 'message' => 'Đã xóa tài khoản!']);
-            break;
+            usersResponse(200, ['status' => 'success', 'message' => 'Da xoa tai khoan.']);
 
         default:
-            http_response_code(405);
-            echo json_encode(['status' => 'error', 'message' => 'Method Not Allowed']);
-            break;
+            usersResponse(405, ['status' => 'error', 'message' => 'Method Not Allowed']);
     }
-} catch (PDOException $e) {
-    http_response_code(500);
-    echo json_encode(['status' => 'error', 'message' => 'Lỗi Database: ' . $e->getMessage()]);
+} catch (PDOException $exception) {
+    usersResponse(500, ['status' => 'error', 'message' => 'Loi Database: ' . $exception->getMessage()]);
 }
-?>

@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="min-h-screen bg-[#f4f8fb] text-slate-900">
     <div class="flex min-h-screen flex-col xl:flex-row">
       <aside
@@ -167,14 +167,21 @@ const navSections = [
           "Thiết lập lộ trình học theo mục tiêu và trình độ của học viên.",
       },
       {
+        label: "Quản lý lớp học",
+        icon: "fa-solid fa-users",
+        to: "/admin/classes",
+        description: "Quản lý danh sách lớp học, gắn khóa học và giáo viên chủ nhiệm.",
+      },
+      {
         label: "Quản lý bài tập",
         icon: "fa-solid fa-file-pen",
     
         description: "Quản lý bài tập, quiz và tiến độ hoàn thành.",
       },
       {
-        label: "Quản lý giảng viên",
-        icon: "fa-solid fa-chalkboard-user",
+        label: "Quản lý lịch giảng dạy",
+        icon: "fa-regular fa-calendar-days",
+        to: "/admin/schedules",
         description: "Theo dõi thông tin giảng viên và phân công giảng dạy.",
       },
     ],
@@ -197,6 +204,7 @@ const navSections = [
       {
         label: "Quản lý nội dung trang web",
         icon: "fa-solid fa-window-maximize",
+        to: "/admin/content",
         description: "Cập nhật nội dung hiển thị cho các trang trên website.",
       },
     ],
@@ -224,6 +232,31 @@ const routeMetaMap = {
     description:
       "Sắp xếp khóa học theo danh mục, cấp độ và nhóm nội dung.",
   },
+  '/admin/learning-paths': {
+    title: "Quản lý lộ trình học",
+    description:
+      "Thiết lập lộ trình học theo mục tiêu và trình độ của học viên.",
+  },
+  '/admin/classes': {
+    title: "Quản lý lớp học",
+    description: "Quản lý danh sách lớp học, gắn khóa học và giáo viên chủ nhiệm.",
+  },
+  "/admin/schedules": {
+    title: "Quản lý lịch giảng dạy",
+    description: "Theo dõi lịch dạy, lớp học và phân công giảng viên theo từng buổi.",
+  },
+  "/admin/consultations": {
+    title: "Quản lý đăng ký tư vấn",
+    description: "Theo dõi danh sách đăng ký tư vấn và quá trình xử lý.",
+  },
+  "/admin/contacts": {
+    title: "Quản lý liên hệ",
+    description: "Tiếp nhận và phản hồi các yêu cầu liên hệ từ website.",
+  },
+  "/admin/content": {
+    title: "Quản lý nội dung trang web",
+    description: "Cập nhật nội dung hiển thị cho các trang trên website.",
+  },  
 };
 
 const pageTitle = computed(
@@ -274,3 +307,4 @@ const logout = () => {
   router.push("/login");
 };
 </script>
+

@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="h-full flex flex-col p-6 animate__animated animate__fadeIn">
     <div class="flex flex-col md:flex-row justify-end items-start md:items-center mb-6 gap-4">
       <button
@@ -154,6 +154,7 @@ import { computed, onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 import { apiFetch } from "../../utils/api";
 import { clearAuthSession } from "../../utils/auth";
+import { openConfirm } from "../../utils/confirm";
 
 const router = useRouter();
 
@@ -288,26 +289,33 @@ const saveCategory = async () => {
 };
 
 const confirmDelete = async (category) => {
-  if (confirm(`Bạn có chắc chắn muốn xóa danh mục "${category.name}" không? Toàn bộ khóa học thuộc danh mục này có thể bị ảnh hưởng.`)) {
-    try {
-      const response = await apiFetch(`${API_PATH}?id=${category.id}`, {
-        method: "DELETE",
-      });
+  const confirmed = await openConfirm({
+    title: "Xóa danh mục",
+    message: `Bạn có chắc chắn muốn xóa danh mục "${category.name}" không? Toàn bộ khóa học thuộc danh mục này có thể bị ảnh hưởng.`,
+    confirmText: "Xóa danh mục",
+    cancelText: "Không xóa",
+    tone: "danger",
+  });
+  if (!confirmed) return;
 
-      if (response.status === 401 || response.status === 403) {
-        redirectToLogin();
-        return;
-      }
+  try {
+    const response = await apiFetch(`${API_PATH}?id=${category.id}`, {
+      method: "DELETE",
+    });
 
-      const result = await response.json();
-      if (result.status === "success") {
-        loadCategories();
-      } else {
-        alert("Lỗi: " + result.message);
-      }
-    } catch (error) {
-      alert("Không thể kết nối với máy chủ!");
+    if (response.status === 401 || response.status === 403) {
+      redirectToLogin();
+      return;
     }
+
+    const result = await response.json();
+    if (result.status === "success") {
+      loadCategories();
+    } else {
+      alert("Lỗi: " + result.message);
+    }
+  } catch (error) {
+    alert("Không thể kết nối với máy chủ!");
   }
 };
 </script>
@@ -333,3 +341,5 @@ const confirmDelete = async (category) => {
   overflow: hidden;
 }
 </style>
+
+
