@@ -19,6 +19,8 @@ import ContactManager from '../views/admin/ContactManager.vue'
 import WebsiteContentManager from '../views/admin/WebsiteContentManager.vue'
 import ScheduleManager from '../views/admin/ScheduleManager.vue'
 import ClassManager from '../views/admin/ClassManager.vue'
+import LessonDetail from '../views/admin/LessonDetail.vue'
+import EnrollmentManager from '../views/admin/EnrollmentManager.vue'
 import { clearAuthSession, getCurrentUser } from '../utils/auth'
 
 const router = createRouter({
@@ -86,7 +88,18 @@ const router = createRouter({
             path: 'classes',
             name: 'admin-classes',
             component: ClassManager
+          },
+          {
+            path: 'schedules/:id', 
+            name: 'admin-lesson-detail',
+            component: LessonDetail
+          },
+          {
+            path: 'enrollments',
+            name: 'admin-enrollments',
+            component: EnrollmentManager
           }
+
 
       ]
     },

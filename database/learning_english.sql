@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1:3306
--- Generation Time: Mar 29, 2026 at 11:56 AM
+-- Generation Time: Mar 31, 2026 at 09:37 AM
 -- Server version: 9.1.0
 -- PHP Version: 8.4.0
 
@@ -47,14 +47,19 @@ CREATE TABLE IF NOT EXISTS `announcements` (
 DROP TABLE IF EXISTS `assignments`;
 CREATE TABLE IF NOT EXISTS `assignments` (
   `id` int NOT NULL AUTO_INCREMENT,
+  `schedule_id` int DEFAULT NULL COMMENT 'Gắn với buổi học cụ thể',
   `lesson_id` int DEFAULT NULL,
   `course_id` int NOT NULL,
   `title` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
   `description` text COLLATE utf8mb4_unicode_ci,
+  `attached_file` varchar(500) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'File đề đính kèm',
+  `deadline` datetime DEFAULT NULL COMMENT 'Hạn chót nộp bài',
+  `assignment_type` enum('post_class','pre_class','general') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'post_class',
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   KEY `lesson_id` (`lesson_id`),
-  KEY `course_id` (`course_id`)
+  KEY `course_id` (`course_id`),
+  KEY `fk_assignments_schedule` (`schedule_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
@@ -100,14 +105,43 @@ CREATE TABLE IF NOT EXISTS `classes` (
   PRIMARY KEY (`id`),
   KEY `course_id` (`course_id`),
   KEY `fk_classes_instructor` (`instructor_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Dumping data for table `classes`
 --
 
 INSERT INTO `classes` (`id`, `course_id`, `instructor_id`, `class_name`, `start_date`, `end_date`, `created_at`) VALUES
-(1, 4, 5, 'IELTS 01', '2026-03-29', '2026-06-23', '2026-03-29 11:49:47');
+(2, 4, 5, 'IELTS 01', '2026-03-30', '2026-04-17', '2026-03-29 13:33:50'),
+(4, 1, 22, 'Cơ bản 01', '2026-03-30', '2026-04-24', '2026-03-30 16:48:09');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `class_details`
+--
+
+DROP TABLE IF EXISTS `class_details`;
+CREATE TABLE IF NOT EXISTS `class_details` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `class_id` int NOT NULL,
+  `detail_name` varchar(255) NOT NULL,
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `class_id` (`class_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+--
+-- Dumping data for table `class_details`
+--
+
+INSERT INTO `class_details` (`id`, `class_id`, `detail_name`, `created_at`) VALUES
+(1, 2, 'IELTS 01 - Sáng - 2/4/6', '2026-03-30 20:36:08'),
+(2, 2, 'IELTS 01 - Tối - 2/4/6', '2026-03-30 20:36:29'),
+(3, 2, 'IELTS 01 - Tối - 3/5/7', '2026-03-30 20:36:53'),
+(4, 2, 'IELTS 01 - Sáng - 3/5/7', '2026-03-30 20:37:06'),
+(5, 4, 'Cơ bản 01 - Tối - 3/5/7', '2026-03-30 20:44:24'),
+(6, 2, 'IELTS 01 - Tối - 2/4/6', '2026-03-30 20:44:45');
 
 -- --------------------------------------------------------
 
@@ -227,12 +261,15 @@ CREATE TABLE IF NOT EXISTS `enrollments` (
   `id` int NOT NULL AUTO_INCREMENT,
   `student_id` int NOT NULL,
   `class_id` int NOT NULL,
+  `class_detail_id` int DEFAULT NULL,
   `status` enum('active','completed','dropped') COLLATE utf8mb4_unicode_ci DEFAULT 'active',
   `enrollment_date` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   KEY `student_id` (`student_id`),
-  KEY `class_id` (`class_id`)
+  KEY `class_id` (`class_id`),
+  KEY `fk_enrollments_class_detail` (`class_detail_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 
 -- --------------------------------------------------------
 
@@ -303,11 +340,14 @@ DROP TABLE IF EXISTS `materials`;
 CREATE TABLE IF NOT EXISTS `materials` (
   `id` int NOT NULL AUTO_INCREMENT,
   `class_id` int NOT NULL,
+  `schedule_id` int DEFAULT NULL COMMENT 'Gắn với buổi học cụ thể',
   `title` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
   `file_url` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `material_type` enum('document','audio','video','link') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'document',
   `uploaded_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
-  KEY `class_id` (`class_id`)
+  KEY `class_id` (`class_id`),
+  KEY `fk_materials_schedule` (`schedule_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
@@ -359,6 +399,7 @@ DROP TABLE IF EXISTS `schedules`;
 CREATE TABLE IF NOT EXISTS `schedules` (
   `id` int NOT NULL AUTO_INCREMENT,
   `class_id` int NOT NULL,
+  `class_detail_id` int DEFAULT NULL,
   `teacher_id` int DEFAULT NULL COMMENT 'Giảng viên dạy thực tế ca này',
   `study_date` date NOT NULL,
   `start_time` time NOT NULL,
@@ -370,8 +411,32 @@ CREATE TABLE IF NOT EXISTS `schedules` (
   `note` text COLLATE utf8mb4_unicode_ci COMMENT 'Ghi chú buổi học',
   PRIMARY KEY (`id`),
   KEY `fk_schedules_class` (`class_id`),
-  KEY `fk_schedules_teacher` (`teacher_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  KEY `fk_schedules_teacher` (`teacher_id`),
+  KEY `fk_schedules_class_detail` (`class_detail_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=348 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `schedules`
+--
+
+INSERT INTO `schedules` (`id`, `class_id`, `class_detail_id`, `teacher_id`, `study_date`, `start_time`, `end_time`, `teaching_type`, `room_info`, `status`, `attendance_checked`, `note`) VALUES
+(331, 2, 4, 5, '2026-04-04', '08:00:00', '09:30:00', 'offline', NULL, 'scheduled', 0, NULL),
+(332, 2, 4, NULL, '2026-04-07', '08:00:00', '09:30:00', 'offline', NULL, 'scheduled', 0, NULL),
+(333, 2, 4, NULL, '2026-04-09', '08:00:00', '09:30:00', 'offline', NULL, 'scheduled', 0, NULL),
+(334, 2, 4, NULL, '2026-04-11', '08:00:00', '09:30:00', 'offline', NULL, 'scheduled', 0, NULL),
+(335, 2, 4, NULL, '2026-04-14', '08:00:00', '09:30:00', 'offline', NULL, 'scheduled', 0, NULL),
+(336, 2, 4, NULL, '2026-04-16', '08:00:00', '09:30:00', 'offline', NULL, 'scheduled', 0, NULL),
+(337, 4, 5, 23, '2026-03-31', '18:00:00', '19:30:00', 'offline', NULL, 'scheduled', 0, NULL),
+(338, 4, 5, 23, '2026-04-02', '18:00:00', '19:30:00', 'offline', NULL, 'scheduled', 0, NULL),
+(339, 4, 5, 23, '2026-04-04', '18:00:00', '19:30:00', 'offline', NULL, 'scheduled', 0, NULL),
+(340, 4, 5, 23, '2026-04-07', '18:00:00', '19:30:00', 'offline', NULL, 'scheduled', 0, NULL),
+(341, 4, 5, 23, '2026-04-09', '18:00:00', '19:30:00', 'offline', NULL, 'scheduled', 0, NULL),
+(342, 4, 5, 23, '2026-04-11', '18:00:00', '19:30:00', 'offline', NULL, 'scheduled', 0, NULL),
+(343, 4, 5, 23, '2026-04-14', '18:00:00', '19:30:00', 'offline', NULL, 'scheduled', 0, NULL),
+(344, 4, 5, 23, '2026-04-16', '18:00:00', '19:30:00', 'offline', NULL, 'scheduled', 0, NULL),
+(345, 4, 5, 23, '2026-04-18', '18:00:00', '19:30:00', 'offline', NULL, 'scheduled', 0, NULL),
+(346, 4, 5, 23, '2026-04-21', '18:00:00', '19:30:00', 'offline', NULL, 'scheduled', 0, NULL),
+(347, 4, 5, 23, '2026-04-23', '18:00:00', '19:30:00', 'offline', NULL, 'scheduled', 0, NULL);
 
 -- --------------------------------------------------------
 
@@ -525,14 +590,22 @@ ALTER TABLE `announcements`
 --
 ALTER TABLE `assignments`
   ADD CONSTRAINT `assignments_ibfk_1` FOREIGN KEY (`lesson_id`) REFERENCES `lessons` (`id`) ON DELETE CASCADE,
-  ADD CONSTRAINT `assignments_ibfk_2` FOREIGN KEY (`course_id`) REFERENCES `courses` (`id`) ON DELETE CASCADE;
+  ADD CONSTRAINT `assignments_ibfk_2` FOREIGN KEY (`course_id`) REFERENCES `courses` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `fk_assignments_schedule` FOREIGN KEY (`schedule_id`) REFERENCES `schedules` (`id`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `classes`
 --
 ALTER TABLE `classes`
   ADD CONSTRAINT `classes_ibfk_1` FOREIGN KEY (`course_id`) REFERENCES `courses` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `classes_ibfk_2` FOREIGN KEY (`instructor_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
   ADD CONSTRAINT `fk_classes_instructor` FOREIGN KEY (`instructor_id`) REFERENCES `users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+
+--
+-- Constraints for table `class_details`
+--
+ALTER TABLE `class_details`
+  ADD CONSTRAINT `class_details_ibfk_1` FOREIGN KEY (`class_id`) REFERENCES `classes` (`id`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `courses`
@@ -558,6 +631,7 @@ ALTER TABLE `lessons`
 -- Constraints for table `materials`
 --
 ALTER TABLE `materials`
+  ADD CONSTRAINT `fk_materials_schedule` FOREIGN KEY (`schedule_id`) REFERENCES `schedules` (`id`) ON DELETE CASCADE,
   ADD CONSTRAINT `materials_ibfk_1` FOREIGN KEY (`class_id`) REFERENCES `classes` (`id`) ON DELETE CASCADE;
 
 --
@@ -577,7 +651,9 @@ ALTER TABLE `quizzes`
 --
 ALTER TABLE `schedules`
   ADD CONSTRAINT `fk_schedules_class` FOREIGN KEY (`class_id`) REFERENCES `classes` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  ADD CONSTRAINT `fk_schedules_teacher` FOREIGN KEY (`teacher_id`) REFERENCES `users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+  ADD CONSTRAINT `fk_schedules_class_detail` FOREIGN KEY (`class_detail_id`) REFERENCES `class_details` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `fk_schedules_teacher` FOREIGN KEY (`teacher_id`) REFERENCES `users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
+  ADD CONSTRAINT `schedules_ibfk_1` FOREIGN KEY (`class_id`) REFERENCES `classes` (`id`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `submissions`
@@ -601,6 +677,17 @@ ALTER TABLE `vocabularies`
   ADD CONSTRAINT `vocabularies_ibfk_1` FOREIGN KEY (`lesson_id`) REFERENCES `lessons` (`id`) ON DELETE CASCADE;
 COMMIT;
 
+--
+-- Constraints for table `enrollments`
+--
+ALTER TABLE `enrollments`
+  ADD CONSTRAINT `enrollments_ibfk_1` FOREIGN KEY (`student_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `enrollments_ibfk_2` FOREIGN KEY (`class_id`) REFERENCES `classes` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `fk_enrollments_class_detail` FOREIGN KEY (`class_detail_id`) REFERENCES `class_details` (`id`) ON DELETE SET NULL;
+COMMIT;
+
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+ALTER TABLE class_details ADD COLUMN max_students INT NOT NULL DEFAULT 20 AFTER detail_name;
+ALTER TABLE classes ADD COLUMN max_capacity INT NOT NULL DEFAULT 40 AFTER class_name;

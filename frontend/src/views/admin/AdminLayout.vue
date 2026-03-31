@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="min-h-screen bg-[#f4f8fb] text-slate-900">
     <div class="flex min-h-screen flex-col xl:flex-row">
       <aside
@@ -173,6 +173,12 @@ const navSections = [
         description: "Quản lý danh sách lớp học, gắn khóa học và giáo viên chủ nhiệm.",
       },
       {
+        label: "Ghi danh & Xếp lớp",
+        icon: "fa-solid fa-user-plus",
+        to: "/admin/enrollments",
+        description: "Đăng ký ghi danh và xếp lớp, ca học cho học viên.",
+      },
+      {
         label: "Quản lý bài tập",
         icon: "fa-solid fa-file-pen",
     
@@ -240,6 +246,10 @@ const routeMetaMap = {
   '/admin/classes': {
     title: "Quản lý lớp học",
     description: "Quản lý danh sách lớp học, gắn khóa học và giáo viên chủ nhiệm.",
+  },
+  "/admin/enrollments": {
+    title: "Ghi danh & Xếp lớp",
+    description: "Xếp học viên vào đợt khai giảng, chọn nhóm học và ca học phù hợp.",
   },
   "/admin/schedules": {
     title: "Quản lý lịch giảng dạy",

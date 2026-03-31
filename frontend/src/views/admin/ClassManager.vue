@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="h-full flex flex-col p-6 animate__animated animate__fadeIn">
     <div class="flex flex-col md:flex-row justify-end items-start md:items-center mb-6 gap-4">
       <button
@@ -67,6 +67,9 @@
               </td>
               <td class="px-6 py-4 text-right">
                 <div class="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <button @click="openClassDetailsModal(item)" title="Quản lý Nhóm ca học" class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white flex items-center justify-center transition-colors">
+                    <i class="fa-solid fa-layer-group text-xs"></i>
+                  </button>
                   <button @click="openModal('edit', item)" class="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white flex items-center justify-center transition-colors">
                     <i class="fa-solid fa-pen text-xs"></i>
                   </button>
@@ -140,6 +143,61 @@
         </form>
       </div>
     </div>
+
+    <!-- Modal Quản lý Nhóm Lớp -->
+    <div v-if="isClassDetailsOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate__animated animate__fadeIn animate__faster">
+      <div class="bg-white rounded-2xl shadow-2xl w-full max-w-xl overflow-hidden animate__animated animate__zoomIn animate__faster border border-emerald-100">
+        <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-emerald-50/50">
+          <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+            <i class="fa-solid fa-layer-group text-emerald-600"></i>
+            Quản lý Nhóm Học - {{ activeClassDetails?.class_name }}
+          </h3>
+          <button @click="closeClassDetailsModal" class="text-slate-400 hover:text-red-500 transition">
+            <i class="fa-solid fa-xmark text-xl"></i>
+          </button>
+        </div>
+
+        <div class="p-6">
+          <form @submit.prevent="addClassDetail" class="flex flex-col gap-3 mb-6 bg-slate-50 p-4 rounded-xl border border-slate-100">
+            <div class="flex flex-col md:flex-row gap-2">
+              <div class="flex-1 flex items-center bg-white border border-slate-200 rounded-xl px-4 py-2 text-sm shadow-sm gap-2 whitespace-nowrap overflow-x-auto custom-scrollbar">
+                <span class="font-bold text-slate-700">{{ activeClassDetails?.class_name }}</span>
+                <span class="text-slate-300">-</span>
+                <select v-model="newDetailShift" required class="bg-transparent font-medium border-none focus:outline-none text-emerald-700 cursor-pointer min-w-[90px]">
+                  <option value="" disabled>Ca học</option>
+                  <option value="Sáng">Sáng</option>
+                  <option value="Chiều">Chiều</option>
+                  <option value="Tối">Tối</option>
+                </select>
+                <span class="text-slate-300">-</span>
+                <select v-model="newDetailDays" required class="bg-transparent font-medium border-none focus:outline-none text-sky-700 cursor-pointer min-w-[90px]">
+                  <option value="" disabled>Lịch học</option>
+                  <option value="2/4/6">2/4/6</option>
+                  <option value="3/5/7">3/5/7</option>
+                  <option value="T7/CN">T7/CN</option>
+                </select>
+              </div>
+              <button type="submit" class="px-5 py-2.5 rounded-xl font-bold text-slate-900 bg-[#7AE582] hover:bg-emerald-300 transition shadow-sm flex items-center justify-center gap-2 shrink-0">
+                <i class="fa-solid fa-plus"></i> Thêm
+              </button>
+            </div>
+          </form>
+
+          <div class="bg-slate-50 rounded-xl border border-slate-100 max-h-64 overflow-y-auto custom-scrollbar">
+            <div v-if="isLoadingDetails" class="p-4 text-center text-slate-500 text-sm">Đang tải dữ liệu...</div>
+            <div v-else-if="classDetails.length === 0" class="p-4 text-center text-slate-500 text-sm italic">Chưa có nhóm học nào. Hãy tạo nhóm đầu tiên.</div>
+            <div v-else class="divide-y divide-slate-100">
+              <div v-for="detail in classDetails" :key="detail.id" class="flex justify-between items-center p-3 hover:bg-white transition group/item">
+                <span class="font-bold text-slate-700 text-sm"><i class="fa-regular fa-clock text-emerald-500 mr-2"></i> {{ detail.detail_name }}</span>
+                <button @click="deleteClassDetail(detail.id)" class="w-8 h-8 rounded-lg text-red-400 hover:bg-red-50 hover:text-red-600 transition flex items-center justify-center opacity-0 group-hover/item:opacity-100">
+                  <i class="fa-solid fa-trash-can text-xs"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -149,6 +207,7 @@ import { useRouter } from "vue-router";
 import { apiFetch } from "../../utils/api";
 import { clearAuthSession } from "../../utils/auth";
 import { openConfirm } from "../../utils/confirm";
+import { notifyError, notifySuccess } from "../../utils/notify";
 
 const router = useRouter();
 const classes = ref([]);
@@ -160,6 +219,13 @@ const errorMessage = ref("");
 
 const isModalOpen = ref(false);
 const modalMode = ref("add");
+
+const isClassDetailsOpen = ref(false);
+const activeClassDetails = ref(null);
+const classDetails = ref([]);
+const newDetailShift = ref("");
+const newDetailDays = ref("");
+const isLoadingDetails = ref(false);
 const createDefaultFormData = () => ({
   id: null,
   class_name: "",
@@ -331,6 +397,85 @@ const deleteClass = async (id) => {
     }
   } catch (error) {
     alert("Lỗi kết nối API");
+  }
+};
+
+const openClassDetailsModal = async (classItem) => {
+  activeClassDetails.value = classItem;
+  isClassDetailsOpen.value = true;
+  newDetailName.value = "";
+  await loadClassDetails(classItem.id);
+};
+
+const closeClassDetailsModal = () => {
+  isClassDetailsOpen.value = false;
+  activeClassDetails.value = null;
+};
+
+const loadClassDetails = async (classId) => {
+  isLoadingDetails.value = true;
+  try {
+    const res = await apiFetch(`admin/class_details.php?class_id=${classId}`);
+    if (res.status === 401 || res.status === 403) return redirectToLogin();
+    const result = await res.json();
+    if (result.status === "success") {
+      classDetails.value = result.data || [];
+    } else {
+      notifyError(result.message);
+    }
+  } catch (error) {
+    notifyError("Lỗi tải danh sách nhóm học");
+  } finally {
+    isLoadingDetails.value = false;
+  }
+};
+
+const addClassDetail = async () => {
+  if (!newDetailShift.value || !newDetailDays.value) {
+    return notifyError("Vui lòng chọn đầy đủ Ca học và Lịch học.");
+  }
+  const name = `${activeClassDetails.value.class_name} - ${newDetailShift.value} - ${newDetailDays.value}`;
+
+  try {
+    const res = await apiFetch("admin/class_details.php", {
+      method: "POST",
+      body: JSON.stringify({ class_id: activeClassDetails.value.id, detail_name: name })
+    });
+    const result = await res.json();
+    if (result.status === "success") {
+      newDetailShift.value = "";
+      newDetailDays.value = "";
+      notifySuccess("Đã thêm nhóm lịch học");
+      await loadClassDetails(activeClassDetails.value.id);
+    } else {
+      notifyError(result.message);
+    }
+  } catch (error) {
+    notifyError("Lỗi kết nối API");
+  }
+};
+
+const deleteClassDetail = async (id) => {
+  const confirmed = await openConfirm({
+    title: "Xóa nhóm học",
+    message: "Hành động này sẽ xóa toàn bộ các ca học thuộc nhóm này. Bạn có chắc chắn?",
+    confirmText: "Xóa",
+    cancelText: "Hủy",
+    tone: "danger"
+  });
+  if (!confirmed) return;
+
+  try {
+    const res = await apiFetch(`admin/class_details.php?id=${id}`, { method: "DELETE" });
+    const result = await res.json();
+    if (result.status === "success") {
+      notifySuccess("Đã xóa nhóm học");
+      await loadClassDetails(activeClassDetails.value.id);
+    } else {
+      notifyError(result.message);
+    }
+  } catch (error) {
+    notifyError("Lỗi kết nối API");
   }
 };
 </script>
