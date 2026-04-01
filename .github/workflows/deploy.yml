@@ -17,7 +17,7 @@ jobs:
     - name: 🛠️ Cài đặt Node.js và Build Vue 3
       uses: actions/setup-node@v3
       with:
-        node-version: '18'
+        node-version: '20'
     - name: Chạy lệnh Build
       run: |
         # Chuyển vào thư mục chứa code Vue của bạn (đổi tên 'frontend' nếu thư mục của bạn tên khác)
