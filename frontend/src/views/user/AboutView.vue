@@ -1,17 +1,20 @@
 <template>
-  <div class="bg-white">
+  <div>
+    <!-- ═══ HERO ═══ -->
+    <section class="relative overflow-hidden py-20 lg:py-28"
+      style="background: linear-gradient(160deg, #f0fdf4 0%, #ffffff 50%, #f0fdf4 100%)">
+      <div class="absolute -top-24 -right-24 w-96 h-96 bg-emerald-200/25 rounded-full blur-3xl pointer-events-none"></div>
+      <div class="absolute -bottom-16 -left-16 w-72 h-72 bg-emerald-100/35 rounded-full blur-3xl pointer-events-none"></div>
+      <div class="absolute inset-0 opacity-[0.03]"
+        style="background-image: radial-gradient(circle, #16a34a 1px, transparent 1px); background-size: 28px 28px;">
+      </div>
 
-    <!-- ─── HERO ─── -->
-    <section class="relative bg-[#f0faf1] overflow-hidden">
-      <div class="absolute left-0 bottom-0 w-72 h-72 bg-emerald-200/40 rounded-full blur-3xl"></div>
-      <div class="absolute right-0 top-0 w-96 h-96 bg-emerald-100/50 rounded-full blur-3xl"></div>
-
-      <div class="relative max-w-6xl mx-auto px-6 py-20 lg:py-28 text-center">
+      <div class="relative max-w-7xl mx-auto px-6 text-center">
         <div class="inline-flex items-center gap-2 bg-white rounded-full px-4 py-1.5 text-xs font-bold text-emerald-700 border border-emerald-200 shadow-sm mb-6">
           <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
           {{ pageData.hero.tagline }}
         </div>
-        <h1 class="text-4xl md:text-5xl lg:text-6xl font-black text-slate-900 leading-[1.1] tracking-tight mb-6 max-w-3xl mx-auto">
+        <h1 class="text-4xl md:text-5xl lg:text-6xl font-black text-slate-900 leading-[1.08] tracking-tight mb-6 max-w-3xl mx-auto">
           {{ pageData.hero.title }}
           <span class="text-emerald-600">{{ pageData.hero.highlight }}</span>
         </h1>
@@ -20,11 +23,12 @@
         </p>
         <div class="flex flex-wrap items-center justify-center gap-4">
           <router-link to="/register"
-            class="inline-flex items-center gap-2.5 px-8 py-3.5 rounded-xl bg-emerald-600 text-white text-sm font-bold hover:bg-emerald-700 transition-colors shadow-lg shadow-emerald-600/20">
+            class="inline-flex items-center gap-2.5 px-8 py-3.5 rounded-xl text-sm font-bold text-white shadow-lg shadow-emerald-500/25 hover:-translate-y-0.5 hover:shadow-emerald-500/35 transition-all"
+            style="background: linear-gradient(135deg, #7ae582 0%, #16a34a 100%)">
             Bắt đầu học ngay <i class="fa-solid fa-arrow-right text-xs"></i>
           </router-link>
           <router-link to="/courses"
-            class="inline-flex items-center gap-2 px-6 py-3.5 rounded-xl border-2 border-slate-200 text-sm font-bold text-slate-600 hover:border-emerald-300 hover:text-emerald-600 transition-colors bg-white">
+            class="inline-flex items-center gap-2 px-6 py-3.5 rounded-xl border-2 border-slate-200 text-sm font-bold text-slate-600 hover:border-emerald-300 hover:text-emerald-700 hover:bg-emerald-50 transition-all bg-white">
             <i class="fa-solid fa-play text-emerald-500 text-xs"></i> Xem khóa học
           </router-link>
         </div>
@@ -135,17 +139,16 @@
 
     <!-- ─── CTA ─── -->
     <section class="py-20 bg-emerald-600 relative overflow-hidden">
-      <div class="absolute inset-0">
-        <div class="absolute -left-20 -top-20 w-60 h-60 bg-emerald-500 rounded-full opacity-40"></div>
-        <div class="absolute -right-10 -bottom-10 w-80 h-80 bg-emerald-700 rounded-full opacity-30"></div>
-      </div>
-      <div class="relative max-w-3xl mx-auto px-6 text-center">
+      <div class="absolute inset-0" style="background: linear-gradient(135deg, #16a34a 0%, #15803d 100%)"></div>
+      <div class="absolute -left-20 -top-20 w-60 h-60 bg-white/5 rounded-full"></div>
+      <div class="absolute -right-10 -bottom-10 w-80 h-80 bg-black/5 rounded-full"></div>
+      <div class="relative max-w-7xl mx-auto px-6 text-center">
         <h2 class="text-3xl md:text-4xl font-black text-white mb-5 leading-tight">{{ pageData.cta.title }}</h2>
         <p class="text-emerald-100 mb-10 max-w-lg mx-auto leading-relaxed">
           {{ pageData.cta.description }}
         </p>
         <router-link :to="pageData.cta.button_link"
-          class="inline-flex items-center justify-center gap-2.5 px-8 py-4 rounded-xl bg-white text-emerald-700 text-sm font-bold hover:bg-emerald-50 transition-colors shadow-lg">
+          class="inline-flex items-center justify-center gap-2.5 px-8 py-4 rounded-xl bg-white text-emerald-700 text-sm font-bold hover:bg-emerald-50 transition-colors shadow-xl shadow-black/10">
           {{ pageData.cta.button_text }} <i class="fa-solid fa-arrow-right text-xs"></i>
         </router-link>
       </div>

@@ -3,9 +3,10 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1:3306
--- Generation Time: Apr 01, 2026 at 06:13 AM
+-- Generation Time: Apr 01, 2026 at 06:07 PM
 -- Server version: 9.1.0
 -- PHP Version: 8.4.0
+SET FOREIGN_KEY_CHECKS = 0;
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -131,7 +132,7 @@ CREATE TABLE IF NOT EXISTS `class_details` (
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   KEY `class_id` (`class_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Dumping data for table `class_details`
@@ -339,7 +340,16 @@ CREATE TABLE IF NOT EXISTS `lessons` (
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   KEY `course_id` (`course_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `lessons`
+--
+
+INSERT INTO `lessons` (`id`, `course_id`, `title`, `video_url`, `order_number`, `created_at`) VALUES
+(1, 4, 'Lesson 1', NULL, 1, '2026-04-01 16:26:33'),
+(2, 5, 'Lesson 1', NULL, 1, '2026-04-01 16:33:57'),
+(3, 5, 'Lesson 2', NULL, 2, '2026-04-01 16:34:14');
 
 -- --------------------------------------------------------
 
@@ -411,6 +421,8 @@ CREATE TABLE IF NOT EXISTS `quizzes` (
   `id` int NOT NULL AUTO_INCREMENT,
   `lesson_id` int NOT NULL,
   `title` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `category` enum('grammar','vocabulary','reading','listening','speaking','writing') COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `total_points` int DEFAULT '0',
   `description` text COLLATE utf8mb4_unicode_ci,
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
@@ -804,7 +816,4 @@ COMMIT;
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
--- Thêm cột phân loại bài tập (category) và tổng điểm (total_points) vào bảng quizzes
-ALTER TABLE `quizzes`
-ADD COLUMN `category` ENUM('grammar', 'vocabulary', 'reading', 'listening', 'speaking', 'writing') NULL AFTER `title`,
-ADD COLUMN `total_points` INT DEFAULT 0 AFTER `category`;
+SET FOREIGN_KEY_CHECKS = 1;
