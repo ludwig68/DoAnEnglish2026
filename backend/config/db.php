@@ -1,28 +1,35 @@
 <?php
 // backend/config/db.php
 
-$host = 'localhost';
-$db   = 'learning_english'; // Tên database ta đã tạo trước đó
-$user = 'root';             // User mặc định của WAMP/XAMPP
-$pass = '';                 // Mật khẩu mặc định của WAMP/XAMPP (thường để trống)
-$charset = 'utf8mb4';
+// Kiểm tra xem có đang chạy ở Localhost hay không
+$isLocalhost = ($_SERVER['HTTP_HOST'] === 'localhost' || $_SERVER['HTTP_HOST'] === '127.0.0.1');
 
-$dsn = "mysql:host=$host;dbname=$db;charset=$charset";
-$options = [
-    PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION, // Báo lỗi rõ ràng
-    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,       // Trả về mảng dễ đọc
-    PDO::ATTR_EMULATE_PREPARES   => false,                  // Bảo mật chống SQL Injection
-];
+if ($isLocalhost) {
+    // --- CẤU HÌNH CHO MÁY CỦA BẠN (LOCALHOST) ---
+    $host = 'localhost';
+    $dbname = 'learning_english';
+    $username = 'root';
+    $password = ''; // Thường để trống ở local
+} else {
+    // --- CẤU HÌNH CHO HOSTING (TTTN375) ---
+    $host = 'localhost'; 
+    $dbname = 'viakingv_da2026'; // Thay bằng tên DB thật trên host
+    $username = 'viakingv_da2026';  // Thay bằng user thật trên host
+    $password = 'viakingv_da2026'; // Thay bằng pass thật trên host
+}
 
 try {
-    $pdo = new PDO($dsn, $user, $pass, $options);
-} catch (\PDOException $e) {
-    // Nếu lỗi, trả về JSON để Frontend Vue.js có thể đọc được
-    header('Content-Type: application/json');
-    echo json_encode([
-        'status' => 'error',
-        'message' => 'Lỗi kết nối cơ sở dữ liệu: ' . $e->getMessage()
-    ]);
-    exit;
+    $pdo = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8", $username, $password);
+    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    $pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
+    
+    // Dòng này để test, nếu chạy ổn thì nên comment lại
+    // echo "Kết nối thành công!"; 
+} catch (PDOException $e) {
+    // Đừng hiện lỗi chi tiết cho người dùng xem trên host để bảo mật
+    if ($isLocalhost) {
+        die("Lỗi kết nối Local: " . $e->getMessage());
+    } else {
+        die("Hệ thống đang bảo trì, vui lòng quay lại sau!");
+    }
 }
-?>
