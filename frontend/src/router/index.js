@@ -21,6 +21,7 @@ import ScheduleManager from '../views/admin/ScheduleManager.vue'
 import ClassManager from '../views/admin/ClassManager.vue'
 import LessonDetail from '../views/admin/LessonDetail.vue'
 import EnrollmentManager from '../views/admin/EnrollmentManager.vue'
+import QuizBuilder from '../views/admin/QuizBuilder.vue'
 import { clearAuthSession, getCurrentUser } from '../utils/auth'
 
 const router = createRouter({
@@ -88,6 +89,11 @@ const router = createRouter({
             path: 'classes',
             name: 'admin-classes',
             component: ClassManager
+          },
+          {
+            path: 'quizzes',
+            name: 'admin-quizzes',
+            component: QuizBuilder
           },
           {
             path: 'schedules/:id', 

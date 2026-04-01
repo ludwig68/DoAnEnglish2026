@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="h-full flex flex-col p-6 animate__animated animate__fadeIn">
     <div
       class="flex flex-col md:flex-row justify-end items-start md:items-center mb-6 gap-4"
@@ -80,73 +80,173 @@
               <th class="px-6 py-4 text-right">Thao tác</th>
             </tr>
           </thead>
-          <tbody class="divide-y divide-slate-50 text-sm text-slate-700">
-            <tr
+          <tbody class="text-sm text-slate-700">
+            <template
               v-for="course in filteredCourses"
               :key="course.id"
-              class="hover:bg-slate-50/50 transition-colors group"
             >
-              <td class="px-6 py-4">
-                <div class="flex items-center gap-4">
-                  <img
-                    :src="course.image_url || fallbackImage"
-                    :alt="course.title"
-                    class="h-14 w-20 rounded-xl border border-slate-200 object-cover shrink-0"
-                  />
-                  <div>
-                    <p class="font-bold text-slate-800">{{ course.title }}</p>
-                    <p class="text-xs text-slate-500 mt-1">
-                      {{ course.level || "Chưa có trình độ" }}
-                      <span class="mx-1">•</span>
-                      {{ course.lesson_count }} bài học
-                      <span class="mx-1">•</span>
-                      {{ course.class_count }} lớp học
-                    </p>
+              <!-- Main course row -->
+              <tr
+                class="border-b border-slate-100 hover:bg-slate-50/60 transition-colors"
+                :class="{ 'bg-emerald-50/40 border-b-0': expandedCourseId === course.id }"
+              >
+                <td class="px-6 py-4">
+                  <div class="flex items-center gap-3">
+                    <!-- Chevron toggle button -->
+                    <button
+                      @click="toggleExpand(course)"
+                      class="chevron-btn w-7 h-7 rounded-lg flex items-center justify-center transition-all duration-200 shrink-0"
+                      :class="expandedCourseId === course.id
+                        ? 'bg-emerald-500 text-white shadow-md shadow-emerald-200 rotate-180-btn'
+                        : 'bg-slate-100 text-slate-500 hover:bg-emerald-100 hover:text-emerald-600'"
+                      :title="expandedCourseId === course.id ? 'Thu gọn' : 'Xem bài học'"
+                    >
+                      <i class="fa-solid fa-chevron-down text-xs transition-transform duration-300"
+                         :style="expandedCourseId === course.id ? 'transform: rotate(180deg)' : ''"
+                      ></i>
+                    </button>
+                    <img
+                      :src="course.image_url || fallbackImage"
+                      :alt="course.title"
+                      class="h-14 w-20 rounded-xl border border-slate-200 object-cover shrink-0"
+                    />
+                    <div>
+                      <p class="font-bold text-slate-800">{{ course.title }}</p>
+                      <p class="text-xs text-slate-500 mt-1">
+                        {{ course.level || "Chưa có trình độ" }}
+                        <span class="mx-1">•</span>
+                        <span :class="course.lesson_count > 0 ? 'text-emerald-600 font-semibold' : ''">
+                          {{ course.lesson_count }} bài học
+                        </span>
+                        <span class="mx-1">•</span>
+                        {{ course.class_count }} lớp học
+                      </p>
+                    </div>
                   </div>
-                </div>
-              </td>
-              <td class="px-6 py-4 text-slate-600 font-medium">
-                {{ course.category_name || "Chưa phân loại" }}
-              </td>
-              <td class="px-6 py-4 text-slate-600 font-medium">
-                {{ formatCurrency(course.fee) }}
-              </td>
-              <td class="px-6 py-4">
-                <span
-                  :class="
-                    course.is_featured
-                      ? 'bg-emerald-100 text-emerald-700 border-emerald-200'
-                      : 'bg-slate-100 text-slate-600 border-slate-200'
-                  "
-                  class="px-2.5 py-1 rounded-md text-[0.65rem] font-bold uppercase tracking-wider border"
-                >
-                  {{ course.is_featured ? "Nổi bật" : "Thường" }}
-                </span>
-              </td>
-              <td class="px-6 py-4 text-slate-500 font-medium">
-                {{ course.created_at }}
-              </td>
-              <td class="px-6 py-4 text-right">
-                <div
-                  class="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity"
-                >
-                  <button
-                    @click="openModal('edit', course)"
-                    class="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white flex items-center justify-center transition-colors"
-                    title="Chỉnh sửa"
+                </td>
+                <td class="px-6 py-4 text-slate-600 font-medium">
+                  {{ course.category_name || "Chưa phân loại" }}
+                </td>
+                <td class="px-6 py-4 text-slate-600 font-medium">
+                  {{ formatCurrency(course.fee) }}
+                </td>
+                <td class="px-6 py-4">
+                  <span
+                    :class="
+                      course.is_featured
+                        ? 'bg-emerald-100 text-emerald-700 border-emerald-200'
+                        : 'bg-slate-100 text-slate-600 border-slate-200'
+                    "
+                    class="px-2.5 py-1 rounded-md text-[0.65rem] font-bold uppercase tracking-wider border"
                   >
-                    <i class="fa-solid fa-pen text-xs"></i>
-                  </button>
-                  <button
-                    @click="confirmDelete(course)"
-                    class="w-8 h-8 rounded-lg bg-red-50 text-red-600 hover:bg-red-600 hover:text-white flex items-center justify-center transition-colors"
-                    title="Xóa"
-                  >
-                    <i class="fa-solid fa-trash-can text-xs"></i>
-                  </button>
-                </div>
-              </td>
-            </tr>
+                    {{ course.is_featured ? "Nổi bật" : "Thường" }}
+                  </span>
+                </td>
+                <td class="px-6 py-4 text-slate-500 font-medium">
+                  {{ course.created_at }}
+                </td>
+                <td class="px-6 py-4 text-right">
+                  <div class="flex justify-end gap-2">
+                    <button
+                      @click="openModal('edit', course)"
+                      class="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white flex items-center justify-center transition-colors"
+                      title="Chỉnh sửa khóa học"
+                    >
+                      <i class="fa-solid fa-pen text-xs"></i>
+                    </button>
+                    <button
+                      @click="confirmDelete(course)"
+                      class="w-8 h-8 rounded-lg bg-red-50 text-red-600 hover:bg-red-600 hover:text-white flex items-center justify-center transition-colors"
+                      title="Xóa khóa học"
+                    >
+                      <i class="fa-solid fa-trash-can text-xs"></i>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+
+              <!-- Expandable dropdown panel -->
+              <tr
+                v-if="expandedCourseId === course.id"
+                class="border-b border-slate-100 bg-emerald-50/30"
+              >
+                <td colspan="6" class="px-6 pb-5 pt-0">
+                  <div class="expand-panel rounded-2xl border border-emerald-100 bg-white shadow-sm overflow-hidden">
+                    <!-- Panel header -->
+                    <div class="flex items-center justify-between px-5 py-3 bg-emerald-50/70 border-b border-emerald-100">
+                      <div class="flex items-center gap-2">
+                        <i class="fa-solid fa-layer-group text-emerald-600 text-sm"></i>
+                        <span class="text-xs font-bold uppercase tracking-widest text-emerald-700">Danh sách bài học</span>
+                        <span class="ml-1 px-2 py-0.5 rounded-full bg-emerald-500 text-white text-[0.6rem] font-bold">
+                          {{ course.lesson_count }}
+                        </span>
+                      </div>
+                      <button
+                        @click="openLessonModal(course)"
+                        class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-500 text-white text-xs font-bold hover:bg-emerald-600 transition shadow-sm"
+                      >
+                        <i class="fa-solid fa-plus"></i>
+                        Thêm bài học
+                      </button>
+                    </div>
+
+                    <!-- Lesson list -->
+                    <div class="p-4">
+                      <div v-if="isLoadingLessons" class="flex items-center justify-center py-6 text-slate-400 gap-2">
+                        <div class="h-4 w-4 animate-spin rounded-full border-2 border-emerald-200 border-t-emerald-500"></div>
+                        <span class="text-xs">Đang tải bài học...</span>
+                      </div>
+
+                      <div v-else-if="expandedLessons.length === 0" class="flex flex-col items-center py-8 text-slate-400">
+                        <i class="fa-regular fa-file-lines text-3xl mb-2"></i>
+                        <p class="text-xs">Khóa học này chưa có bài học nào.</p>
+                        <button
+                          @click="openLessonModal(course)"
+                          class="mt-3 inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-600 text-xs font-bold hover:bg-emerald-100 transition border border-emerald-200"
+                        >
+                          <i class="fa-solid fa-plus"></i> Tạo bài học đầu tiên
+                        </button>
+                      </div>
+
+                      <div v-else class="grid gap-2">
+                        <div
+                          v-for="(lesson, idx) in expandedLessons"
+                          :key="lesson.id"
+                          class="lesson-item group/lesson flex items-center gap-3 rounded-xl border border-slate-100 bg-slate-50/60 px-4 py-3 hover:border-emerald-200 hover:bg-emerald-50/40 transition-all"
+                        >
+                          <span class="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-700 text-xs font-black flex items-center justify-center shrink-0">
+                            {{ idx + 1 }}
+                          </span>
+                          <div class="flex-1 min-w-0">
+                            <p class="text-sm font-semibold text-slate-800 truncate">{{ lesson.title }}</p>
+                            <p v-if="lesson.video_url" class="text-xs text-slate-400 mt-0.5 truncate">
+                              <i class="fa-brands fa-youtube text-red-400 mr-1"></i>{{ lesson.video_url }}
+                            </p>
+                          </div>
+                          <!-- Action buttons: edit + delete -->
+                          <div class="flex items-center gap-1.5 shrink-0 opacity-0 group-hover/lesson:opacity-100 transition-opacity">
+                            <button
+                              @click="openEditLessonModal(lesson, course)"
+                              class="w-7 h-7 rounded-lg bg-blue-50 text-blue-500 hover:bg-blue-500 hover:text-white flex items-center justify-center transition-colors"
+                              title="Sửa bài học"
+                            >
+                              <i class="fa-solid fa-pen text-[0.6rem]"></i>
+                            </button>
+                            <button
+                              @click="confirmDeleteLesson(lesson, course)"
+                              class="w-7 h-7 rounded-lg bg-red-50 text-red-500 hover:bg-red-500 hover:text-white flex items-center justify-center transition-colors"
+                              title="Xóa bài học"
+                            >
+                              <i class="fa-solid fa-trash-can text-[0.6rem]"></i>
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </td>
+              </tr>
+            </template>
 
             <tr v-if="filteredCourses.length === 0">
               <td colspan="6" class="px-6 py-12 text-center text-slate-500">
@@ -425,6 +525,167 @@
               class="px-5 py-2.5 rounded-xl font-bold text-slate-900 bg-[#7AE582] hover:bg-emerald-300 transition shadow-md disabled:opacity-60"
             >
               {{ modalMode === "add" ? "Tạo khóa học" : "Lưu thay đổi" }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Modal Thêm bài học mới -->
+    <div
+      v-if="isLessonModalOpen"
+      class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate__animated animate__fadeIn animate__faster"
+    >
+      <div
+        class="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden animate__animated animate__zoomIn animate__faster"
+      >
+        <div
+          class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-emerald-50/50"
+        >
+          <h3 class="text-lg font-bold text-emerald-800 flex items-center gap-2">
+            <i class="fa-solid fa-book-medical text-emerald-600"></i> Khởi tạo bài học mới
+          </h3>
+          <button
+            @click="closeLessonModal"
+            class="text-slate-400 hover:text-red-500 transition"
+          >
+            <i class="fa-solid fa-xmark text-xl"></i>
+          </button>
+        </div>
+
+        <form @submit.prevent="submitLesson" class="p-6 space-y-5">
+          <div class="bg-emerald-50 rounded-xl p-4 border border-emerald-100 flex items-center gap-4">
+             <div class="w-10 h-10 rounded-lg bg-white flex items-center justify-center text-emerald-600 shadow-sm shrink-0">
+              <i class="fa-solid fa-layer-group"></i>
+            </div>
+            <div>
+              <p class="text-[0.65rem] font-bold text-emerald-600 uppercase tracking-widest">Khóa học hiện tại</p>
+              <p class="text-sm font-black text-slate-800 line-clamp-1">{{ selectedCourseForLesson?.title }}</p>
+            </div>
+          </div>
+
+          <div>
+             <label
+              class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1"
+              >Tên bài học <span class="text-red-500">*</span></label
+            >
+            <input
+              v-model="lessonForm.title"
+              type="text"
+              required
+              placeholder="Ví dụ: Bài 1 - Phát âm cơ bản"
+              class="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#7AE582]"
+            />
+          </div>
+
+          <div>
+             <label
+              class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1"
+              >Đường dẫn Video (Tùy chọn)</label
+            >
+            <input
+              v-model="lessonForm.video_url"
+              type="text"
+              placeholder="https://youtube.com/..."
+              class="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#7AE582]"
+            />
+          </div>
+
+          <div class="pt-3 flex justify-end gap-3 mt-6 border-t border-slate-100">
+            <button
+              type="button"
+              @click="closeLessonModal"
+              class="px-5 py-2.5 rounded-xl font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 transition"
+            >
+              Hủy bỏ
+            </button>
+            <button
+              type="submit"
+              :disabled="isSubmittingLesson"
+              class="px-5 py-2.5 rounded-xl font-bold flex items-center gap-2 text-slate-900 shadow-md hover:opacity-90 transition disabled:opacity-60"
+              style="background: linear-gradient(135deg, #7ae582 0%, #16a34a 100%)"
+            >
+              <i :class="isSubmittingLesson ? 'fa-solid fa-spinner animate-spin' : 'fa-solid fa-floppy-disk'"></i>
+              {{ isSubmittingLesson ? 'Đang tạo...' : 'Tạo bài học' }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Modal Sửa bài học -->
+    <div
+      v-if="isEditLessonModalOpen"
+      class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate__animated animate__fadeIn animate__faster"
+    >
+      <div
+        class="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden animate__animated animate__zoomIn animate__faster"
+      >
+        <div
+          class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-blue-50/50"
+        >
+          <h3 class="text-lg font-bold text-blue-800 flex items-center gap-2">
+            <i class="fa-solid fa-pen text-blue-600"></i> Chỉnh sửa bài học
+          </h3>
+          <button
+            @click="closeEditLessonModal"
+            class="text-slate-400 hover:text-red-500 transition"
+          >
+            <i class="fa-solid fa-xmark text-xl"></i>
+          </button>
+        </div>
+
+        <form @submit.prevent="submitEditLesson" class="p-6 space-y-5">
+          <div class="bg-blue-50 rounded-xl p-4 border border-blue-100 flex items-center gap-4">
+            <div class="w-10 h-10 rounded-lg bg-white flex items-center justify-center text-blue-600 shadow-sm shrink-0">
+              <i class="fa-solid fa-layer-group"></i>
+            </div>
+            <div>
+              <p class="text-[0.65rem] font-bold text-blue-600 uppercase tracking-widest">Khóa học</p>
+              <p class="text-sm font-black text-slate-800 line-clamp-1">{{ editLessonCourse?.title }}</p>
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1"
+              >Tên bài học <span class="text-red-500">*</span></label
+            >
+            <input
+              v-model="editLessonForm.title"
+              type="text"
+              required
+              placeholder="Ví dụ: Bài 1 - Phát âm cơ bản"
+              class="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#7AE582]"
+            />
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1"
+              >Đường dẫn Video (Tùy chọn)</label
+            >
+            <input
+              v-model="editLessonForm.video_url"
+              type="text"
+              placeholder="https://youtube.com/..."
+              class="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#7AE582]"
+            />
+          </div>
+
+          <div class="pt-3 flex justify-end gap-3 mt-6 border-t border-slate-100">
+            <button
+              type="button"
+              @click="closeEditLessonModal"
+              class="px-5 py-2.5 rounded-xl font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 transition"
+            >
+              Hủy bỏ
+            </button>
+            <button
+              type="submit"
+              :disabled="isSubmittingEditLesson"
+              class="px-5 py-2.5 rounded-xl font-bold flex items-center gap-2 text-white shadow-md hover:opacity-90 transition disabled:opacity-60 bg-blue-500 hover:bg-blue-600"
+            >
+              <i :class="isSubmittingEditLesson ? 'fa-solid fa-spinner animate-spin' : 'fa-solid fa-floppy-disk'"></i>
+              {{ isSubmittingEditLesson ? 'Đang lưu...' : 'Lưu thay đổi' }}
             </button>
           </div>
         </form>
@@ -772,6 +1033,198 @@ const confirmDelete = async (course) => {
   }
 };
 
+// --- LOGIC TẠO BÀI HỌC (THÊM MỚI) ---
+const isLessonModalOpen = ref(false)
+const isSubmittingLesson = ref(false)
+const selectedCourseForLesson = ref(null)
+const lessonForm = ref({ title: '', video_url: '' })
+
+// --- LOGIC MỞ RỘNG/THU GỌN BẢNG BÀI HỌC ---
+const expandedCourseId = ref(null)
+const expandedLessons = ref([])
+const isLoadingLessons = ref(false)
+
+const toggleExpand = async (course) => {
+  if (expandedCourseId.value === course.id) {
+    // Thu gọn nếu đang mở
+    expandedCourseId.value = null
+    expandedLessons.value = []
+    return
+  }
+
+  expandedCourseId.value = course.id
+  expandedLessons.value = []
+  isLoadingLessons.value = true
+
+  try {
+    const response = await apiFetch(`${API_PATH}?action=get_lessons&course_id=${course.id}`)
+    if (response.ok) {
+      const result = await response.json()
+      if (result.status === 'success') {
+        expandedLessons.value = result.data.lessons || []
+      }
+    }
+  } catch (e) {
+    console.error('Không thể tải bài học:', e)
+  } finally {
+    isLoadingLessons.value = false
+  }
+}
+
+const openLessonModal = (course) => {
+  selectedCourseForLesson.value = course
+  lessonForm.value = { title: '', video_url: '' }
+  isLessonModalOpen.value = true
+}
+
+const closeLessonModal = () => {
+  isLessonModalOpen.value = false
+  selectedCourseForLesson.value = null
+}
+
+const submitLesson = async () => {
+  if (!lessonForm.value.title.trim()) {
+    alert("Vui lòng nhập tên bài học.");
+    return;
+  }
+
+  isSubmittingLesson.value = true;
+  
+  try {
+    const payload = {
+      action: 'create_lesson',
+      course_id: selectedCourseForLesson.value.id,
+      title: lessonForm.value.title.trim(),
+      video_url: lessonForm.value.video_url.trim()
+    };
+    
+    const response = await apiFetch(API_PATH, {
+      method: 'POST',
+      body: JSON.stringify(payload)
+    });
+    
+    if (response.status === 401 || response.status === 403) {
+      redirectToLogin();
+      return;
+    }
+
+    const result = await response.json();
+    if (result.status === 'success') {
+      const savedCourse = selectedCourseForLesson.value;
+      closeLessonModal();
+
+      // Tăng lesson_count trong danh sách ngay lập tức (không cần reload toàn trang)
+      const courseInList = courses.value.find(c => c.id === savedCourse.id);
+      if (courseInList) courseInList.lesson_count++;
+
+      // Nếu dropdown đang mở cho khóa học này → reload danh sách bài học luôn
+      if (expandedCourseId.value === savedCourse.id) {
+        isLoadingLessons.value = true;
+        try {
+          const r = await apiFetch(`${API_PATH}?action=get_lessons&course_id=${savedCourse.id}`);
+          if (r.ok) {
+            const data = await r.json();
+            if (data.status === 'success') expandedLessons.value = data.data.lessons || [];
+          }
+        } finally {
+          isLoadingLessons.value = false;
+        }
+      }
+    } else {
+      alert("Lỗi: " + result.message);
+    }
+  } catch (error) {
+    alert("Không thể kết nối đến máy chủ.");
+    console.error(error);
+  } finally {
+    isSubmittingLesson.value = false;
+  }
+};
+
+// --- EDIT LESSON ---
+const isEditLessonModalOpen = ref(false)
+const isSubmittingEditLesson = ref(false)
+const editLessonCourse = ref(null)
+const editLessonForm = ref({ id: null, title: '', video_url: '' })
+
+const openEditLessonModal = (lesson, course) => {
+  editLessonCourse.value = course
+  editLessonForm.value = { id: lesson.id, title: lesson.title, video_url: lesson.video_url || '' }
+  isEditLessonModalOpen.value = true
+}
+
+const closeEditLessonModal = () => {
+  isEditLessonModalOpen.value = false
+  editLessonCourse.value = null
+}
+
+const submitEditLesson = async () => {
+  if (!editLessonForm.value.title.trim()) {
+    alert('Vui lòng nhập tên bài học.')
+    return
+  }
+  isSubmittingEditLesson.value = true
+  try {
+    const response = await apiFetch(`${API_PATH}?action=update_lesson`, {
+      method: 'PUT',
+      body: JSON.stringify({
+        lesson_id: editLessonForm.value.id,
+        title: editLessonForm.value.title.trim(),
+        video_url: editLessonForm.value.video_url.trim()
+      })
+    })
+    if (response.status === 401 || response.status === 403) { redirectToLogin(); return }
+    const result = await response.json()
+    if (result.status === 'success') {
+      // Cập nhật tập tin củc bộ trong expandedLessons
+      const idx = expandedLessons.value.findIndex(l => l.id === editLessonForm.value.id)
+      if (idx !== -1) {
+        expandedLessons.value[idx] = {
+          ...expandedLessons.value[idx],
+          title: editLessonForm.value.title.trim(),
+          video_url: editLessonForm.value.video_url.trim() || null
+        }
+      }
+      closeEditLessonModal()
+    } else {
+      alert('Lỗi: ' + result.message)
+    }
+  } catch (e) {
+    alert('Không thể kết nối máy chủ.')
+  } finally {
+    isSubmittingEditLesson.value = false
+  }
+}
+
+// --- DELETE LESSON ---
+const confirmDeleteLesson = async (lesson, course) => {
+  const confirmed = await openConfirm({
+    title: 'Xóa bài học',
+    message: `Bạn có chắc muốn xóa bài học “${lesson.title}” không?`,
+    confirmText: 'Xóa bài học',
+    cancelText: 'Không xóa',
+    tone: 'danger'
+  })
+  if (!confirmed) return
+
+  try {
+    const response = await apiFetch(`${API_PATH}?action=delete_lesson&lesson_id=${lesson.id}`, { method: 'DELETE' })
+    if (response.status === 401 || response.status === 403) { redirectToLogin(); return }
+    const result = await response.json()
+    if (result.status === 'success') {
+      // Xóa khỏi danh sách cục bộ
+      expandedLessons.value = expandedLessons.value.filter(l => l.id !== lesson.id)
+      // Giảm lesson_count trong danh sách khóa học
+      const courseInList = courses.value.find(c => c.id === course.id)
+      if (courseInList && courseInList.lesson_count > 0) courseInList.lesson_count--
+    } else {
+      alert('Lỗi: ' + result.message)
+    }
+  } catch (e) {
+    alert('Không thể kết nối máy chủ.')
+  }
+}
+
 const formatCurrency = (value) =>
   new Intl.NumberFormat("vi-VN", {
     style: "currency",
@@ -792,6 +1245,32 @@ const formatCurrency = (value) =>
 .custom-scrollbar::-webkit-scrollbar-thumb {
   background: #cbd5e1;
   border-radius: 10px;
+}
+
+/* Expand panel animation */
+.expand-panel {
+  animation: expandDown 0.25s cubic-bezier(0.4,0,0.2,1);
+}
+
+@keyframes expandDown {
+  from {
+    opacity: 0;
+    transform: translateY(-8px) scaleY(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scaleY(1);
+  }
+}
+
+/* Lesson item hover */
+.lesson-item {
+  animation: fadeSlideIn 0.2s ease both;
+}
+
+@keyframes fadeSlideIn {
+  from { opacity: 0; transform: translateX(-6px); }
+  to   { opacity: 1; transform: translateX(0); }
 }
 </style>
 

@@ -181,7 +181,7 @@ const navSections = [
       {
         label: "Quản lý bài tập",
         icon: "fa-solid fa-file-pen",
-    
+        to: "/admin/quizzes",
         description: "Quản lý bài tập, quiz và tiến độ hoàn thành.",
       },
       {
@@ -246,6 +246,10 @@ const routeMetaMap = {
   '/admin/classes': {
     title: "Quản lý lớp học",
     description: "Quản lý danh sách lớp học, gắn khóa học và giáo viên chủ nhiệm.",
+  },
+  "/admin/quizzes": {
+    title: "Quản lý quiz",
+    description: "Xây dựng quiz tương tác, cấu hình câu hỏi và đáp án theo từng bài học.",
   },
   "/admin/enrollments": {
     title: "Ghi danh & Xếp lớp",
