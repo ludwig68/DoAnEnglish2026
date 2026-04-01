@@ -115,6 +115,15 @@ function validateCoursePayload(PDO $pdo, array $data): array
 try {
     switch ($method) {
         case 'GET':
+            if (isset($_GET['action']) && $_GET['action'] === 'get_lessons') {
+                $courseId = (int)($_GET['course_id'] ?? 0);
+                $stmt = $pdo->prepare("SELECT id, title, video_url, order_number FROM lessons WHERE course_id = ? ORDER BY order_number ASC, id ASC");
+                $stmt->execute([$courseId]);
+                $lessons = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                echo json_encode(['status' => 'success', 'data' => ['lessons' => $lessons]]);
+                break;
+            }
+
             $stmtCourses = $pdo->query("
                 SELECT
                     c.id,
@@ -192,6 +201,39 @@ try {
             break;
 
         case 'POST':
+            $action = $data['action'] ?? '';
+            
+            if ($action === 'create_lesson') {
+                $courseId = normalizeNullableInt($data['course_id'] ?? null);
+                $title = trim((string) ($data['title'] ?? ''));
+                $videoUrl = trim((string) ($data['video_url'] ?? ''));
+                
+                if (!$courseId) {
+                    throw new InvalidArgumentException('ID khóa học không hợp lệ.');
+                }
+                
+                $titleCheck = Validator::checkStringLength($title, 3, 255);
+                if ($titleCheck !== true) {
+                    throw new InvalidArgumentException('Tiêu đề bài học: ' . $titleCheck);
+                }
+                
+                $stmtOrder = $pdo->prepare("SELECT COALESCE(MAX(order_number), 0) + 1 as next_order FROM lessons WHERE course_id = ?");
+                $stmtOrder->execute([$courseId]);
+                $nextOrder = $stmtOrder->fetchColumn();
+                
+                $stmt = $pdo->prepare("
+                    INSERT INTO lessons (course_id, title, video_url, order_number)
+                    VALUES (?, ?, ?, ?)
+                ");
+                $stmt->execute([$courseId, $title, $videoUrl !== '' ? $videoUrl : null, $nextOrder]);
+                
+                echo json_encode([
+                    'status' => 'success',
+                    'message' => 'Tạo bài học thành công!',
+                ]);
+                break;
+            }
+
             $payload = validateCoursePayload($pdo, $data ?? []);
 
             $stmt = $pdo->prepare("
@@ -216,6 +258,31 @@ try {
             break;
 
         case 'PUT':
+            // Cập nhật bài học
+            if (isset($_GET['action']) && $_GET['action'] === 'update_lesson') {
+                $lessonId = (int) ($data['lesson_id'] ?? 0);
+                $title    = trim((string) ($data['title'] ?? ''));
+                $videoUrl = trim((string) ($data['video_url'] ?? ''));
+
+                if ($lessonId <= 0) {
+                    http_response_code(422);
+                    echo json_encode(['status' => 'error', 'message' => 'Bài học không hợp lệ.']);
+                    exit;
+                }
+
+                $titleCheck = Validator::checkStringLength($title, 3, 255);
+                if ($titleCheck !== true) {
+                    throw new InvalidArgumentException('Tên bài học: ' . $titleCheck);
+                }
+
+                $stmt = $pdo->prepare("UPDATE lessons SET title = ?, video_url = ? WHERE id = ?");
+                $stmt->execute([$title, $videoUrl !== '' ? $videoUrl : null, $lessonId]);
+
+                echo json_encode(['status' => 'success', 'message' => 'Cập nhật bài học thành công!']);
+                break;
+            }
+
+            // Cập nhật khóa học
             $id = (int) ($data['id'] ?? 0);
             if ($id <= 0) {
                 http_response_code(422);
@@ -257,6 +324,18 @@ try {
             break;
 
         case 'DELETE':
+            if (isset($_GET['action']) && $_GET['action'] === 'delete_lesson') {
+                $lessonId = (int)($_GET['lesson_id'] ?? 0);
+                if ($lessonId > 0) {
+                    $stmt = $pdo->prepare("DELETE FROM lessons WHERE id = ?");
+                    $stmt->execute([$lessonId]);
+                    echo json_encode(['status' => 'success', 'message' => 'Đã xóa bài học']);
+                } else {
+                    echo json_encode(['status' => 'error', 'message' => 'Bài học không hợp lệ.']);
+                }
+                break;
+            }
+
             $id = (int) ($_GET['id'] ?? 0);
             if ($id <= 0) {
                 http_response_code(422);

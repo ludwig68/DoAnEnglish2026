@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1:3306
--- Generation Time: Mar 31, 2026 at 09:37 AM
+-- Generation Time: Apr 01, 2026 at 06:13 AM
 -- Server version: 9.1.0
 -- PHP Version: 8.4.0
 
@@ -99,6 +99,7 @@ CREATE TABLE IF NOT EXISTS `classes` (
   `course_id` int NOT NULL,
   `instructor_id` int DEFAULT NULL,
   `class_name` varchar(150) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `max_capacity` int NOT NULL DEFAULT '40',
   `start_date` date NOT NULL,
   `end_date` date NOT NULL,
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
@@ -111,9 +112,9 @@ CREATE TABLE IF NOT EXISTS `classes` (
 -- Dumping data for table `classes`
 --
 
-INSERT INTO `classes` (`id`, `course_id`, `instructor_id`, `class_name`, `start_date`, `end_date`, `created_at`) VALUES
-(2, 4, 5, 'IELTS 01', '2026-03-30', '2026-04-17', '2026-03-29 13:33:50'),
-(4, 1, 22, 'Cơ bản 01', '2026-03-30', '2026-04-24', '2026-03-30 16:48:09');
+INSERT INTO `classes` (`id`, `course_id`, `instructor_id`, `class_name`, `max_capacity`, `start_date`, `end_date`, `created_at`) VALUES
+(2, 4, 5, 'IELTS 01', 40, '2026-03-30', '2026-04-17', '2026-03-29 13:33:50'),
+(4, 1, 22, 'Cơ bản 01', 40, '2026-03-30', '2026-04-24', '2026-03-30 16:48:09');
 
 -- --------------------------------------------------------
 
@@ -126,22 +127,25 @@ CREATE TABLE IF NOT EXISTS `class_details` (
   `id` int NOT NULL AUTO_INCREMENT,
   `class_id` int NOT NULL,
   `detail_name` varchar(255) NOT NULL,
+  `max_students` int NOT NULL DEFAULT '20',
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   KEY `class_id` (`class_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
 -- Dumping data for table `class_details`
 --
 
-INSERT INTO `class_details` (`id`, `class_id`, `detail_name`, `created_at`) VALUES
-(1, 2, 'IELTS 01 - Sáng - 2/4/6', '2026-03-30 20:36:08'),
-(2, 2, 'IELTS 01 - Tối - 2/4/6', '2026-03-30 20:36:29'),
-(3, 2, 'IELTS 01 - Tối - 3/5/7', '2026-03-30 20:36:53'),
-(4, 2, 'IELTS 01 - Sáng - 3/5/7', '2026-03-30 20:37:06'),
-(5, 4, 'Cơ bản 01 - Tối - 3/5/7', '2026-03-30 20:44:24'),
-(6, 2, 'IELTS 01 - Tối - 2/4/6', '2026-03-30 20:44:45');
+INSERT INTO `class_details` (`id`, `class_id`, `detail_name`, `max_students`, `created_at`) VALUES
+(1, 2, 'IELTS 01 - Sáng - 2/4/6', 20, '2026-03-30 20:36:08'),
+(2, 2, 'IELTS 01 - Tối - 2/4/6', 20, '2026-03-30 20:36:29'),
+(3, 2, 'IELTS 01 - Tối - 3/5/7', 20, '2026-03-30 20:36:53'),
+(4, 2, 'IELTS 01 - Sáng - 3/5/7', 20, '2026-03-30 20:37:06'),
+(5, 4, 'Cơ bản 01 - Tối - 3/5/7', 20, '2026-03-30 20:44:24'),
+(6, 2, 'IELTS 01 - Tối - 2/4/6', 20, '2026-03-30 20:44:45'),
+(7, 4, 'Cơ bản 01 - Chiều - 3/5/7', 20, '2026-03-31 16:15:02'),
+(8, 4, 'Cơ bản 01 - Sáng - 2/4/6', 20, '2026-03-31 16:15:14');
 
 -- --------------------------------------------------------
 
@@ -268,8 +272,15 @@ CREATE TABLE IF NOT EXISTS `enrollments` (
   KEY `student_id` (`student_id`),
   KEY `class_id` (`class_id`),
   KEY `fk_enrollments_class_detail` (`class_detail_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+--
+-- Dumping data for table `enrollments`
+--
+
+INSERT INTO `enrollments` (`id`, `student_id`, `class_id`, `class_detail_id`, `status`, `enrollment_date`) VALUES
+(1, 1, 2, 1, 'active', '2026-03-31 10:06:52'),
+(2, 8, 2, 2, 'active', '2026-03-31 10:55:53');
 
 -- --------------------------------------------------------
 
@@ -360,16 +371,33 @@ DROP TABLE IF EXISTS `questions`;
 CREATE TABLE IF NOT EXISTS `questions` (
   `id` int NOT NULL AUTO_INCREMENT,
   `quiz_id` int NOT NULL,
-  `question_type` enum('multiple_choice','fill_blank','listening') COLLATE utf8mb4_unicode_ci DEFAULT 'multiple_choice',
+  `question_type` enum('matching','multiple_choice','fill_blank','dictation','writing') COLLATE utf8mb4_unicode_ci NOT NULL,
   `question_text` text COLLATE utf8mb4_unicode_ci NOT NULL,
   `audio_url` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `option_a` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `option_b` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `option_c` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `option_d` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `correct_option` enum('A','B','C','D') COLLATE utf8mb4_unicode_ci NOT NULL,
+  `hint` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Gợi ý giải bài',
+  `explanation` text COLLATE utf8mb4_unicode_ci COMMENT 'Giải thích chi tiết sau khi làm xong',
+  `order_num` int DEFAULT '0',
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   KEY `quiz_id` (`quiz_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `question_options`
+--
+
+DROP TABLE IF EXISTS `question_options`;
+CREATE TABLE IF NOT EXISTS `question_options` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `question_id` int NOT NULL,
+  `option_text` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Nội dung hiển thị (VD: Vế trái nối từ, hoặc câu trả lời A, B, C)',
+  `match_text` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Dùng cho dạng Matching: Vế phải nối từ',
+  `is_correct` tinyint(1) DEFAULT '0' COMMENT '1 = Đúng, 0 = Sai',
+  `order_num` int DEFAULT '0',
+  PRIMARY KEY (`id`),
+  KEY `question_id` (`question_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
@@ -437,6 +465,72 @@ INSERT INTO `schedules` (`id`, `class_id`, `class_detail_id`, `teacher_id`, `stu
 (345, 4, 5, 23, '2026-04-18', '18:00:00', '19:30:00', 'offline', NULL, 'scheduled', 0, NULL),
 (346, 4, 5, 23, '2026-04-21', '18:00:00', '19:30:00', 'offline', NULL, 'scheduled', 0, NULL),
 (347, 4, 5, 23, '2026-04-23', '18:00:00', '19:30:00', 'offline', NULL, 'scheduled', 0, NULL);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `student_answers`
+--
+
+DROP TABLE IF EXISTS `student_answers`;
+CREATE TABLE IF NOT EXISTS `student_answers` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `attempt_id` int NOT NULL,
+  `question_id` int NOT NULL,
+  `selected_option_id` int DEFAULT NULL COMMENT 'Nếu học sinh làm bài trắc nghiệm',
+  `answer_text` text COLLATE utf8mb4_unicode_ci COMMENT 'Nếu học sinh gõ chữ (Writing / Fill in the blank)',
+  `is_correct` tinyint(1) DEFAULT '0',
+  `points_earned` decimal(5,2) DEFAULT '0.00',
+  `teacher_feedback` json DEFAULT NULL COMMENT 'Lưu định dạng JSON để bóc tách lỗi Grammar, Vocab hiển thị bôi màu',
+  `graded_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `attempt_id` (`attempt_id`),
+  KEY `question_id` (`question_id`),
+  KEY `selected_option_id` (`selected_option_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `student_attempts`
+--
+
+DROP TABLE IF EXISTS `student_attempts`;
+CREATE TABLE IF NOT EXISTS `student_attempts` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `quiz_id` int NOT NULL,
+  `student_id` int NOT NULL,
+  `attempt_number` int DEFAULT '1' COMMENT 'Lần làm thứ mấy',
+  `total_score` decimal(5,2) DEFAULT '0.00',
+  `status` enum('in_progress','completed','graded') COLLATE utf8mb4_unicode_ci DEFAULT 'in_progress',
+  `started_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `completed_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `quiz_id` (`quiz_id`),
+  KEY `student_id` (`student_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `student_vocabulary_progress`
+--
+
+DROP TABLE IF EXISTS `student_vocabulary_progress`;
+CREATE TABLE IF NOT EXISTS `student_vocabulary_progress` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `student_id` int NOT NULL,
+  `vocab_id` int NOT NULL,
+  `status` enum('learning','reviewing','mastered') COLLATE utf8mb4_unicode_ci DEFAULT 'learning',
+  `correct_count` int DEFAULT '0',
+  `incorrect_count` int DEFAULT '0',
+  `last_reviewed_at` timestamp NULL DEFAULT NULL,
+  `next_review_at` timestamp NULL DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `unique_student_vocab` (`student_id`,`vocab_id`),
+  KEY `vocab_id` (`vocab_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -539,6 +633,7 @@ CREATE TABLE IF NOT EXISTS `vocabularies` (
   `id` int NOT NULL AUTO_INCREMENT,
   `lesson_id` int NOT NULL,
   `word` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `part_of_speech` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `meaning` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
   `pronunciation` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `example_sentence` text COLLATE utf8mb4_unicode_ci,
@@ -619,7 +714,8 @@ ALTER TABLE `courses`
 --
 ALTER TABLE `enrollments`
   ADD CONSTRAINT `enrollments_ibfk_1` FOREIGN KEY (`student_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
-  ADD CONSTRAINT `enrollments_ibfk_2` FOREIGN KEY (`class_id`) REFERENCES `classes` (`id`) ON DELETE CASCADE;
+  ADD CONSTRAINT `enrollments_ibfk_2` FOREIGN KEY (`class_id`) REFERENCES `classes` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `fk_enrollments_class_detail` FOREIGN KEY (`class_detail_id`) REFERENCES `class_details` (`id`) ON DELETE SET NULL;
 
 --
 -- Constraints for table `lessons`
@@ -641,6 +737,12 @@ ALTER TABLE `questions`
   ADD CONSTRAINT `questions_ibfk_1` FOREIGN KEY (`quiz_id`) REFERENCES `quizzes` (`id`) ON DELETE CASCADE;
 
 --
+-- Constraints for table `question_options`
+--
+ALTER TABLE `question_options`
+  ADD CONSTRAINT `question_options_ibfk_1` FOREIGN KEY (`question_id`) REFERENCES `questions` (`id`) ON DELETE CASCADE;
+
+--
 -- Constraints for table `quizzes`
 --
 ALTER TABLE `quizzes`
@@ -654,6 +756,28 @@ ALTER TABLE `schedules`
   ADD CONSTRAINT `fk_schedules_class_detail` FOREIGN KEY (`class_detail_id`) REFERENCES `class_details` (`id`) ON DELETE CASCADE,
   ADD CONSTRAINT `fk_schedules_teacher` FOREIGN KEY (`teacher_id`) REFERENCES `users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
   ADD CONSTRAINT `schedules_ibfk_1` FOREIGN KEY (`class_id`) REFERENCES `classes` (`id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `student_answers`
+--
+ALTER TABLE `student_answers`
+  ADD CONSTRAINT `student_answers_ibfk_1` FOREIGN KEY (`attempt_id`) REFERENCES `student_attempts` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `student_answers_ibfk_2` FOREIGN KEY (`question_id`) REFERENCES `questions` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `student_answers_ibfk_3` FOREIGN KEY (`selected_option_id`) REFERENCES `question_options` (`id`) ON DELETE SET NULL;
+
+--
+-- Constraints for table `student_attempts`
+--
+ALTER TABLE `student_attempts`
+  ADD CONSTRAINT `student_attempts_ibfk_1` FOREIGN KEY (`quiz_id`) REFERENCES `quizzes` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `student_attempts_ibfk_2` FOREIGN KEY (`student_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `student_vocabulary_progress`
+--
+ALTER TABLE `student_vocabulary_progress`
+  ADD CONSTRAINT `student_vocabulary_progress_ibfk_1` FOREIGN KEY (`student_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `student_vocabulary_progress_ibfk_2` FOREIGN KEY (`vocab_id`) REFERENCES `vocabularies` (`id`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `submissions`
@@ -677,17 +801,10 @@ ALTER TABLE `vocabularies`
   ADD CONSTRAINT `vocabularies_ibfk_1` FOREIGN KEY (`lesson_id`) REFERENCES `lessons` (`id`) ON DELETE CASCADE;
 COMMIT;
 
---
--- Constraints for table `enrollments`
---
-ALTER TABLE `enrollments`
-  ADD CONSTRAINT `enrollments_ibfk_1` FOREIGN KEY (`student_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
-  ADD CONSTRAINT `enrollments_ibfk_2` FOREIGN KEY (`class_id`) REFERENCES `classes` (`id`) ON DELETE CASCADE,
-  ADD CONSTRAINT `fk_enrollments_class_detail` FOREIGN KEY (`class_detail_id`) REFERENCES `class_details` (`id`) ON DELETE SET NULL;
-COMMIT;
-
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
-ALTER TABLE class_details ADD COLUMN max_students INT NOT NULL DEFAULT 20 AFTER detail_name;
-ALTER TABLE classes ADD COLUMN max_capacity INT NOT NULL DEFAULT 40 AFTER class_name;
+-- Thêm cột phân loại bài tập (category) và tổng điểm (total_points) vào bảng quizzes
+ALTER TABLE `quizzes`
+ADD COLUMN `category` ENUM('grammar', 'vocabulary', 'reading', 'listening', 'speaking', 'writing') NULL AFTER `title`,
+ADD COLUMN `total_points` INT DEFAULT 0 AFTER `category`;

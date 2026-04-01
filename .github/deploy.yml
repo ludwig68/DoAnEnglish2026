@@ -1,0 +1,43 @@
+name: Tự động Deploy lên cPanel
+
+# Kích hoạt khi có code mới push lên nhánh 'main' (nếu bạn dùng nhánh 'master' thì đổi lại nhé)
+on:
+  push:
+    branches:
+      - main 
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: 🚚 Tải code từ GitHub về máy ảo
+      uses: actions/checkout@v3
+
+    - name: 🛠️ Cài đặt Node.js và Build Vue 3
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+    - name: Chạy lệnh Build
+      run: |
+        # Chuyển vào thư mục chứa code Vue của bạn (đổi tên 'frontend' nếu thư mục của bạn tên khác)
+        cd frontend 
+        npm install
+        npm run build
+
+    - name: 🚀 Đẩy code lên cPanel qua FTP
+      uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+      with:
+        server: ${{ secrets.FTP_SERVER }}
+        username: ${{ secrets.FTP_USERNAME }}
+        password: ${{ secrets.FTP_PASSWORD }}
+        server-dir: ./
+        # Lọc bỏ các file rác, file mã nguồn gốc để Hosting không bị đầy bộ nhớ
+        exclude: |
+          **/.git*
+          **/.git*/**
+          **/node_modules/**
+          **/frontend/node_modules/**
+          **/frontend/src/**
+          **/.github/**
+          readme.md

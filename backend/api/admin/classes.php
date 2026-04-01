@@ -19,7 +19,7 @@ JwtHelper::requireAuth('admin');
 function classJsonResponse(int $statusCode, array $payload): void
 {
     http_response_code($statusCode);
-    echo json_encode($payload);
+    echo json_encode($payload, JSON_UNESCAPED_UNICODE);
     exit;
 }
 
