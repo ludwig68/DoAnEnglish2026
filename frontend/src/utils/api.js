@@ -1,6 +1,12 @@
 import { getAuthToken } from './auth'
 
-export const API_BASE_URL = 'http://localhost/DoAnEnglish2026/backend/api'
+// 🚀 BÍ QUYẾT Ở ĐÂY: Tự động kiểm tra xem bạn đang chạy ở đâu
+const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+
+// Nếu là localhost thì dùng link XAMPP/WAMP, ngược lại dùng link web thật
+export const API_BASE_URL = isLocalhost 
+  ? 'http://localhost/DoAnEnglish2026/backend/api' 
+  : 'https://tttn375.cnttstu.online/backend/api';
 
 export const buildApiUrl = (path) => `${API_BASE_URL}/${path.replace(/^\/+/, '')}`
 
