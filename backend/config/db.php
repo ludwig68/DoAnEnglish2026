@@ -3,7 +3,7 @@
 
 $host = 'localhost';
 $db   = 'learning_english'; // Tên database ta đã tạo trước đó
-$user = 'root';             // User mặc định của WAMP/XAMPP
+$user = 'root';             // User mặc định của WAMP/XAMP
 $pass = '';                 // Mật khẩu mặc định của WAMP/XAMPP (thường để trống)
 $charset = 'utf8mb4';
 
