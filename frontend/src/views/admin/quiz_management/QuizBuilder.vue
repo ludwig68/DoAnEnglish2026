@@ -334,6 +334,7 @@ const route = useRoute();
 const router = useRouter();
 
 const quizCategories = [
+  { value: "summary", label: "Tổng hợp" },
   { value: "grammar", label: "Ngữ pháp" },
   { value: "vocabulary", label: "Từ vựng" },
   { value: "reading", label: "Đọc hiểu" },
