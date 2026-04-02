@@ -163,9 +163,10 @@
                 </div>
               </div>
 
-
-              <div class="mt-5 grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
-                <div>
+              <!-- Hàng 1: Tiêu đề · Danh mục · Tổng điểm -->
+              <div class="mt-5 grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+                <!-- Tiêu đề chiếm 2 cột -->
+                <div class="lg:col-span-2">
                   <label class="mb-1 block text-xs font-bold uppercase tracking-[0.18em] text-slate-500">Tiêu đề bài tập</label>
                   <input
                     v-model="form.title"
@@ -175,6 +176,32 @@
                   />
                 </div>
 
+                <div>
+                  <label class="mb-1 block text-xs font-bold uppercase tracking-[0.18em] text-slate-500">Danh mục</label>
+                  <select
+                    v-model="form.category"
+                    class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#7AE582]"
+                  >
+                    <option value="">Chọn danh mục</option>
+                    <option v-for="category in quizCategories" :key="category.value" :value="category.value">
+                      {{ category.label }}
+                    </option>
+                  </select>
+                </div>
+
+                <div>
+                  <label class="mb-1 block text-xs font-bold uppercase tracking-[0.18em] text-slate-500">Tổng điểm</label>
+                  <input
+                    v-model.number="form.total_points"
+                    type="number"
+                    min="1"
+                    class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#7AE582]"
+                  />
+                </div>
+              </div>
+
+              <!-- Hàng 2: Khóa học · Bài học -->
+              <div class="mt-4 grid gap-4 grid-cols-1 sm:grid-cols-2">
                 <div>
                   <label class="mb-1 block text-xs font-bold uppercase tracking-[0.18em] text-slate-500">Khóa học</label>
                   <select
@@ -206,31 +233,9 @@
                     {{ selectedCourseId ? `${filteredLessons.length} bài học trong khóa đã chọn` : "Danh sách bài học sẽ lọc theo khóa học." }}
                   </p>
                 </div>
-
-                <div>
-                  <label class="mb-1 block text-xs font-bold uppercase tracking-[0.18em] text-slate-500">Danh mục</label>
-                  <select
-                    v-model="form.category"
-                    class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#7AE582]"
-                  >
-                    <option value="">Chọn danh mục</option>
-                    <option v-for="category in quizCategories" :key="category.value" :value="category.value">
-                      {{ category.label }}
-                    </option>
-                  </select>
-                </div>
-
-                <div>
-                  <label class="mb-1 block text-xs font-bold uppercase tracking-[0.18em] text-slate-500">Tổng điểm</label>
-                  <input
-                    v-model.number="form.total_points"
-                    type="number"
-                    min="1"
-                    class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#7AE582]"
-                  />
-                </div>
               </div>
 
+              <!-- Hàng 3: Mô tả (toàn chiều rộng) -->
               <div class="mt-4">
                 <label class="mb-1 block text-xs font-bold uppercase tracking-[0.18em] text-slate-500">Mô tả</label>
                 <textarea
@@ -240,6 +245,7 @@
                   class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#7AE582]"
                 ></textarea>
               </div>
+
 
               <div class="mt-4 grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
                 <div class="rounded-2xl border border-white bg-white px-4 py-3 shadow-sm">
@@ -327,7 +333,7 @@ import { useRoute, useRouter } from "vue-router";
 import { openConfirm } from "../../../utils/confirm";
 import { notifyError, notifySuccess, notifyWarning } from "../../../utils/notify";
 import { getAuthToken } from "../../../utils/auth";
-import { API_BASE_URL } from "../../../utils/api";
+import { API_BASE_URL, buildApiUrl } from "../../../utils/api";
 import QuestionCard from "./components/QuestionCard.vue";
 
 const route = useRoute();
@@ -367,7 +373,9 @@ const lessons = ref([]);
 const quizList = ref([]);
 const selectedQuizId = ref(null);
 const selectedCourseId = ref("");
-const QUIZ_API_URL = `${API_BASE_URL.replace(/\/api$/, "")}/admin/quiz_management/quiz_api.php`;
+// URL chuẩn: backend/api/admin/quiz_management/quiz_api.php
+// Hoạt động trên cả localhost và production
+const QUIZ_API_URL = buildApiUrl('admin/quiz_management/quiz_api.php');
 
 const createLocalId = () => `question-${++localSeed}`;
 
