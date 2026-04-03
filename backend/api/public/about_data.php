@@ -3,7 +3,7 @@ header("Access-Control-Allow-Origin: *");
 header("Content-Type: application/json; charset=UTF-8");
 
 require_once __DIR__ . '/../../config/db.php';
-
+require_once __DIR__ . '/../../utils/ImageHelper.php';
 $defaultValues = [
     [
         'icon' => 'fa-layer-group',
@@ -131,7 +131,7 @@ try {
                 'description' => $contentMap['about_hero_description'],
             ],
             'story' => [
-                'image_url' => $contentMap['about_story_image_url'],
+                'image_url' => resolveImageUrl($contentMap['about_story_image_url']),
                 'title' => $contentMap['about_story_title'],
                 'content' => $contentMap['about_story_content'],
                 'year' => '2026',

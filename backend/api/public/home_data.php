@@ -3,6 +3,7 @@ header("Access-Control-Allow-Origin: *");
 header("Content-Type: application/json; charset=UTF-8");
 
 require_once __DIR__ . '/../../config/db.php';
+require_once __DIR__ . '/../../utils/ImageHelper.php';
 
 $defaultContent = [
     'home_banner_tagline' => 'Năm học 2026',
@@ -72,7 +73,7 @@ try {
             'id' => (int) $course['id'],
             'title' => $course['title'],
             'description' => $course['description'],
-            'image_url' => $course['image_url'],
+            'image_url' => resolveImageUrl($course['image_url']),
             'level' => $course['level'],
             'fee' => (float) $course['fee'],
             'students_count' => (int) $course['students_count'],
@@ -87,14 +88,14 @@ try {
                 'tagline' => $contentMap['home_banner_tagline'],
                 'title' => $contentMap['home_banner_title'],
                 'description' => $contentMap['home_banner_description'],
-                'image_url' => $contentMap['home_banner_image_url'],
+                'image_url' => resolveImageUrl($contentMap['home_banner_image_url']),
                 'primary_button_text' => $contentMap['home_banner_primary_button_text'],
                 'primary_button_link' => $contentMap['home_banner_primary_button_link'],
             ],
             'intro' => [
                 'title' => $contentMap['home_intro_title'],
                 'content' => $contentMap['home_intro_content'],
-                'image_url' => $contentMap['home_intro_image_url'],
+                'image_url' => resolveImageUrl($contentMap['home_intro_image_url']),
             ],
             'stats' => [
                 'students' => number_format($totalStudents, 0, ',', '.') . '+',

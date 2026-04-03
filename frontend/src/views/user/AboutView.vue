@@ -5,9 +5,6 @@
       style="background: linear-gradient(160deg, #f0fdf4 0%, #ffffff 50%, #f0fdf4 100%)">
       <div class="absolute -top-24 -right-24 w-96 h-96 bg-emerald-200/25 rounded-full blur-3xl pointer-events-none"></div>
       <div class="absolute -bottom-16 -left-16 w-72 h-72 bg-emerald-100/35 rounded-full blur-3xl pointer-events-none"></div>
-      <div class="absolute inset-0 opacity-[0.03]"
-        style="background-image: radial-gradient(circle, #16a34a 1px, transparent 1px); background-size: 28px 28px;">
-      </div>
 
       <div class="relative max-w-7xl mx-auto px-6 text-center">
         <div class="inline-flex items-center gap-2 bg-white rounded-full px-4 py-1.5 text-xs font-bold text-emerald-700 border border-emerald-200 shadow-sm mb-6">
@@ -36,9 +33,9 @@
     </section>
 
     <!-- ─── CÂU CHUYỆN ─── -->
-    <section class="py-20 bg-white">
+    <section class="py-20 bg-white scroll-section">
       <div class="max-w-6xl mx-auto px-6 grid md:grid-cols-2 gap-16 items-center">
-        <div class="relative">
+        <div class="relative scroll-fade">
           <div class="absolute -inset-3 bg-emerald-50 rounded-3xl -rotate-2"></div>
           <img :src="pageData.story.image_url" alt="Sứ mệnh"
             class="relative z-10 w-full h-auto object-cover rounded-2xl aspect-[4/3]">
@@ -53,13 +50,12 @@
           </div>
         </div>
 
-        <div>
+        <div class="scroll-fade" style="transition-delay: 150ms">
           <p class="text-xs font-bold text-emerald-600 uppercase tracking-widest mb-3 flex items-center gap-2">
             <span class="w-6 h-[2px] bg-emerald-500 rounded-full"></span> Câu chuyện
           </p>
           <h2 class="text-3xl font-black text-slate-900 mb-5 leading-snug">{{ pageData.story.title }}</h2>
           <div class="space-y-3 text-slate-500 leading-relaxed text-[15px]" v-html="pageData.story.content"></div>
-
           <div class="flex items-center gap-6 mt-10">
             <div class="flex items-center gap-3">
               <div class="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600">
@@ -86,9 +82,9 @@
     </section>
 
     <!-- ─── GIÁ TRỊ CỐT LÕI ─── -->
-    <section class="py-20 bg-slate-50">
+    <section class="py-20 bg-slate-50 scroll-section">
       <div class="max-w-6xl mx-auto px-6">
-        <div class="text-center max-w-xl mx-auto mb-14">
+        <div class="text-center max-w-xl mx-auto mb-14 scroll-fade">
           <p class="text-xs font-bold text-emerald-600 uppercase tracking-widest mb-3">Giá trị cốt lõi</p>
           <h2 class="text-3xl font-black text-slate-900 mb-3">{{ pageData.values_title }}</h2>
           <p class="text-slate-500 text-sm leading-relaxed">{{ pageData.values_description }}</p>
@@ -96,7 +92,8 @@
 
         <div v-if="pageData.values.length > 0" class="grid md:grid-cols-3 gap-6">
           <div v-for="(item, index) in pageData.values" :key="index"
-            class="bg-white p-7 rounded-2xl border border-slate-100 hover:shadow-lg hover:border-emerald-100 transition-all duration-300 group">
+            class="bg-white p-7 rounded-2xl border border-slate-100 hover:shadow-lg hover:border-emerald-100 transition-all duration-300 group scroll-fade"
+            :style="{ transitionDelay: index * 120 + 'ms' }">
             <div class="w-12 h-12 rounded-xl flex items-center justify-center text-xl mb-5 transition-transform duration-300 group-hover:scale-110"
               :class="[item.icon_background || 'bg-emerald-50', item.icon_color || 'text-emerald-600']">
               <i :class="['fa-solid', item.icon || 'fa-star']"></i>
@@ -112,19 +109,27 @@
       </div>
     </section>
 
-    <!-- ─── ĐỘI NGŨ ─── -->
-    <section v-if="pageData.team.length > 0" class="py-20 bg-white">
+    <!-- ─── ĐỘI NGŨ (redesigned with colored accents) ─── -->
+    <section v-if="pageData.team.length > 0" class="py-20 bg-white scroll-section">
       <div class="max-w-6xl mx-auto px-6">
-        <div class="text-center max-w-xl mx-auto mb-14">
+        <div class="text-center max-w-xl mx-auto mb-14 scroll-fade">
           <p class="text-xs font-bold text-emerald-600 uppercase tracking-widest mb-3">Đội ngũ</p>
-          <h2 class="text-3xl font-black text-slate-900">{{ pageData.team_title }}</h2>
+          <h2 class="text-3xl font-black text-slate-900 mb-2">{{ pageData.team_title }}</h2>
+          <p class="text-sm text-slate-400">Đội ngũ gồm {{ pageData.team.length }} thành viên tận tâm</p>
         </div>
 
         <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-8">
-          <div v-for="member in pageData.team" :key="member.id" class="text-center group">
-            <div class="w-28 h-28 mx-auto mb-4 overflow-hidden rounded-2xl border-2 border-slate-100 shadow-sm group-hover:shadow-md transition-shadow">
-              <img :src="member.avatar" :alt="member.name"
-                class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+          <div v-for="(member, idx) in pageData.team" :key="member.id"
+            class="text-center group scroll-fade"
+            :style="{ transitionDelay: idx * 100 + 'ms' }">
+            <!-- Photo with colored ring -->
+            <div class="relative w-32 h-32 mx-auto mb-5">
+              <div class="absolute inset-0 rounded-full opacity-60 group-hover:opacity-100 transition-opacity duration-500"
+                :style="{ background: teamColors[idx % teamColors.length] }"></div>
+              <div class="absolute inset-[3px] rounded-full overflow-hidden bg-white">
+                <img :src="member.avatar" :alt="member.name"
+                  class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
+              </div>
             </div>
             <h3 class="text-sm font-bold text-slate-800">{{ member.name }}</h3>
             <p class="text-xs font-bold text-emerald-600 mt-0.5">{{ member.role }}</p>
@@ -137,12 +142,24 @@
       </div>
     </section>
 
+    <!-- ─── BÁO CHÍ (new section) ─── -->
+    <section class="py-16 bg-slate-50 scroll-section">
+      <div class="max-w-4xl mx-auto px-6 text-center scroll-fade">
+        <p class="text-[0.65rem] font-bold text-slate-400 uppercase tracking-[0.2em] mb-2">Được đánh giá tích cực bởi</p>
+        <h3 class="text-xl font-black text-slate-800 mb-10">Báo chí viết về English Learning</h3>
+        <div class="flex flex-wrap items-center justify-center gap-8 md:gap-14 opacity-50 grayscale hover:grayscale-0 hover:opacity-100 transition-all duration-500">
+          <span v-for="media in pressLogos" :key="media" class="text-lg md:text-xl font-black text-slate-700 tracking-tight">
+            {{ media }}
+          </span>
+        </div>
+      </div>
+    </section>
+
     <!-- ─── CTA ─── -->
-    <section class="py-20 bg-emerald-600 relative overflow-hidden">
-      <div class="absolute inset-0" style="background: linear-gradient(135deg, #16a34a 0%, #15803d 100%)"></div>
+    <section class="py-20 relative overflow-hidden scroll-section" style="background: linear-gradient(135deg, #16a34a 0%, #15803d 100%)">
       <div class="absolute -left-20 -top-20 w-60 h-60 bg-white/5 rounded-full"></div>
       <div class="absolute -right-10 -bottom-10 w-80 h-80 bg-black/5 rounded-full"></div>
-      <div class="relative max-w-7xl mx-auto px-6 text-center">
+      <div class="relative max-w-7xl mx-auto px-6 text-center scroll-fade">
         <h2 class="text-3xl md:text-4xl font-black text-white mb-5 leading-tight">{{ pageData.cta.title }}</h2>
         <p class="text-emerald-100 mb-10 max-w-lg mx-auto leading-relaxed">
           {{ pageData.cta.description }}
@@ -153,13 +170,21 @@
         </router-link>
       </div>
     </section>
-
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { apiFetch } from '../../utils/api'
+
+const teamColors = [
+  'linear-gradient(135deg, #7ae582, #16a34a)',
+  'linear-gradient(135deg, #38bdf8, #0284c7)',
+  'linear-gradient(135deg, #fbbf24, #f59e0b)',
+  'linear-gradient(135deg, #a78bfa, #7c3aed)',
+]
+
+const pressLogos = ['HTV9', 'VTV7', 'Thanh Niên', 'Tuổi Trẻ', 'VnExpress']
 
 const defaultPageData = {
   hero: {
@@ -215,7 +240,41 @@ const fetchAboutData = async () => {
   }
 }
 
+// ── Scroll-triggered fade-in ──
+let observer = null
+const initScrollObserver = () => {
+  observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('is-visible')
+        observer.unobserve(entry.target)
+      }
+    })
+  }, { threshold: 0.12 })
+
+  document.querySelectorAll('.scroll-fade').forEach(el => observer.observe(el))
+}
+
 onMounted(() => {
-  fetchAboutData()
+  fetchAboutData().then(() => {
+    setTimeout(initScrollObserver, 100)
+  })
+})
+
+onUnmounted(() => {
+  if (observer) observer.disconnect()
 })
 </script>
+
+<style scoped>
+.scroll-fade {
+  opacity: 0;
+  transform: translateY(32px);
+  transition: opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1),
+              transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.scroll-fade.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+</style>

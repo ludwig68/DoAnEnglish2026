@@ -13,6 +13,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 require_once __DIR__ . '/../../config/db.php';
 require_once __DIR__ . '/../../utils/Validator.php';
 require_once __DIR__ . '/../../utils/JwtHelper.php';
+require_once __DIR__ . '/../../utils/ImageHelper.php';
 
 $method = $_SERVER['REQUEST_METHOD'];
 $data = json_decode(file_get_contents("php://input"), true);
@@ -171,7 +172,7 @@ try {
                             'id' => (int) $course['id'],
                             'title' => $course['title'],
                             'description' => $course['description'],
-                            'image_url' => $course['image_url'],
+                            'image_url' => resolveImageUrl($course['image_url']),
                             'level' => $course['level'],
                             'fee' => (float) $course['fee'],
                             'is_featured' => (bool) $course['is_featured'],

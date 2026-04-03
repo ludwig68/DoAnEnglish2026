@@ -85,17 +85,22 @@ if (!move_uploaded_file($tmpName, $targetPath)) {
     exit;
 }
 
+// Lưu đường dẫn tương đối — hoạt động trên cả localhost lẫn production
+$relativePath = '/backend/uploads/course-images/' . $fileName;
+
+// Build full URL để trả về cho frontend hiển thị ngay
 $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
 $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
 $scriptName = $_SERVER['SCRIPT_NAME'] ?? '';
 $projectBasePath = preg_replace('#/backend/api/admin/upload_course_image\.php$#', '', $scriptName);
-$publicUrl = $scheme . '://' . $host . $projectBasePath . '/backend/uploads/course-images/' . $fileName;
+$publicUrl = $scheme . '://' . $host . $projectBasePath . $relativePath;
 
 echo json_encode([
     'status' => 'success',
     'message' => 'Tai anh thanh cong.',
     'data' => [
         'url' => $publicUrl,
+        'relative_path' => $relativePath,
         'file_name' => $fileName,
     ],
 ]);

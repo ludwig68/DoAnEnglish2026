@@ -11,7 +11,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 
 require_once __DIR__ . '/../../config/db.php';
 require_once __DIR__ . '/../../utils/JwtHelper.php';
-
+require_once __DIR__ . '/../../utils/ImageHelper.php';
 if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
     http_response_code(405);
     echo json_encode(['status' => 'error', 'message' => 'Method Not Allowed']);
@@ -108,7 +108,7 @@ try {
                 'id' => (int) $course['id'],
                 'title' => $course['title'],
                 'level' => $course['level'],
-                'image_url' => $course['image_url'],
+                'image_url' => resolveImageUrl($course['image_url']),
                 'class_name' => $course['class_name'],
                 'start_date' => $course['start_date'],
                 'end_date' => $course['end_date'],

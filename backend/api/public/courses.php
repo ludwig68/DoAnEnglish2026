@@ -3,7 +3,7 @@ header("Access-Control-Allow-Origin: *");
 header("Content-Type: application/json; charset=UTF-8");
 
 require_once __DIR__ . '/../../config/db.php';
-
+require_once __DIR__ . '/../../utils/ImageHelper.php';
 try {
     $stmtCat = $pdo->query("SELECT id, name FROM categories ORDER BY name ASC");
     $categories = $stmtCat->fetchAll(PDO::FETCH_ASSOC);
@@ -19,7 +19,6 @@ try {
             c.title AS name,
             c.description,
             c.image_url,
-            c.image_url AS imageUrl,
             c.level,
             c.fee,
             COALESCE(student_stats.students_count, 0) AS students_count,
@@ -51,6 +50,8 @@ try {
         $course['fee'] = (float) $course['fee'];
         $course['students_count'] = (int) $course['students_count'];
         $course['lesson_count'] = (int) $course['lesson_count'];
+        $course['image_url'] = resolveImageUrl($course['image_url']);
+        $course['imageUrl'] = $course['image_url'];
         $course['isFree'] = ($course['fee'] == 0);
         $course['is_free'] = $course['isFree'];
     }

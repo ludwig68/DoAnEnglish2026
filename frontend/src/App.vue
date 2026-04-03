@@ -10,9 +10,6 @@
 
         <!-- Logo -->
         <router-link to="/" class="flex items-center gap-2.5 shrink-0 group">
-          <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-[#7AE582] to-emerald-600 flex items-center justify-center shadow-md shadow-emerald-200 group-hover:shadow-emerald-300 transition-shadow">
-            <i class="fa-solid fa-graduation-cap text-white text-sm"></i>
-          </div>
           <div class="flex flex-col leading-tight">
             <span class="font-black tracking-tight text-slate-900 text-[15px]">English Learning</span>
             <span class="text-[0.62rem] text-emerald-600 font-semibold">Học mỗi ngày · Tiến bộ mỗi ngày</span>
@@ -82,7 +79,7 @@
       </div>
     </header>
 
-    <!-- Main content (no max-width — each page controls its own) -->
+    <!-- Main content -->
     <main class="flex-1 w-full">
       <router-view></router-view>
     </main>
@@ -109,7 +106,7 @@
       </a>
     </div>
 
-    <!-- ═══ FOOTER ═══ -->
+    <!-- ═══ FOOTER (giữ nền trắng) ═══ -->
     <footer v-if="!isDashboard" class="bg-white border-t border-slate-100 mt-auto">
       <div class="max-w-7xl mx-auto px-6 pt-12 pb-8">
         <div class="grid gap-10 md:grid-cols-4">
@@ -174,7 +171,7 @@
             <h3 class="text-slate-800 font-bold text-[0.7rem] mb-4 uppercase tracking-widest">Bản đồ</h3>
             <div class="h-36 rounded-xl overflow-hidden border border-slate-200">
               <iframe
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3919.9544104258935!2d106.67525717589443!3d10.737997189408455!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x31752f62a90e5dbd%3A0x674d5126513db295!2zVHLGsOG7nW5nIMSQ4bqhaSBo4buNYyBDw7RuZyBuZ2jhu4cgU8OgaSBHw7Ru!5e0!3m2!1svi!2s!4v1774721804211!5m2!1svi!2s"
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3919.9544104258935!2d106.67525717589443!3d10.737997189408455!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x31752f62a90e5dbd%3A0x674d5126513db295!2zVHLGsOG7nW5nIMSQ4bqhaSBo4buNYyBDw7RuZyBuZ2jhu4cgU8OgaSBHw7Ju!5e0!3m2!1svi!2s!4v1774721804211!5m2!1svi!2s"
                 width="100%" height="100%" style="border:0" allowfullscreen="" loading="lazy"
               ></iframe>
             </div>
@@ -219,4 +216,3 @@ const logout = () => {
   router.push('/login')
 }
 </script>
-
