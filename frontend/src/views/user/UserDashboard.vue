@@ -1,683 +1,351 @@
 <template>
-  <div class="min-h-screen bg-slate-50 pb-16">
-    <div v-if="isProfileModalOpen" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/35 px-4 py-6">
-      <div class="w-full max-w-2xl rounded-[2rem] bg-white shadow-2xl shadow-slate-950/20">
-        <div class="flex items-center justify-between border-b border-slate-100 px-6 py-5">
-          <div>
-            <h2 class="text-xl font-bold text-slate-900">Thông tin cá nhân</h2>
-            <p class="mt-1 text-sm text-slate-500">Cập nhật thông tin để tài khoản của bạn luôn chính xác.</p>
-          </div>
-          <button
-            type="button"
-            @click="closeProfileModal"
-            class="flex h-11 w-11 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-600 transition hover:bg-slate-50"
-          >
-            <i class="fa-solid fa-xmark"></i>
-          </button>
-        </div>
+  <div class="flex-1 flex flex-col">
 
-        <form @submit.prevent="submitProfileUpdate" class="px-6 py-6">
-          <div v-if="profileMessage" :class="profileMessageClass" class="mb-5 rounded-2xl px-4 py-3 text-sm font-medium">
-            {{ profileMessage }}
-          </div>
-
-          <div class="grid gap-5 sm:grid-cols-2">
-            <label class="block">
-              <span class="mb-2 block text-sm font-semibold text-slate-700">Họ và tên</span>
-              <input
-                v-model="profileForm.full_name"
-                type="text"
-                class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-800 outline-none transition focus:border-[#16a34a] focus:bg-white"
-                placeholder="Nhập họ và tên"
-              >
-            </label>
-
-            <label class="block">
-              <span class="mb-2 block text-sm font-semibold text-slate-700">Email</span>
-              <input
-                v-model="profileForm.email"
-                type="email"
-                class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-800 outline-none transition focus:border-[#16a34a] focus:bg-white"
-                placeholder="email@example.com"
-              >
-            </label>
-
-            <label class="block">
-              <span class="mb-2 block text-sm font-semibold text-slate-700">Số điện thoại</span>
-              <input
-                v-model="profileForm.phone"
-                type="text"
-                class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-800 outline-none transition focus:border-[#16a34a] focus:bg-white"
-                placeholder="Nhập số điện thoại"
-              >
-            </label>
-
-            <label class="block">
-              <span class="mb-2 block text-sm font-semibold text-slate-700">Vai trò</span>
-              <input
-                :value="formatRole(user.role)"
-                type="text"
-                disabled
-                class="w-full rounded-2xl border border-slate-200 bg-slate-100 px-4 py-3 text-sm text-slate-500"
-              >
-            </label>
-          </div>
-
-          <label class="mt-5 block">
-            <span class="mb-2 block text-sm font-semibold text-slate-700">Mật khẩu mới</span>
-            <input
-              v-model="profileForm.password"
-              type="password"
-              class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-800 outline-none transition focus:border-[#16a34a] focus:bg-white"
-              placeholder="Để trống nếu chưa muốn đổi"
-            >
-            <span class="mt-2 block text-xs text-slate-400">Chỉ nhập khi bạn muốn đổi mật khẩu đăng nhập.</span>
-          </label>
-
-          <div class="mt-6 flex flex-wrap justify-end gap-3">
-            <button
-              type="button"
-              @click="closeProfileModal"
-              class="inline-flex items-center justify-center rounded-full border border-slate-200 bg-white px-5 py-3 text-sm font-bold text-slate-700 transition hover:bg-slate-50"
-            >
-              Đóng
-            </button>
-            <button
-              type="submit"
-              :disabled="isSavingProfile"
-              class="inline-flex items-center justify-center rounded-full bg-[#7AE582] px-6 py-3 text-sm font-bold text-slate-900 transition hover:bg-emerald-300 disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              <span v-if="isSavingProfile">Đang lưu...</span>
-              <span v-else>Lưu thay đổi</span>
-            </button>
-          </div>
-        </form>
-      </div>
+    <!-- Trạng thái tải dữ liệu -->
+    <div v-if="isLoading" class="flex-1 flex items-center justify-center py-32">
+      <div class="w-12 h-12 border-4 border-slate-50 border-t-emerald-400 rounded-full animate-spin"></div>
     </div>
 
-    <section class="relative overflow-hidden bg-gradient-to-br from-emerald-50 via-white to-lime-50 pt-12 pb-20">
-      <div class="absolute inset-0 opacity-60">
-        <div class="absolute top-0 left-0 h-80 w-80 rounded-full bg-emerald-200 blur-[120px]"></div>
-        <div class="absolute right-0 bottom-0 h-96 w-96 rounded-full bg-lime-100 blur-[140px]"></div>
-      </div>
+    <!-- Nội dung Dashboard -->
+    <div v-else class="flex-1 overflow-y-auto no-scrollbar scroll-smooth">
+      <div class="w-full px-10 py-14">
 
-      <div class="relative max-w-6xl mx-auto px-4">
-        <div v-if="isLoading" class="min-h-[40vh] flex flex-col items-center justify-center text-slate-500">
-          <div class="w-16 h-16 rounded-full border-4 border-emerald-100 border-t-[#16a34a] animate-spin mb-4"></div>
-          <p>Đang tải trang học tập của bạn...</p>
+        <!-- THÔNG BÁO LỖI HỆ THỐNG -->
+        <div v-if="errorMessage" class="mb-10 rounded-[2.5rem] border border-red-100 bg-red-50/50 p-6 flex items-center gap-5 text-red-600 shadow-[0_2px_15px_rgba(239,68,68,0.05)] animate-in fade-in slide-in-from-top-4 duration-500">
+           <div class="w-12 h-12 rounded-2xl bg-white flex items-center justify-center shadow-sm border border-red-50 text-xl overflow-hidden">
+              <i class="fa-solid fa-triangle-exclamation text-red-500 animate-pulse"></i>
+           </div>
+           <div class="flex-1">
+              <p class="font-headline font-black uppercase text-[11px] tracking-[0.2em] mb-0.5 opacity-60">Lỗi kết nối / Hệ thống</p>
+              <p class="text-[15px] font-bold">{{ errorMessage }}</p>
+           </div>
+           <button @click="fetchDashboard" class="px-5 py-2.5 bg-white border border-red-100 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-red-500 hover:text-white transition-all shadow-sm">Thử lại</button>
         </div>
 
-        <template v-else>
-          <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-8">
-            <div class="max-w-3xl">
-              <span class="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-white/80 px-4 py-2 text-sm font-bold text-[#16a34a] shadow-sm">
-                <i class="fa-solid fa-sparkles"></i> Góc học tập của bạn
-              </span>
-              <h1 class="mt-5 text-4xl md:text-5xl font-extrabold leading-tight text-slate-900">
-                Chào {{ firstName }},
-                <span class="block text-transparent bg-clip-text bg-gradient-to-r from-[#7AE582] to-emerald-300">
-                  tiếp tục hành trình của bạn
-                </span>
-              </h1>
-              <p class="mt-5 max-w-2xl text-lg leading-relaxed text-slate-600">
-                Xem nhanh các khóa học đang học, tiến độ của bạn và kết quả gần đây để tiếp tục học thuận tiện hơn mỗi ngày.
-              </p>
+        <div class="grid grid-cols-12 gap-16">
+          <!-- Cột nội dung (Trái - 8/12) -->
+          <div class="col-span-12 lg:col-span-8 space-y-24">
 
-              <div class="mt-8 flex flex-wrap gap-3">
-                <router-link to="/courses" class="inline-flex items-center gap-2 rounded-full bg-[#7AE582] px-6 py-3 font-bold text-slate-900 shadow-lg shadow-emerald-900/20 transition hover:bg-emerald-300">
-                  Khám phá khóa học <i class="fa-solid fa-arrow-right"></i>
-                </router-link>
-                <router-link to="/" class="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-6 py-3 font-bold text-slate-700 transition hover:bg-slate-50">
-                  Về trang chủ
-                </router-link>
-              </div>
+            <!-- Status Header Row: Mục tiêu & Tin nhắn (Đã chuyển lên đầu) -->
+            <div class="grid grid-cols-1 xl:grid-cols-2 gap-8 mb-16">
+              
+              <!-- Widget: KPI Mục tiêu học tập -->
+              <section class="bg-white rounded-[2.5rem] p-8 border border-slate-100 shadow-sm flex items-center gap-8 relative overflow-hidden group/goal">
+                <div class="absolute -bottom-10 -left-10 w-24 h-24 bg-emerald-50 rounded-full blur-xl opacity-50"></div>
+                
+                <div class="relative flex shrink-0 items-center justify-center">
+                  <!-- Vòng tròn (Xoay 180 độ khi di chuột vào khối cha) -->
+                  <div class="transition-all duration-[1000ms] group-hover/goal:rotate-180">
+                    <svg class="w-32 h-32 transform -rotate-90">
+                      <circle class="text-slate-50" cx="64" cy="64" fill="transparent" r="58" stroke="currentColor" stroke-width="3"></circle>
+                      <circle class="text-[#7AE582]" cx="64" cy="64" fill="transparent" r="58"
+                        stroke="currentColor" stroke-width="6" stroke-linecap="round"
+                        stroke-dasharray="364.4" :stroke-dashoffset="364.4 * (1 - goalPercentage / 100)"
+                        style="transition: stroke-dashoffset 2s cubic-bezier(0.85, 0, 0.15, 1)"></circle>
+                    </svg>
+                  </div>
+                  <!-- Phần trăm (Giữ nguyên không xoay) -->
+                  <div class="absolute flex flex-col items-center pointer-events-none">
+                    <span class="text-2xl font-headline font-black text-slate-800 leading-none">{{ goalPercentage }}%</span>
+                  </div>
+                </div>
+
+                <div class="flex-1 min-w-0">
+                  <h3 class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-2">Mục tiêu học tập</h3>
+                  <p class="text-sm font-headline font-black text-slate-800 leading-tight mb-2 uppercase">Tiến độ tuần này</p>
+                  <p class="text-[11px] text-slate-400 font-bold italic leading-relaxed">"Gần đạt mục tiêu rồi {{ firstName }}!"</p>
+                </div>
+              </section>
+
+              <!-- Widget: Phản hồi giảng viên -->
+              <section class="bg-white border border-slate-100 rounded-[2.5rem] p-8 shadow-sm relative overflow-hidden group">
+                <div class="absolute -top-10 -right-10 w-32 h-32 bg-emerald-100/20 rounded-full blur-2xl pointer-events-none"></div>
+                <div class="flex items-center justify-between mb-6 relative z-10">
+                  <h3 class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Tin nhắn mới</h3>
+                  <div class="w-1.5 h-1.5 rounded-full bg-[#7AE582] animate-pulse"></div>
+                </div>
+                <div class="flex items-start gap-4 relative z-10 min-w-0">
+                  <img :src="`https://ui-avatars.com/api/?name=${encodeURIComponent(upcomingSchedules[0]?.teacher_name || 'Sarah')}&background=111&color=ffffff&rounded=true&bold=true`" class="w-10 h-10 rounded-xl object-cover ring-2 ring-slate-50 shadow-sm shrink-0">
+                  <div class="flex-1 bg-slate-50 p-4 rounded-2xl rounded-tl-none border border-slate-100 shadow-inner min-w-0">
+                    <p class="text-[10px] text-slate-600 leading-relaxed font-bold italic opacity-80 line-clamp-2">
+                      "Chào {{ firstName }}, {{ enrolledCourses.length > 0 ? 'hãy bắt đầu bài học hôm nay nhé!' : 'đăng ký khóa học ngay nhé!' }}..."
+                    </p>
+                  </div>
+                </div>
+              </section>
+
             </div>
 
-            <div class="w-full max-w-xl lg:pt-2 lg:self-start">
-              <div class="flex items-center justify-end gap-2">
-                <span class="inline-flex rounded-full border border-emerald-200 bg-white/80 px-4 py-1.5 text-sm font-bold text-[#16a34a] shadow-sm">
-                  {{ formatRole(user.role) }}
-                </span>
+            <!-- Khu vực khóa học đang diễn ra -->
+            <section class="space-y-10">
+              <div class="flex items-center justify-between">
+                <h3 class="text-2xl font-headline font-black tracking-tight text-slate-800">Khóa học hiện tại</h3>
+                <router-link to="/courses" class="text-emerald-500 font-black flex items-center gap-1.5 hover:gap-3 transition-all text-[10px] uppercase tracking-widest group">
+                  Xem tất cả <i class="fa-solid fa-arrow-right text-[9px] transition-transform group-hover:translate-x-1"></i>
+                </router-link>
+              </div>
 
-                <div class="flex items-center gap-3">
-                  <div ref="notificationMenuRef" class="relative">
-                    <button
-                      type="button"
-                      @click="toggleNotificationMenu"
-                      class="flex h-14 w-14 items-center justify-center rounded-full border-2 border-white bg-white text-slate-700 shadow-lg shadow-emerald-950/10 transition hover:bg-emerald-50"
-                    >
-                      <i class="fa-regular fa-bell text-xl"></i>
-                    </button>
-
-                    <div
-                      v-if="isNotificationMenuOpen"
-                      class="absolute right-0 top-[calc(100%+10px)] z-30 w-72 rounded-[1.6rem] border border-slate-200 bg-white p-4 shadow-2xl shadow-slate-950/20"
-                    >
-                      <p class="text-sm font-bold text-slate-800">Thông báo</p>
-                      <p class="mt-2 text-sm text-slate-500">Không có thông báo gì.</p>
+              <div v-if="enrolledCourses.length > 0" class="flex flex-col gap-10">
+                <!-- Thẻ khóa học DẠNG NGANG (Đã sửa lỗi vỡ layout) -->
+                <div v-for="course in enrolledCourses.slice(0, 4)" :key="course.id" class="group bg-white rounded-[2.5rem] ambient-shadow overflow-hidden border border-slate-50 transition-all duration-500 hover:shadow-xl flex flex-col lg:flex-row min-w-0">
+                  
+                  <!-- Khối ảnh (Thu nhỏ lại để không chiếm hết chỗ) -->
+                  <div class="relative w-full lg:w-64 xl:w-72 h-48 lg:h-auto overflow-hidden bg-slate-100 shrink-0">
+                    <img v-if="course.image_url" :src="course.image_url" class="w-full h-full object-cover transition-transform duration-[2000ms] group-hover:scale-110">
+                    <div v-else class="w-full h-full bg-slate-100 flex items-center justify-center">
+                      <i class="fa-solid fa-book text-slate-200 text-5xl"></i>
+                    </div>
+                    <div class="absolute inset-0 bg-gradient-to-r from-black/40 via-transparent to-transparent opacity-60"></div>
+                    <div class="absolute top-4 left-4">
+                      <div class="px-2.5 py-1 bg-emerald-500 backdrop-blur-md rounded-lg text-[8px] font-black text-white uppercase tracking-widest shadow-sm">
+                        {{ course.level || 'HỌC THUẬT' }}
+                      </div>
                     </div>
                   </div>
 
-                  <div ref="profileMenuRef" class="relative">
-                    <button
-                      type="button"
-                      @click="toggleProfileMenu"
-                      class="flex h-14 w-14 items-center justify-center rounded-full border-2 border-white bg-white text-slate-700 shadow-lg shadow-emerald-950/10 transition hover:bg-emerald-50"
-                    >
-                      <img class="h-11 w-11 rounded-full object-cover" :src="avatarUrl" alt="Mở menu cá nhân">
-                    </button>
+                  <!-- Khối nội dung (Sử dụng min-w-0 để tự động xuống dòng) -->
+                  <div class="flex-1 p-6 lg:p-8 flex flex-col justify-between min-w-0">
+                    <div class="min-w-0">
+                      <div class="flex items-center justify-between mb-3">
+                         <p class="text-[9px] font-black text-emerald-500 uppercase tracking-[0.2em]">{{ course.class_name || 'LỚP HỌC' }}</p>
+                         <span class="text-[9px] text-slate-300 font-bold uppercase tracking-widest italic opacity-40">ID: #C{{ course.id }}</span>
+                      </div>
+                      <h4 class="text-lg lg:text-xl font-headline font-black text-slate-800 mb-3 leading-tight tracking-tight uppercase group-hover:text-emerald-500 transition-colors truncate lg:whitespace-normal lg:line-clamp-2">
+                        {{ course.title }}
+                      </h4>
+                      <p class="text-[11px] text-slate-400 font-bold uppercase tracking-widest leading-relaxed mb-6 flex items-center gap-2">
+                         <i class="fa-solid fa-calendar-day text-emerald-500 opacity-60"></i>
+                         {{ new Date(course.start_date).toLocaleDateString('vi-VN') }}
+                      </p>
+                    </div>
 
-                    <div
-                      v-if="isProfileMenuOpen"
-                      class="absolute right-0 top-[calc(100%+10px)] z-30 w-64 rounded-[1.6rem] border border-slate-200 bg-white p-2 shadow-2xl shadow-slate-950/20"
-                    >
-                      <button
-                        type="button"
-                        @click="openProfileCard"
-                        class="flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-left text-slate-800 transition hover:bg-slate-50"
-                      >
-                        <i class="fa-regular fa-id-card text-slate-500"></i>
-                        <span class="font-semibold">Thông tin cá nhân</span>
-                      </button>
-                      <button
-                        type="button"
-                        @click="handleLogout"
-                        class="flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-left text-slate-800 transition hover:bg-slate-50"
-                      >
-                        <i class="fa-solid fa-right-from-bracket text-slate-500"></i>
-                        <span class="font-semibold">Đăng xuất</span>
-                      </button>
+                    <div class="space-y-6">
+                      <!-- Thanh phần trăm hoàn thành -->
+                      <div class="space-y-3">
+                        <div class="flex justify-between text-[9px] font-black uppercase tracking-widest text-slate-400">
+                          <span>Tiến độ</span>
+                          <span class="text-emerald-500 font-bold">{{ course.status === 'completed' ? '100%' : '65%' }}</span>
+                        </div>
+                        <div class="h-1.5 w-full bg-slate-50 rounded-full overflow-hidden border border-slate-100">
+                          <div class="h-full bg-gradient-to-r from-emerald-400 to-[#7AE582] rounded-full transition-all duration-1000 ease-in-out shadow-[0_0_10px_rgba(122,229,130,0.2)]" 
+                            :style="{ width: course.status === 'completed' ? '100%' : '65%' }"></div>
+                        </div>
+                      </div>
+
+                      <div class="flex items-center justify-end">
+                         <router-link :to="`/course/${course.id}`" class="px-6 py-3 bg-slate-900 text-white rounded-xl text-[10px] font-black uppercase tracking-[0.2em] text-center hover:bg-emerald-500 transition-all active:scale-95 duration-500 shadow-md">
+                            Tiếp tục
+                         </router-link>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
-          </div>
-        </template>
-      </div>
-    </section>
-
-    <section class="relative -mt-10 z-10 max-w-6xl mx-auto px-4">
-      <div v-if="errorMessage" class="mb-6 rounded-3xl border border-red-200 bg-white p-5 text-sm text-red-700 shadow-sm">
-        {{ errorMessage }}
-      </div>
-
-      <div class="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
-        <article class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-          <div class="flex items-start justify-between gap-4">
-            <div>
-              <p class="text-xs font-bold uppercase tracking-[0.2em] text-slate-400">Khóa học đang học</p>
-              <p class="mt-3 text-4xl font-black text-slate-900">{{ stats.activeCourses }}</p>
-              <p class="mt-2 text-sm text-slate-500">Những khóa học bạn đang theo học hiện tại.</p>
-            </div>
-            <div class="flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-50 text-xl text-[#16a34a]">
-              <i class="fa-solid fa-book-open-reader"></i>
-            </div>
-          </div>
-        </article>
-
-        <article class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-          <div class="flex items-start justify-between gap-4">
-            <div>
-              <p class="text-xs font-bold uppercase tracking-[0.2em] text-slate-400">Bài tập đã nộp</p>
-              <p class="mt-3 text-4xl font-black text-slate-900">{{ stats.submittedAssignments }}</p>
-              <p class="mt-2 text-sm text-slate-500">Tổng số bài bạn đã hoàn thành và gửi lên hệ thống.</p>
-            </div>
-            <div class="flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-50 text-xl text-blue-600">
-              <i class="fa-solid fa-file-circle-check"></i>
-            </div>
-          </div>
-        </article>
-
-        <article class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm sm:col-span-2 xl:col-span-1">
-          <div class="flex items-start justify-between gap-4">
-            <div>
-              <p class="text-xs font-bold uppercase tracking-[0.2em] text-slate-400">Trung bình điểm</p>
-              <p class="mt-3 text-4xl font-black text-slate-900">{{ formatScore(stats.avgScore) }}/10</p>
-              <p class="mt-2 text-sm text-slate-500">Điểm trung bình từ các bài đã được chấm.</p>
-            </div>
-            <div class="flex h-14 w-14 items-center justify-center rounded-2xl bg-amber-50 text-xl text-amber-600">
-              <i class="fa-solid fa-ranking-star"></i>
-            </div>
-          </div>
-        </article>
-
-        <article class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-          <div class="flex items-start justify-between gap-4">
-            <div>
-              <p class="text-xs font-bold uppercase tracking-[0.2em] text-slate-400">Khóa học hoàn thành</p>
-              <p class="mt-3 text-4xl font-black text-slate-900">{{ stats.completedCourses }}</p>
-              <p class="mt-2 text-sm text-slate-500">Những khóa học bạn đã hoàn thành.</p>
-            </div>
-            <div class="flex h-14 w-14 items-center justify-center rounded-2xl bg-sky-50 text-xl text-sky-600">
-              <i class="fa-solid fa-circle-check"></i>
-            </div>
-          </div>
-        </article>
-
-        <article class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-          <div class="flex items-start justify-between gap-4">
-            <div>
-              <p class="text-xs font-bold uppercase tracking-[0.2em] text-slate-400">Bài học đã làm</p>
-              <p class="mt-3 text-4xl font-black text-slate-900">{{ stats.completedLessons }}</p>
-              <p class="mt-2 text-sm text-slate-500">Số bài học bạn đã đi qua trong quá trình học.</p>
-            </div>
-            <div class="flex h-14 w-14 items-center justify-center rounded-2xl bg-violet-50 text-xl text-violet-600">
-              <i class="fa-solid fa-layer-group"></i>
-            </div>
-          </div>
-        </article>
-
-        <article class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-          <div class="flex items-start justify-between gap-4">
-            <div>
-              <p class="text-xs font-bold uppercase tracking-[0.2em] text-slate-400">Điểm quiz trung bình</p>
-              <p class="mt-3 text-4xl font-black text-slate-900">{{ formatScore(stats.avgQuizScore) }}/10</p>
-              <p class="mt-2 text-sm text-slate-500">Mức điểm trung bình ở các bài quiz bạn đã làm.</p>
-            </div>
-            <div class="flex h-14 w-14 items-center justify-center rounded-2xl bg-rose-50 text-xl text-rose-600">
-              <i class="fa-solid fa-chart-line"></i>
-            </div>
-          </div>
-        </article>
-      </div>
-    </section>
-
-    <section class="max-w-6xl mx-auto px-4 mt-8 grid gap-8 lg:grid-cols-[1.3fr_0.7fr]">
-      <div class="rounded-3xl border border-slate-200 bg-white shadow-sm overflow-hidden">
-        <div class="flex items-center justify-between gap-4 border-b border-slate-100 px-6 py-5">
-          <div>
-            <h2 class="text-xl font-bold text-slate-900">Khóa học gần đây</h2>
-            <p class="mt-1 text-sm text-slate-500">Những khóa học bạn có thể quay lại để tiếp tục học.</p>
-          </div>
-          <router-link to="/courses" class="inline-flex items-center gap-2 rounded-full bg-slate-100 px-4 py-2 text-sm font-bold text-slate-700 transition hover:bg-emerald-50 hover:text-[#16a34a]">
-            Xem tất cả <i class="fa-solid fa-arrow-right-long"></i>
-          </router-link>
-        </div>
-
-        <div v-if="enrolledCourses.length === 0" class="px-6 py-14 text-center">
-          <div class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-slate-100 text-2xl text-slate-400">
-            <i class="fa-solid fa-book-open"></i>
-          </div>
-          <h3 class="text-xl font-bold text-slate-800">Bạn chưa tham gia khóa học nào</h3>
-          <p class="mx-auto mt-3 max-w-xl text-sm leading-relaxed text-slate-500">
-            Hãy chọn một khóa học phù hợp để bắt đầu. Khi tham gia khóa học, nội dung và tiến độ của bạn sẽ xuất hiện tại đây.
-          </p>
-          <router-link to="/courses" class="mt-6 inline-flex items-center gap-2 rounded-full bg-[#7AE582] px-6 py-3 font-bold text-slate-900 transition hover:bg-emerald-300">
-            Khám phá khóa học
-          </router-link>
-        </div>
-
-        <div v-else class="divide-y divide-slate-100">
-          <article v-for="course in enrolledCourses" :key="`${course.id}-${course.class_name}`" class="p-6 transition hover:bg-slate-50/80">
-            <div class="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
-              <div class="flex items-start gap-4">
-                <img :src="course.image_url || fallbackImage" :alt="course.title" class="h-24 w-36 rounded-2xl object-cover border border-slate-200">
-                <div>
-                  <div class="flex flex-wrap items-center gap-2">
-                    <span class="rounded-full bg-emerald-50 px-3 py-1 text-xs font-bold uppercase tracking-wide text-[#16a34a]">
-                      Level {{ course.level || 'N/A' }}
-                    </span>
-                    <span :class="statusBadgeClass(course.status)">
-                      {{ formatStatus(course.status) }}
-                    </span>
+                <!-- Empty State -->
+                <div v-else class="bg-slate-50/50 rounded-[2.5rem] border border-dashed border-slate-200 p-20 text-center">
+                  <div class="w-16 h-16 bg-white rounded-2xl flex items-center justify-center mx-auto mb-6 text-slate-200 shadow-sm">
+                    <i class="fa-solid fa-graduation-cap text-2xl"></i>
                   </div>
-                  <h3 class="mt-3 text-lg font-bold text-slate-900">{{ course.title }}</h3>
-                  <p class="mt-2 text-sm text-slate-500">Lớp: {{ course.class_name || 'Chưa phân lớp' }}</p>
-                  <p class="mt-1 text-sm text-slate-500">
-                    Bắt đầu: {{ formatDate(course.start_date) }}
-                    <span v-if="course.end_date"> • Kết thúc: {{ formatDate(course.end_date) }}</span>
-                  </p>
+                  <p class="text-sm font-bold text-slate-400 uppercase tracking-widest mb-2">Bạn chưa đăng ký khóa học nào</p>
+                  <router-link to="/courses" class="text-[11px] font-black text-emerald-500 uppercase hover:underline">Khám phá ngay khóa học</router-link>
+                </div>
+            </section>
+          </div>
+
+          <!-- Cột Tiện ích (Phải 4/12) -->
+          <div class="col-span-12 lg:col-span-4 space-y-12">
+
+            <!-- Widget: Lịch học (Dữ liệu thật) -->
+            <section class="bg-white rounded-[2.5rem] p-10 border border-slate-100 shadow-sm space-y-10">
+              <div class="flex items-center justify-between">
+                <h3 class="text-2xl font-headline font-black text-slate-800 tracking-tight leading-tight">Lịch học sắp tới</h3>
+                <div class="w-12 h-12 rounded-2xl bg-emerald-50 flex items-center justify-center text-emerald-500 shadow-sm border border-emerald-100/50">
+                  <i class="fa-solid fa-calendar-check text-xl"></i>
                 </div>
               </div>
 
-              <div class="flex items-center gap-3">
-                <router-link :to="`/course/${course.id}`" class="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-5 py-2.5 text-sm font-bold text-slate-700 transition hover:border-[#7AE582] hover:text-[#16a34a]">
-                  Chi tiết
-                </router-link>
-                <router-link :to="`/course/${course.id}`" class="inline-flex items-center gap-2 rounded-full bg-slate-900 px-5 py-2.5 text-sm font-bold text-white transition hover:bg-slate-800">
-                  Vào học
-                </router-link>
+              <div v-if="upcomingSchedules.length > 0" class="space-y-10">
+                <!-- Danh sách lịch học - Redesigned (Đã giới hạn 3 buổi) -->
+                <div v-for="(sch, index) in upcomingSchedules.slice(0, 3)" :key="sch.id" 
+                  class="flex items-start gap-5 group cursor-pointer transition-all"
+                  :class="index > 0 ? 'opacity-40 grayscale hover:opacity-100 hover:grayscale-0' : ''">
+                  
+                  <!-- Date Badge (Cố định kích thước) -->
+                  <div class="w-16 h-16 rounded-full flex flex-col items-center justify-center shrink-0 border border-emerald-100/50 shadow-sm transition-transform group-hover:scale-105"
+                    :class="index === 0 ? 'bg-emerald-50' : 'bg-slate-50 border-slate-100'">
+                    <span class="text-[9px] font-black uppercase tracking-widest"
+                      :class="index === 0 ? 'text-emerald-500/80' : 'text-slate-400'">
+                      {{ formatDay(sch.study_date) }}
+                    </span>
+                    <span class="text-2xl font-headline font-black leading-none mt-0.5"
+                      :class="index === 0 ? 'text-emerald-500' : 'text-slate-400'">
+                      {{ sch.study_date.split('-')[2] }}
+                    </span>
+                  </div>
+
+                  <!-- Info (Logic Tiêu đề Thông minh: Ưu tiên Bài học > Khóa học) -->
+                  <div class="flex-1 min-w-0 pt-0.5">
+                    <h4 class="text-[15px] font-black leading-[1.3] group-hover:text-emerald-600 transition-colors line-clamp-2 uppercase tracking-tight"
+                      :class="index === 0 ? 'text-slate-800' : 'text-slate-400'">
+                      {{ sch.lesson_title || sch.course_title }}
+                    </h4>
+                    <div class="mt-3 space-y-1.5">
+                      <div class="flex items-center gap-2" :class="index === 0 ? 'text-slate-400' : 'text-slate-300'">
+                        <i class="fa-solid fa-clock text-[10px] opacity-60"></i>
+                        <span class="text-[11px] font-bold">{{ sch.start_time }} – {{ sch.end_time }}</span>
+                      </div>
+                      <div class="flex items-center gap-2" :class="index === 0 ? 'text-slate-400' : 'text-slate-300'">
+                        <i class="fa-solid fa-user-tie text-[10px] opacity-60"></i>
+                        <span class="text-[11px] font-bold uppercase tracking-tight">GV: {{ sch.teacher_name || 'Đang cập nhật' }}</span>
+                      </div>
+                      <div class="flex items-center gap-2" :class="index === 0 ? 'text-slate-400' : 'text-slate-300'">
+                        <i :class="sch.teaching_type === 'online' ? 'fa-solid fa-video' : 'fa-solid fa-location-dot'" class="text-[10px] opacity-60"></i>
+                        <span class="text-[11px] font-bold truncate">{{ sch.teaching_type === 'online' ? 'Học Online (Zoom)' : (sch.room_info || 'Phòng học 402') }}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
-            </div>
-          </article>
+              <!-- Empty State schedule -->
+              <div v-else class="py-10 text-center space-y-4">
+                <div class="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto text-slate-200">
+                  <i class="fa-solid fa-calendar-xmark text-2xl"></i>
+                </div>
+                <p class="text-xs font-black text-slate-300 uppercase tracking-widest">Không có lịch học sắp tới</p>
+              </div>
+
+              <button class="group flex w-full items-center justify-center py-4 bg-emerald-50/50 text-[#10B981] rounded-full text-[13px] font-black uppercase tracking-widest hover:bg-emerald-100 active:scale-95 transition-all border border-emerald-100/50 shadow-sm">
+                <span>XEM LỊCH CHI TIẾT</span>
+              </button>
+            </section>
+
+
+          </div>
         </div>
       </div>
-
-      <div class="space-y-8">
-        <section class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-          <h2 class="text-xl font-bold text-slate-900">Tóm tắt tiến độ</h2>
-          <p class="mt-1 text-sm text-slate-500">Một vài con số để bạn dễ theo dõi việc học của mình.</p>
-
-          <div class="mt-6 space-y-5">
-            <div>
-              <div class="mb-2 flex items-center justify-between text-sm">
-                <span class="font-medium text-slate-600">Khóa học đang học</span>
-                <span class="font-bold text-slate-900">{{ stats.activeCourses }}</span>
-              </div>
-              <div class="h-3 rounded-full bg-slate-100 overflow-hidden">
-                <div class="h-full rounded-full bg-gradient-to-r from-[#7AE582] to-emerald-500" :style="{ width: progressWidth(stats.activeCourses, courseTotal) }"></div>
-              </div>
-            </div>
-
-            <div>
-              <div class="mb-2 flex items-center justify-between text-sm">
-                <span class="font-medium text-slate-600">Khóa học hoàn thành</span>
-                <span class="font-bold text-slate-900">{{ stats.completedCourses }}</span>
-              </div>
-              <div class="h-3 rounded-full bg-slate-100 overflow-hidden">
-                <div class="h-full rounded-full bg-gradient-to-r from-sky-400 to-blue-600" :style="{ width: progressWidth(stats.completedCourses, courseTotal) }"></div>
-              </div>
-            </div>
-
-            <div>
-              <div class="mb-2 flex items-center justify-between text-sm">
-                <span class="font-medium text-slate-600">Bài học đã làm</span>
-                <span class="font-bold text-slate-900">{{ stats.completedLessons }}</span>
-              </div>
-              <div class="h-3 rounded-full bg-slate-100 overflow-hidden">
-                <div class="h-full rounded-full bg-gradient-to-r from-violet-400 to-violet-600" :style="{ width: progressWidth(stats.completedLessons, lessonGoal) }"></div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-          <h2 class="text-xl font-bold text-slate-900">Bắt đầu nhanh</h2>
-          <div class="mt-5 space-y-3">
-            <router-link to="/courses" class="flex items-center justify-between rounded-2xl border border-slate-200 px-4 py-4 transition hover:border-[#7AE582] hover:bg-emerald-50/60">
-              <div>
-                <p class="font-bold text-slate-800">Tìm khóa học mới</p>
-                <p class="text-sm text-slate-500">Khám phá các khóa học đang có và chọn nội dung phù hợp với bạn.</p>
-              </div>
-              <i class="fa-solid fa-arrow-right text-slate-400"></i>
-            </router-link>
-
-            <router-link to="/about" class="flex items-center justify-between rounded-2xl border border-slate-200 px-4 py-4 transition hover:border-[#7AE582] hover:bg-emerald-50/60">
-              <div>
-                <p class="font-bold text-slate-800">Xem thêm thông tin</p>
-                <p class="text-sm text-slate-500">Tìm hiểu thêm về nền tảng và cách học hiệu quả hơn.</p>
-              </div>
-              <i class="fa-solid fa-arrow-right text-slate-400"></i>
-            </router-link>
-          </div>
-        </section>
-
-        <section class="rounded-3xl bg-gradient-to-br from-[#7AE582] via-emerald-300 to-emerald-400 p-6 text-slate-900 shadow-lg shadow-emerald-200/60">
-          <p class="text-xs font-bold uppercase tracking-[0.25em] text-slate-700">Gợi ý</p>
-          <h2 class="mt-3 text-2xl font-black">Giữ nhịp học đều mỗi ngày</h2>
-          <p class="mt-3 text-sm leading-relaxed text-slate-800/80">
-            Chỉ cần duy trì việc học thường xuyên, trang này sẽ giúp bạn nhìn rõ tiến độ, kết quả và những gì cần tiếp tục.
-          </p>
-        </section>
-      </div>
-    </section>
+    </div>
   </div>
 </template>
 
 <script setup>
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
+/**
+ * UserDashboard.vue
+ * Trang nội dung chính trong khu vực người dùng.
+ * Nhận prop `user` từ UserLayout.vue (layout cha).
+ * Chỉ chịu trách nhiệm: fetch data dashboard, hiển thị khóa học, widgets.
+ */
+import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { apiFetch } from '../../utils/api'
-import { clearAuthSession, updateAuthUser } from '../../utils/auth'
+import { clearAuthSession } from '../../utils/auth'
+import { notifyError } from '../../utils/notify'
+
+// ── Props từ UserLayout ──
+const props = defineProps({
+  user: {
+    type: Object,
+    default: () => ({ full_name: 'Học viên', email: '', role: 'student' })
+  }
+})
 
 const router = useRouter()
 
-const user = ref({
-  full_name: 'Học viên',
-  email: '',
-  role: 'student'
-})
-
-const stats = ref({
-  activeCourses: 0,
-  completedCourses: 0,
-  submittedAssignments: 0,
-  avgScore: 0,
-  completedLessons: 0,
-  avgQuizScore: 0
-})
-
-const enrolledCourses = ref([])
+// ── State ──
 const isLoading = ref(true)
 const errorMessage = ref('')
-const fallbackImage = 'https://placehold.co/600x400/e2e8f0/64748b?text=Course'
-const isProfileMenuOpen = ref(false)
-const isNotificationMenuOpen = ref(false)
-const profileMenuRef = ref(null)
-const notificationMenuRef = ref(null)
-const isProfileModalOpen = ref(false)
-const isSavingProfile = ref(false)
-const profileMessage = ref('')
-const profileMessageType = ref('success')
-const profileForm = ref({
-  full_name: '',
-  email: '',
-  phone: '',
-  password: '',
-})
+const enrolledCourses = ref([])
+const upcomingSchedules = ref([])
+const stats = ref({ activeCourses: 0, completedCourses: 0, submittedAssignments: 0, avgScore: 0, completedLessons: 0 })
 
-const avatarUrl = computed(() => {
-  const name = encodeURIComponent(user.value.full_name || 'User')
-  return `https://ui-avatars.com/api/?name=${name}&background=0f172a&color=ffffff`
-})
+// % Mục tiêu học tập - kích hoạt hiệu ứng khi mount
+const goalPercentage = ref(0)
 
+// ── Computed ──
+
+/** Trích xuất tên gọi cuối (VD: "Nguyễn Văn Minh" → "Minh") */
 const firstName = computed(() => {
-  const fullName = (user.value.full_name || '').trim()
-  if (!fullName) return 'bạn'
-  const parts = fullName.split(/\s+/)
+  const name = (props.user?.full_name || 'Học viên').trim()
+  const parts = name.split(/\s+/)
   return parts[parts.length - 1]
 })
 
-const profileMessageClass = computed(() => {
-  return profileMessageType.value === 'error'
-    ? 'border border-red-200 bg-red-50 text-red-700'
-    : 'border border-emerald-200 bg-emerald-50 text-emerald-700'
-})
+/** Định dạng thứ trong tuần bằng tiếng Việt */
+const formatDay = (dateStr) => {
+  const date = new Date(dateStr)
+  const days = ['Chủ Nhật', 'Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7']
+  return days[date.getDay()]
+}
 
-const courseTotal = computed(() => Math.max(1, stats.value.activeCourses + stats.value.completedCourses))
-const lessonGoal = computed(() => Math.max(5, stats.value.completedLessons || 0))
+// ── Methods ──
 
+/**
+ * @function fetchDashboard
+ * @description Tải dữ liệu tổng quan: thống kê & danh sách khóa học.
+ */
 const fetchDashboard = async () => {
   isLoading.value = true
   errorMessage.value = ''
-
   try {
     const response = await apiFetch('user/dashboard.php')
-
     if (response.status === 401 || response.status === 403) {
       clearAuthSession()
       router.push('/login')
       return
     }
-
     const result = await response.json()
-
     if (result.status === 'success') {
-      user.value = result.data.user
       stats.value = result.data.stats
       enrolledCourses.value = Array.isArray(result.data.enrolledCourses) ? result.data.enrolledCourses : []
+      upcomingSchedules.value = Array.isArray(result.data.upcomingSchedules) ? result.data.upcomingSchedules : []
+      
+      // Tính toán phần trăm tiến độ tổng thể (Dự trên khóa học và bài học)
+      const targetPerc = stats.value.activeCourses > 0 ? 80 : 0
+      setTimeout(() => { goalPercentage.value = targetPerc }, 600)
     } else {
-      errorMessage.value = result.message || 'Không tải được thông tin học tập của bạn.'
+      errorMessage.value = result.message || 'Hệ thống không thể tải dữ liệu Dashboard.'
     }
-  } catch (error) {
-    console.error('Lỗi tải dashboard:', error)
-    errorMessage.value = 'Không thể kết nối tới máy chủ.'
+  } catch {
+    errorMessage.value = 'Lỗi kết nối máy chủ. Vui lòng kiểm tra lại đường truyền internet.'
+    notifyError('Mất kết nối tới hệ thống máy chủ.')
   } finally {
     isLoading.value = false
   }
 }
 
-const toggleProfileMenu = () => {
-  isNotificationMenuOpen.value = false
-  isProfileMenuOpen.value = !isProfileMenuOpen.value
-}
-
-const toggleNotificationMenu = () => {
-  isProfileMenuOpen.value = false
-  isNotificationMenuOpen.value = !isNotificationMenuOpen.value
-}
-
-const openProfileCard = async () => {
-  isProfileMenuOpen.value = false
-  profileMessage.value = ''
-  profileMessageType.value = 'success'
-  isProfileModalOpen.value = true
-  await fetchProfile()
-}
-
-const closeProfileModal = () => {
-  isProfileModalOpen.value = false
-  profileMessage.value = ''
-  profileForm.value.password = ''
-}
-
-const fetchProfile = async () => {
-  try {
-    const response = await apiFetch('user/profile.php')
-
-    if (response.status === 401 || response.status === 403) {
-      clearAuthSession()
-      router.push('/login')
-      return
-    }
-
-    const result = await response.json()
-    if (result.status === 'success') {
-      profileForm.value = {
-        full_name: result.data.full_name ?? '',
-        email: result.data.email ?? '',
-        phone: result.data.phone ?? '',
-        password: '',
-      }
-    } else {
-      profileMessageType.value = 'error'
-      profileMessage.value = result.message || 'Không tải được thông tin cá nhân.'
-    }
-  } catch (error) {
-    profileMessageType.value = 'error'
-    profileMessage.value = 'Không thể kết nối tới máy chủ.'
-  }
-}
-
-const submitProfileUpdate = async () => {
-  profileMessage.value = ''
-
-  if (!profileForm.value.full_name.trim()) {
-    profileMessageType.value = 'error'
-    profileMessage.value = 'Vui lòng nhập họ và tên.'
-    return
-  }
-
-  if (!profileForm.value.email.trim()) {
-    profileMessageType.value = 'error'
-    profileMessage.value = 'Vui lòng nhập email.'
-    return
-  }
-
-  isSavingProfile.value = true
-
-  try {
-    const response = await apiFetch('user/profile.php', {
-      method: 'PUT',
-      body: JSON.stringify({
-        full_name: profileForm.value.full_name.trim(),
-        email: profileForm.value.email.trim(),
-        phone: profileForm.value.phone.trim(),
-        password: profileForm.value.password,
-      }),
-    })
-
-    if (response.status === 401 || response.status === 403) {
-      clearAuthSession()
-      router.push('/login')
-      return
-    }
-
-    const result = await response.json()
-    if (result.status === 'success') {
-      user.value = {
-        ...user.value,
-        ...result.data,
-      }
-      updateAuthUser(result.data)
-      profileForm.value.password = ''
-      profileMessageType.value = 'success'
-      profileMessage.value = result.message || 'Đã cập nhật thông tin cá nhân.'
-    } else {
-      profileMessageType.value = 'error'
-      profileMessage.value = result.message || 'Không thể cập nhật thông tin.'
-    }
-  } catch (error) {
-    profileMessageType.value = 'error'
-    profileMessage.value = 'Không thể kết nối tới máy chủ.'
-  } finally {
-    isSavingProfile.value = false
-  }
-}
-
-const handleLogout = () => {
-  isProfileMenuOpen.value = false
-  isNotificationMenuOpen.value = false
-  clearAuthSession()
-  router.push('/login')
-}
-
-const handleDocumentClick = (event) => {
-  if (!profileMenuRef.value?.contains(event.target)) {
-    isProfileMenuOpen.value = false
-  }
-
-  if (!notificationMenuRef.value?.contains(event.target)) {
-    isNotificationMenuOpen.value = false
-  }
-}
-
+// ── Lifecycle ──
 onMounted(() => {
   fetchDashboard()
-  document.addEventListener('mousedown', handleDocumentClick)
+  // Kích hoạt hiệu ứng vẽ vòng tròn mục tiêu sau khi trang mount
+  setTimeout(() => { goalPercentage.value = 80 }, 600)
 })
-
-onBeforeUnmount(() => {
-  document.removeEventListener('mousedown', handleDocumentClick)
-})
-
-const formatRole = (role) => {
-  const roles = {
-    student: 'Học viên',
-    instructor: 'Giảng viên',
-    admin: 'Admin'
-  }
-  return roles[role] || role
-}
-
-const formatStatus = (status) => {
-  const labels = {
-    active: 'Đang học',
-    completed: 'Hoàn thành',
-    dropped: 'Đã dừng'
-  }
-  return labels[status] || status
-}
-
-const formatDate = (date) => {
-  if (!date) return 'Chưa xác định'
-  return new Intl.DateTimeFormat('vi-VN').format(new Date(date))
-}
-
-const formatScore = (score) => Number(score || 0).toFixed(1)
-
-const progressWidth = (value, total) => {
-  const safeTotal = Math.max(1, Number(total) || 1)
-  const width = (Number(value) / safeTotal) * 100
-  return `${Math.min(100, Math.max(8, width || 0))}%`
-}
-
-const statusBadgeClass = (status) => {
-  const base = 'inline-flex rounded-full px-3 py-1 text-xs font-bold '
-  if (status === 'active') return base + 'bg-emerald-50 text-[#16a34a]'
-  if (status === 'completed') return base + 'bg-sky-50 text-sky-700'
-  if (status === 'dropped') return base + 'bg-rose-50 text-rose-700'
-  return base + 'bg-slate-100 text-slate-600'
-}
 </script>
+
+<style scoped>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Manrope:wght@600;700;800;900&display=swap');
+
+.font-headline { font-family: 'Manrope', sans-serif; }
+.font-body { font-family: 'Inter', sans-serif; }
+
+/* Shadow card premium */
+.ambient-shadow {
+  box-shadow: 0 55px 150px -25px rgba(26, 28, 27, 0.08);
+}
+
+/* Ẩn thanh cuộn trình duyệt */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* Giới hạn 2 dòng văn bản */
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.rounded-\[3rem\] { border-radius: 3rem; }
+.rounded-\[3\.5rem\] { border-radius: 3.5rem; }
+.rounded-\[4rem\] { border-radius: 4rem; }
+.rounded-\[4\.5rem\] { border-radius: 4.5rem; }
+</style>

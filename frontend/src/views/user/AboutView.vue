@@ -142,7 +142,7 @@
       </div>
     </section>
 
-    <!-- ─── BÁO CHÍ (new section) ─── -->
+    <!-- ─── BÁO CHÍ ─── -->
     <section class="py-16 bg-slate-50 scroll-section">
       <div class="max-w-4xl mx-auto px-6 text-center scroll-fade">
         <p class="text-[0.65rem] font-bold text-slate-400 uppercase tracking-[0.2em] mb-2">Được đánh giá tích cực bởi</p>

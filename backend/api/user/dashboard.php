@@ -88,6 +88,33 @@ try {
     $stmtProgress->execute([$studentId]);
     $progress = $stmtProgress->fetch(PDO::FETCH_ASSOC) ?: [];
 
+    // LẤY LỊCH HỌC SẮP TỚI (Dữ liệu thật)
+    $stmtSchedules = $pdo->prepare("
+        SELECT 
+            s.id,
+            s.study_date,
+            s.start_time,
+            s.end_time,
+            s.teaching_type,
+            s.room_info,
+            c.class_name,
+            co.title as course_title,
+            u.full_name as teacher_name,
+            cd.detail_name as lesson_title
+        FROM schedules s
+        INNER JOIN classes c ON c.id = s.class_id
+        INNER JOIN courses co ON co.id = c.course_id
+        INNER JOIN enrollments e ON e.class_id = c.id
+        LEFT JOIN class_details cd ON cd.id = s.class_detail_id
+        LEFT JOIN users u ON u.id = s.teacher_id
+        WHERE e.student_id = ? 
+          AND s.study_date >= CURRENT_DATE
+        ORDER BY s.study_date ASC, s.start_time ASC
+        LIMIT 3
+    ");
+    $stmtSchedules->execute([$studentId]);
+    $schedules = $stmtSchedules->fetchAll(PDO::FETCH_ASSOC);
+
     $payload = [
         'user' => [
             'id' => $studentId,
@@ -115,6 +142,19 @@ try {
                 'status' => $course['status'],
             ];
         }, $enrolledCourses),
+        'upcomingSchedules' => array_map(function ($sch) {
+            return [
+                'id' => (int) $sch['id'],
+                'study_date' => $sch['study_date'],
+                'start_time' => substr($sch['start_time'], 0, 5),
+                'end_time' => substr($sch['end_time'], 0, 5),
+                'teaching_type' => $sch['teaching_type'],
+                'room_info' => $sch['room_info'],
+                'class_name' => $sch['class_name'],
+                'course_title' => $sch['course_title'],
+                'teacher_name' => $sch['teacher_name'] ?? 'Giảng viên',
+            ];
+        }, $schedules),
     ];
 
     echo json_encode([

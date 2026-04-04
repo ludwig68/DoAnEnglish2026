@@ -1,38 +1,44 @@
 <template>
-  <div class="bg-white text-slate-900 min-h-screen flex flex-col">
+  <div class="bg-white text-slate-900 min-h-screen flex flex-col font-body">
 
     <!-- ═══ NAVBAR ═══ -->
     <header
-      v-if="!isDashboard"
+      v-if="!shouldHideNav"
       class="sticky top-0 z-40 w-full border-b border-slate-100 bg-white/95 backdrop-blur-md shadow-sm"
     >
-      <div class="max-w-7xl mx-auto px-5 h-16 flex items-center justify-between gap-4">
+      <div class="w-full mx-auto px-10 h-20 flex items-center justify-between gap-10">
 
         <!-- Logo -->
-        <router-link to="/" class="flex items-center gap-2.5 shrink-0 group">
-          <div class="flex flex-col leading-tight">
-            <span class="font-black tracking-tight text-slate-900 text-[15px]">English Learning</span>
-            <span class="text-[0.62rem] text-emerald-600 font-semibold">Học mỗi ngày · Tiến bộ mỗi ngày</span>
+        <router-link to="/" class="flex items-center gap-3 shrink-0 group">
+          <div class="flex flex-col leading-none">
+            <div class="flex items-center">
+              <span class="font-headline font-black tracking-tighter text-slate-900 text-2xl">English</span>
+              <span class="font-headline font-black tracking-tighter text-[#16a34a] text-2xl">Learning</span>
+            </div>
+            <span class="text-[0.55rem] text-[#16a34a] font-black tracking-[0.18em] uppercase mt-1.5 flex items-center gap-2">
+              <span class="w-4 h-[1px] bg-slate-200"></span>
+              Học mỗi ngày · Tiến bộ mỗi ngày
+            </span>
           </div>
         </router-link>
 
         <!-- Nav links (desktop) -->
-        <nav class="hidden md:flex flex-1 items-center justify-center gap-1">
+        <nav class="hidden md:flex flex-1 items-center justify-center gap-2">
           <router-link to="/about"
-            class="px-4 py-2 rounded-lg text-sm font-semibold transition-colors text-slate-600 hover:text-emerald-700 hover:bg-emerald-50"
-            active-class="text-emerald-700 bg-emerald-50"
+            class="px-5 py-2 text-[13px] font-bold transition-all text-slate-400 hover:text-[#16a34a] hover:bg-emerald-50/60 rounded-xl"
+            active-class="text-[#16a34a] bg-emerald-50/60"
           >Giới thiệu</router-link>
           <router-link to="/courses"
-            class="px-4 py-2 rounded-lg text-sm font-semibold transition-colors text-slate-600 hover:text-emerald-700 hover:bg-emerald-50"
-            active-class="text-emerald-700 bg-emerald-50"
+            class="px-5 py-2 text-[13px] font-bold transition-all text-slate-400 hover:text-[#16a34a] hover:bg-emerald-50/60 rounded-xl"
+            active-class="text-[#16a34a] bg-emerald-50/60"
           >Khóa học</router-link>
           <router-link to="/support"
-            class="px-4 py-2 rounded-lg text-sm font-semibold transition-colors text-slate-600 hover:text-emerald-700 hover:bg-emerald-50"
-            active-class="text-emerald-700 bg-emerald-50"
+            class="px-5 py-2 text-[13px] font-bold transition-all text-slate-400 hover:text-[#16a34a] hover:bg-emerald-50/60 rounded-xl"
+            active-class="text-[#16a34a] bg-emerald-50/60"
           >Hỗ trợ</router-link>
           <router-link to="/contact"
-            class="px-4 py-2 rounded-lg text-sm font-semibold transition-colors text-slate-600 hover:text-emerald-700 hover:bg-emerald-50"
-            active-class="text-emerald-700 bg-emerald-50"
+            class="px-5 py-2 text-[13px] font-bold transition-all text-slate-400 hover:text-[#16a34a] hover:bg-emerald-50/60 rounded-xl"
+            active-class="text-[#16a34a] bg-emerald-50/60"
           >Liên hệ</router-link>
         </nav>
 
@@ -49,12 +55,12 @@
             <router-link
               v-else
               to="/user/dashboard"
-              class="hidden sm:inline-flex items-center gap-1.5 h-9 px-4 rounded-lg border border-slate-200 text-slate-600 text-sm font-semibold hover:border-emerald-300 hover:text-emerald-700 hover:bg-emerald-50 transition-all"
+              class="hidden sm:inline-flex items-center gap-1.5 h-9 px-4 rounded-lg border border-slate-200 text-slate-600 text-sm font-bold hover:border-emerald-300 hover:text-[#16a34a] hover:bg-emerald-50 transition-all font-headline"
             >
-              <i class="fa-solid fa-play text-xs text-emerald-500"></i> Vào học
+              <i class="fa-solid fa-play text-xs text-[#16a34a]"></i> Vào học
             </router-link>
-            <span class="hidden sm:inline-flex items-center gap-2 h-9 px-4 rounded-lg bg-slate-50 border border-slate-200 text-slate-700 text-sm font-semibold">
-              <i class="fa-solid fa-circle-user text-emerald-500"></i> {{ username }}
+            <span class="hidden sm:inline-flex items-center gap-2 h-9 px-4 rounded-lg bg-slate-50 border border-slate-200 text-slate-700 text-sm font-bold font-headline">
+              <i class="fa-solid fa-circle-user text-[#16a34a]"></i> {{ username }}
             </span>
             <button
               @click="logout"
@@ -67,12 +73,15 @@
 
           <template v-else>
             <router-link to="/login"
-              class="h-9 px-4 inline-flex items-center text-sm font-semibold text-slate-600 hover:text-emerald-700 transition-colors"
+              class="h-11 px-6 inline-flex items-center text-[13px] font-bold text-slate-900 hover:text-[#16a34a] transition-colors"
             >Đăng nhập</router-link>
             <router-link to="/register"
-              class="h-9 px-5 inline-flex items-center rounded-xl text-sm font-bold text-white shadow-md shadow-emerald-200 hover:-translate-y-px hover:shadow-emerald-300 transition-all"
+              class="h-11 px-7 inline-flex items-center justify-center gap-2 text-white rounded-xl text-[13px] font-bold transition-all hover:shadow-xl hover:shadow-emerald-200 hover:-translate-y-0.5 active:scale-95"
               style="background: linear-gradient(135deg, #7ae582 0%, #16a34a 100%)"
-            >Đăng ký miễn phí</router-link>
+            >
+              <span>Đăng ký miễn phí</span>
+              <i class="fa-solid fa-arrow-right text-[10px] transition-transform group-hover:translate-x-1"></i>
+            </router-link>
           </template>
         </div>
 
@@ -85,7 +94,7 @@
     </main>
 
     <!-- Floating contact buttons -->
-    <div v-if="!isDashboard" class="fixed bottom-5 right-5 z-40 flex flex-col items-end gap-3">
+    <div v-if="!shouldHideNav" class="fixed bottom-5 right-5 z-40 flex flex-col items-end gap-3">
       <a
         href="https://zalo.me/0364132169"
         target="_blank"
@@ -107,17 +116,23 @@
     </div>
 
     <!-- ═══ FOOTER (giữ nền trắng) ═══ -->
-    <footer v-if="!isDashboard" class="bg-white border-t border-slate-100 mt-auto">
+    <footer v-if="!shouldHideNav" class="bg-white border-t border-slate-100 mt-auto">
       <div class="max-w-7xl mx-auto px-6 pt-12 pb-8">
         <div class="grid gap-10 md:grid-cols-4">
 
           <!-- Brand -->
           <div class="md:col-span-1">
-            <div class="flex items-center gap-2.5 mb-4">
-              <div class="w-8 h-8 rounded-xl flex items-center justify-center" style="background: linear-gradient(135deg, #7ae582 0%, #16a34a 100%)">
-                <i class="fa-solid fa-graduation-cap text-white text-sm"></i>
+            <div class="flex items-center gap-3 mb-5 group">
+              <div class="flex flex-col leading-none">
+                <div class="flex items-center">
+                  <span class="font-headline font-black tracking-tighter text-slate-900 text-xl">English</span>
+                  <span class="font-headline font-black tracking-tighter text-[#16a34a] text-xl">Learning</span>
+                </div>
+                <span class="text-[0.45rem] text-[#16a34a] font-black tracking-[0.18em] uppercase mt-1 flex items-center gap-2">
+                  <span class="w-3 h-[1px] bg-slate-200"></span>
+                  Tiến bộ mỗi ngày
+                </span>
               </div>
-              <span class="font-black text-slate-800 text-base tracking-tight">English Learning</span>
             </div>
             <p class="text-sm leading-relaxed text-slate-500">
               Hệ thống học tiếng Anh thông minh với lộ trình cá nhân hoá, từ vựng, flashcard và bài luyện tập tương tác.
@@ -205,6 +220,7 @@ const route = useRoute()
 const router = useRouter()
 
 const isDashboard = computed(() => route.path.startsWith('/user/dashboard') || route.path.startsWith('/admin'))
+const shouldHideNav = computed(() => isDashboard.value || ['/login', '/register'].includes(route.path))
 const currentUser = computed(() => authSession.value?.user ?? null)
 const isLoggedIn = computed(() => Boolean(currentUser.value))
 const userRole = computed(() => currentUser.value?.role ?? '')

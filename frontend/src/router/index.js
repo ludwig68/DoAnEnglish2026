@@ -5,6 +5,7 @@ import RegisterView from '../views/user/RegisterView.vue'
 import CoursesView from '../views/user/CoursesView.vue'
 import AboutView from '../views/user/AboutView.vue'
 import CourseDetailView from '../views/user/CourseDetailView.vue'
+import UserLayout from '../views/user/UserLayout.vue'
 import UserDashboard from '../views/user/UserDashboard.vue'
 import SupportView from '../views/user/SupportView.vue'
 import ContactView from '../views/user/ContactView.vue'
@@ -30,7 +31,20 @@ const router = createRouter({
     { path: '/', name: 'home', component: HomeView },
     { path: '/login', name: 'login', component: LoginView },
     { path: '/register', name: 'register', component: RegisterView },
-    { path: '/user/dashboard', name: 'user-dashboard', component: UserDashboard },
+    {
+      path: '/user',
+      component: UserLayout,
+      children: [
+        {
+          path: 'dashboard',
+          name: 'user-dashboard',
+          component: UserDashboard
+        }
+        // Thêm các trang user khác vào đây trong tương lai:
+        // { path: 'roadmap', name: 'user-roadmap', component: UserRoadmap },
+        // { path: 'library', name: 'user-library', component: UserLibrary },
+      ]
+    },
     { path: '/courses', name: 'courses', component: CoursesView },
     { path: '/about', name: 'about', component: AboutView },
     { path: '/support', name: 'support', component: SupportView },
