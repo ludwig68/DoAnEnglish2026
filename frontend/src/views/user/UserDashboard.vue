@@ -124,17 +124,17 @@
                       <div class="space-y-3">
                         <div class="flex justify-between text-[9px] font-black uppercase tracking-widest text-slate-400">
                           <span>Tiến độ</span>
-                          <span class="text-emerald-500 font-bold">{{ course.status === 'completed' ? '100%' : '65%' }}</span>
+                          <span class="text-emerald-500 font-bold">{{ course.completion_percent || 0 }}%</span>
                         </div>
                         <div class="h-1.5 w-full bg-slate-50 rounded-full overflow-hidden border border-slate-100">
                           <div class="h-full bg-gradient-to-r from-emerald-400 to-[#7AE582] rounded-full transition-all duration-1000 ease-in-out shadow-[0_0_10px_rgba(122,229,130,0.2)]" 
-                            :style="{ width: course.status === 'completed' ? '100%' : '65%' }"></div>
+                            :style="{ width: (course.completion_percent || 0) + '%' }"></div>
                         </div>
                       </div>
 
                       <div class="flex items-center justify-end">
-                         <router-link :to="`/course/${course.id}`" class="px-6 py-3 bg-slate-900 text-white rounded-xl text-[10px] font-black uppercase tracking-[0.2em] text-center hover:bg-emerald-500 transition-all active:scale-95 duration-500 shadow-md">
-                            Tiếp tục
+                         <router-link to="/user/assignments" class="px-6 py-3 bg-slate-900 text-white rounded-xl text-[10px] font-black uppercase tracking-[0.2em] text-center hover:bg-emerald-500 transition-all active:scale-95 duration-500 shadow-md">
+                            Làm bài tập
                          </router-link>
                       </div>
                     </div>
@@ -219,6 +219,70 @@
               </button>
             </section>
 
+            <!-- Widget: Bảng xếp hạng (Dữ liệu thật) -->
+            <section class="bg-white rounded-[2.5rem] p-10 border border-slate-100 shadow-sm space-y-8 relative overflow-hidden group">
+              <!-- Trang trí nền -->
+              <div class="absolute -top-10 -right-10 w-32 h-32 bg-amber-50 rounded-full blur-3xl opacity-60"></div>
+              
+              <div class="flex items-center justify-between relative z-10">
+                <div>
+                  <h3 class="text-2xl font-headline font-black text-slate-800 tracking-tight leading-tight">Bảng xếp hạng</h3>
+                  <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Học viên xuất sắc trong tuần</p>
+                </div>
+                <div class="w-12 h-12 rounded-2xl bg-amber-100/50 flex items-center justify-center text-amber-500 shadow-sm border border-amber-200/30">
+                  <i class="fa-solid fa-crown text-xl animate-pulse"></i>
+                </div>
+              </div>
+
+              <div v-if="leaderboardData.length > 0" class="space-y-4 relative z-10">
+                <div v-for="(student, idx) in leaderboardData" :key="student.id" 
+                  class="flex items-center gap-4 p-4 rounded-[2rem] transition-all border border-transparent hover:border-slate-50 hover:bg-slate-50/50 group/item shadow-sm hover:shadow-md"
+                  :class="student.is_current ? 'bg-emerald-50/60 border-emerald-100/40' : 'bg-slate-50/40'">
+                  
+                  <!-- Rank Number or Icon -->
+                  <div class="w-8 flex justify-center shrink-0">
+                    <span v-if="idx === 0" class="text-2xl filter drop-shadow-sm">🥇</span>
+                    <span v-else-if="idx === 1" class="text-2xl filter drop-shadow-sm">🥈</span>
+                    <span v-else-if="idx === 2" class="text-2xl filter drop-shadow-sm">🥉</span>
+                    <span v-else class="text-[10px] font-black text-slate-300">#{{ idx + 1 }}</span>
+                  </div>
+
+                  <!-- Name and Score -->
+                  <div class="flex-1 min-w-0">
+                    <p class="text-[13px] font-black text-slate-700 truncate flex items-center gap-1.5"
+                      :class="student.is_current ? 'text-emerald-700' : ''">
+                      {{ student.full_name }}
+                      <span v-if="student.is_current" class="text-[7px] bg-emerald-500 text-white px-1.5 py-0.5 rounded-full font-black uppercase tracking-widest">Bạn</span>
+                    </p>
+                    <div class="flex items-center gap-2 mt-0.5">
+                      <div class="h-1 flex-1 bg-slate-100 rounded-full overflow-hidden">
+                        <div class="h-full rounded-full transition-all duration-1000" 
+                          :class="idx === 0 ? 'bg-amber-400' : 'bg-emerald-400'"
+                          :style="{ width: (student.total_points / (leaderboardData[0]?.total_points || 1)) * 100 + '%' }"></div>
+                      </div>
+                      <span class="text-[10px] font-black text-slate-400 shrink-0">{{ student.total_points }}đ</span>
+                    </div>
+                  </div>
+
+                  <!-- Streak/Trend -->
+                  <div class="shrink-0 text-[10px] items-center gap-1 opacity-0 group-hover/item:opacity-100 transition-opacity hidden sm:flex">
+                    <i class="fa-solid fa-fire text-orange-500"></i>
+                    <span class="text-slate-400 font-bold">FLAMING</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Empty State -->
+              <div v-else class="py-10 text-center opacity-40">
+                <i class="fa-solid fa-ranking-star text-3xl mb-3 block"></i>
+                <p class="text-[10px] font-black uppercase tracking-widest">Chưa có xếp hạng</p>
+              </div>
+
+              <router-link to="/user/assignments" class="group flex w-full items-center justify-center py-4 bg-slate-900 text-white rounded-full text-[11px] font-black uppercase tracking-[0.2em] transition-all hover:bg-emerald-600 active:scale-95 shadow-lg">
+                THI ĐUA NGAY <i class="fa-solid fa-angle-right ml-2 transition-transform group-hover:translate-x-1"></i>
+              </router-link>
+            </section>
+
 
           </div>
         </div>
@@ -234,7 +298,7 @@
  * Nhận prop `user` từ UserLayout.vue (layout cha).
  * Chỉ chịu trách nhiệm: fetch data dashboard, hiển thị khóa học, widgets.
  */
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { apiFetch } from '../../utils/api'
 import { clearAuthSession } from '../../utils/auth'
@@ -255,6 +319,7 @@ const isLoading = ref(true)
 const errorMessage = ref('')
 const enrolledCourses = ref([])
 const upcomingSchedules = ref([])
+const leaderboardData = ref([])
 const stats = ref({ activeCourses: 0, completedCourses: 0, submittedAssignments: 0, avgScore: 0, completedLessons: 0 })
 
 // % Mục tiêu học tập - kích hoạt hiệu ứng khi mount
@@ -298,6 +363,14 @@ const fetchDashboard = async () => {
       enrolledCourses.value = Array.isArray(result.data.enrolledCourses) ? result.data.enrolledCourses : []
       upcomingSchedules.value = Array.isArray(result.data.upcomingSchedules) ? result.data.upcomingSchedules : []
       
+      // Xử lý Leaderboard: Đánh dấu user hiện tại
+      if (Array.isArray(result.data.leaderboard)) {
+        leaderboardData.value = result.data.leaderboard.map(s => ({
+          ...s,
+          is_current: s.id === (props.user?.id || result.data.user?.id)
+        }))
+      }
+      
       // Tính toán phần trăm tiến độ tổng thể (Dự trên khóa học và bài học)
       const targetPerc = stats.value.activeCourses > 0 ? 80 : 0
       setTimeout(() => { goalPercentage.value = targetPerc }, 600)
@@ -313,10 +386,17 @@ const fetchDashboard = async () => {
 }
 
 // ── Lifecycle ──
+const handleRefreshEvent = () => fetchDashboard()
+
 onMounted(() => {
   fetchDashboard()
+  window.addEventListener('refresh-dashboard', handleRefreshEvent)
   // Kích hoạt hiệu ứng vẽ vòng tròn mục tiêu sau khi trang mount
   setTimeout(() => { goalPercentage.value = 80 }, 600)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('refresh-dashboard', handleRefreshEvent)
 })
 </script>
 

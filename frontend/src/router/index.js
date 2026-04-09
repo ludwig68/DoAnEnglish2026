@@ -7,6 +7,9 @@ import AboutView from '../views/user/AboutView.vue'
 import CourseDetailView from '../views/user/CourseDetailView.vue'
 import UserLayout from '../views/user/UserLayout.vue'
 import UserDashboard from '../views/user/UserDashboard.vue'
+import UserAssignments from '../views/user/UserAssignments.vue'
+import UserLeaveRequest from '../views/user/UserLeaveRequest.vue'
+import UserSupport from '../views/user/UserSupport.vue'
 import SupportView from '../views/user/SupportView.vue'
 import ContactView from '../views/user/ContactView.vue'
 import AdminLayout from '../views/admin/AdminLayout.vue'
@@ -39,10 +42,22 @@ const router = createRouter({
           path: 'dashboard',
           name: 'user-dashboard',
           component: UserDashboard
+        },
+        {
+          path: 'assignments',
+          name: 'user-assignments',
+          component: UserAssignments
+        },
+        {
+          path: 'support',
+          name: 'user-support',
+          component: UserSupport
+        },
+        {
+          path: 'leave-request',
+          name: 'user-leave-request',
+          component: UserLeaveRequest
         }
-        // Thêm các trang user khác vào đây trong tương lai:
-        // { path: 'roadmap', name: 'user-roadmap', component: UserRoadmap },
-        // { path: 'library', name: 'user-library', component: UserLibrary },
       ]
     },
     { path: '/courses', name: 'courses', component: CoursesView },

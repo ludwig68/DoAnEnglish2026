@@ -115,6 +115,22 @@ try {
     $stmtSchedules->execute([$studentId]);
     $schedules = $stmtSchedules->fetchAll(PDO::FETCH_ASSOC);
 
+    // LẤY BẢNG XẾP HẠNG (Leaderboard - Dữ liệu thật)
+    $stmtLeaderboard = $pdo->query("
+        SELECT 
+            u.id, 
+            u.full_name, 
+            u.email,
+            COALESCE(SUM(up.quiz_score), 0) as total_points
+        FROM users u
+        INNER JOIN user_progress up ON up.student_id = u.id
+        WHERE u.role = 'student'
+        GROUP BY u.id, u.full_name, u.email
+        ORDER BY total_points DESC
+        LIMIT 5
+    ");
+    $leaderboard = $stmtLeaderboard->fetchAll(PDO::FETCH_ASSOC);
+
     $payload = [
         'user' => [
             'id' => $studentId,
@@ -130,7 +146,36 @@ try {
             'completedLessons' => (int) ($progress['completed_lessons'] ?? 0),
             'avgQuizScore' => round((float) ($progress['avg_quiz_score'] ?? 0), 1),
         ],
-        'enrolledCourses' => array_map(function ($course) {
+        'enrolledCourses' => array_map(function ($course) use ($pdo, $studentId) {
+            // Tính completion_percent: số quiz đã submitted / tổng số quiz trong khóa
+            $completionPercent = 0;
+            try {
+                $stmtTotal = $pdo->prepare("
+                    SELECT COUNT(q.id) as total
+                    FROM quizzes q
+                    INNER JOIN lessons l ON l.id = q.lesson_id
+                    WHERE l.course_id = ?
+                ");
+                $stmtTotal->execute([(int)$course['id']]);
+                $totalQuizzes = (int) ($stmtTotal->fetchColumn() ?: 0);
+
+                if ($totalQuizzes > 0) {
+                    $stmtDone = $pdo->prepare("
+                        SELECT COUNT(DISTINCT qs.quiz_id) as done
+                        FROM quiz_submissions qs
+                        INNER JOIN quizzes q ON q.id = qs.quiz_id
+                        INNER JOIN lessons l ON l.id = q.lesson_id
+                        WHERE l.course_id = ? AND qs.student_id = ? AND qs.score IS NOT NULL
+                    ");
+                    $stmtDone->execute([(int)$course['id'], $studentId]);
+                    $doneCount = (int) ($stmtDone->fetchColumn() ?: 0);
+                    $completionPercent = round(($doneCount / $totalQuizzes) * 100);
+                }
+            } catch (PDOException $e) {
+                // quiz_submissions table may not exist yet
+                $completionPercent = 0;
+            }
+
             return [
                 'id' => (int) $course['id'],
                 'title' => $course['title'],
@@ -140,6 +185,7 @@ try {
                 'start_date' => $course['start_date'],
                 'end_date' => $course['end_date'],
                 'status' => $course['status'],
+                'completion_percent' => $completionPercent,
             ];
         }, $enrolledCourses),
         'upcomingSchedules' => array_map(function ($sch) {
@@ -155,6 +201,14 @@ try {
                 'teacher_name' => $sch['teacher_name'] ?? 'Giảng viên',
             ];
         }, $schedules),
+        'leaderboard' => array_map(function ($entry) {
+            return [
+                'id' => (int) $entry['id'],
+                'full_name' => $entry['full_name'],
+                'total_points' => (int) $entry['total_points'],
+                'is_current' => false, // Will be set in frontend
+            ];
+        }, $leaderboard),
     ];
 
     echo json_encode([

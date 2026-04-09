@@ -219,7 +219,7 @@ import { authSession, clearAuthSession } from './utils/auth'
 const route = useRoute()
 const router = useRouter()
 
-const isDashboard = computed(() => route.path.startsWith('/user/dashboard') || route.path.startsWith('/admin'))
+const isDashboard = computed(() => route.path.startsWith('/user') || route.path.startsWith('/admin'))
 const shouldHideNav = computed(() => isDashboard.value || ['/login', '/register'].includes(route.path))
 const currentUser = computed(() => authSession.value?.user ?? null)
 const isLoggedIn = computed(() => Boolean(currentUser.value))
