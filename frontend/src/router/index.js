@@ -9,6 +9,7 @@ import UserLayout from '../views/user/UserLayout.vue'
 import UserDashboard from '../views/user/UserDashboard.vue'
 import UserAssignments from '../views/user/UserAssignments.vue'
 import UserLeaveRequest from '../views/user/UserLeaveRequest.vue'
+import UserMakeUpClass from '../views/user/UserMakeUpClass.vue'
 import UserSupport from '../views/user/UserSupport.vue'
 import SupportView from '../views/user/SupportView.vue'
 import ContactView from '../views/user/ContactView.vue'
@@ -57,6 +58,11 @@ const router = createRouter({
           path: 'leave-request',
           name: 'user-leave-request',
           component: UserLeaveRequest
+        },
+        {
+          path: 'makeup-class',
+          name: 'user-makeup-class',
+          component: UserMakeUpClass
         }
       ]
     },

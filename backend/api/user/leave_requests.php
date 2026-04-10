@@ -1,8 +1,8 @@
 <?php
 /**
  * backend/api/user/leave_requests.php
- * GET  → Lấy danh sách đơn nghỉ học của học viên + thống kê chuyên cần
- * POST → Tạo đơn xin nghỉ mới
+ * GET  → Lấy danh sách đơn nghỉ + lớp enrolled + lịch học từng lớp + thống kê
+ * POST → Tạo đơn xin nghỉ (theo schedule_id cụ thể)
  */
 header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
@@ -28,7 +28,7 @@ if (($authUser['role'] ?? '') === 'admin') {
 $studentId = (int) ($authUser['sub'] ?? 0);
 
 // ═══════════════════════════════════════
-// GET: Lấy danh sách đơn + khóa học enrolled + thống kê
+// GET: Lấy danh sách đơn + lớp enrolled + schedules + thống kê
 // ═══════════════════════════════════════
 if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     try {
@@ -37,17 +37,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
             SELECT 
                 lr.id, lr.class_id, lr.reason, lr.start_date, lr.end_date,
                 lr.status, lr.admin_note, lr.created_at,
-                c.class_name, co.title as course_title, co.level
+                c.class_name, co.title as course_title, co.level,
+                s_start.start_time as session_start_time,
+                s_start.end_time as session_end_time
             FROM leave_requests lr
             LEFT JOIN classes c ON c.id = lr.class_id
             LEFT JOIN courses co ON co.id = c.course_id
+            LEFT JOIN schedules s_start ON s_start.class_id = lr.class_id AND s_start.study_date = lr.start_date
             WHERE lr.student_id = ?
             ORDER BY lr.created_at DESC
         ");
         $stmt->execute([$studentId]);
         $requests = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-        // 2. Danh sách khóa học đã enrolled (cho dropdown)
+        // 2. Danh sách lớp enrolled + lịch học sắp tới
         $stmtClasses = $pdo->prepare("
             SELECT 
                 cl.id as class_id,
@@ -63,12 +66,56 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         $stmtClasses->execute([$studentId]);
         $enrolledClasses = $stmtClasses->fetchAll(PDO::FETCH_ASSOC);
 
-        // 3. Thống kê chuyên cần
+        // 3. Lấy lịch học sắp tới cho TẤT CẢ lớp đã enrolled
+        $classIds = array_column($enrolledClasses, 'class_id');
+        $schedulesMap = []; // class_id -> [schedules]
+
+        if (!empty($classIds)) {
+            $placeholders = implode(',', array_fill(0, count($classIds), '?'));
+            $stmtSchedules = $pdo->prepare("
+                SELECT 
+                    s.id, s.class_id, s.study_date, s.start_time, s.end_time,
+                    s.teaching_type, s.room_info,
+                    cd.detail_name as lesson_title,
+                    u.full_name as teacher_name
+                FROM schedules s
+                LEFT JOIN class_details cd ON cd.id = s.class_detail_id
+                LEFT JOIN users u ON u.id = s.teacher_id
+                WHERE s.class_id IN ($placeholders)
+                  AND s.study_date >= CURRENT_DATE
+                ORDER BY s.study_date ASC, s.start_time ASC
+            ");
+            $stmtSchedules->execute($classIds);
+
+            foreach ($stmtSchedules->fetchAll(PDO::FETCH_ASSOC) as $sch) {
+                $cid = (int) $sch['class_id'];
+
+                // Kiểm tra đã có đơn nghỉ pending/approved cho buổi này chưa
+                $stmtCheck = $pdo->prepare("
+                    SELECT COUNT(*) FROM leave_requests
+                    WHERE student_id = ? AND class_id = ? AND start_date = ? AND status IN ('pending','approved')
+                ");
+                $stmtCheck->execute([$studentId, $cid, $sch['study_date']]);
+                $alreadyRequested = (int) $stmtCheck->fetchColumn() > 0;
+
+                $schedulesMap[$cid][] = [
+                    'id'            => (int) $sch['id'],
+                    'study_date'    => $sch['study_date'],
+                    'start_time'    => substr($sch['start_time'], 0, 5),
+                    'end_time'      => substr($sch['end_time'], 0, 5),
+                    'teaching_type' => $sch['teaching_type'],
+                    'room_info'     => $sch['room_info'],
+                    'lesson_title'  => $sch['lesson_title'],
+                    'teacher_name'  => $sch['teacher_name'],
+                    'already_requested' => $alreadyRequested,
+                ];
+            }
+        }
+
+        // 4. Thống kê chuyên cần 
         $totalSchedules = 0;
         $totalLeaves = 0;
         try {
-            // Tổng số buổi học (tất cả lớp enrolled)
-            $classIds = array_column($enrolledClasses, 'class_id');
             if (!empty($classIds)) {
                 $placeholders = implode(',', array_fill(0, count($classIds), '?'));
                 $stmtTotal = $pdo->prepare("
@@ -79,17 +126,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
                 $totalSchedules = (int) $stmtTotal->fetchColumn();
             }
 
-            // Tổng số ngày đã nghỉ (approved)
             $stmtLeaves = $pdo->prepare("
-                SELECT COALESCE(SUM(DATEDIFF(end_date, start_date) + 1), 0) as total_days
-                FROM leave_requests
+                SELECT COUNT(*) FROM leave_requests
                 WHERE student_id = ? AND status = 'approved'
             ");
             $stmtLeaves->execute([$studentId]);
             $totalLeaves = (int) $stmtLeaves->fetchColumn();
-        } catch (PDOException $e) {
-            // Ignore stats errors
-        }
+        } catch (PDOException $e) {}
 
         $attendanceRate = $totalSchedules > 0
             ? round((($totalSchedules - $totalLeaves) / $totalSchedules) * 100)
@@ -111,15 +154,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
                         'status'       => $r['status'],
                         'admin_note'   => $r['admin_note'],
                         'created_at'   => $r['created_at'],
+                        'session_time' => ($r['session_start_time'] ? substr($r['session_start_time'], 0, 5) . ' – ' . substr($r['session_end_time'], 0, 5) : ''),
                     ];
                 }, $requests),
-                'enrolled_classes' => array_map(function ($c) {
+                'enrolled_classes' => array_map(function ($c) use ($schedulesMap) {
+                    $cid = (int) $c['class_id'];
                     return [
-                        'class_id'     => (int) $c['class_id'],
+                        'class_id'     => $cid,
                         'class_name'   => $c['class_name'],
                         'course_title' => $c['course_title'],
                         'level'        => $c['level'],
                         'label'        => $c['course_title'] . ' - ' . $c['class_name'] . ' (' . ($c['level'] ?: 'N/A') . ')',
+                        'schedules'    => $schedulesMap[$cid] ?? [],
                     ];
                 }, $enrolledClasses),
                 'stats' => [
@@ -138,7 +184,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
 }
 
 // ═══════════════════════════════════════
-// POST: Tạo đơn xin nghỉ
+// POST: Tạo đơn xin nghỉ (theo buổi học cụ thể)
 // ═══════════════════════════════════════
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $input = json_decode(file_get_contents('php://input'), true);
@@ -150,23 +196,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $classId   = isset($input['class_id']) ? (int) $input['class_id'] : 0;
     $reason    = trim($input['reason'] ?? '');
-    $startDate = trim($input['start_date'] ?? '');
-    $endDate   = trim($input['end_date'] ?? '');
+    $studyDate = trim($input['study_date'] ?? ''); // Ngày buổi học cụ thể
 
     // Validate
     $errors = [];
     if (!$classId) $errors[] = 'Vui lòng chọn khóa học.';
     if (!$reason)  $errors[] = 'Vui lòng nhập lý do nghỉ.';
-    if (!$startDate) $errors[] = 'Vui lòng chọn ngày bắt đầu.';
-    if (!$endDate)   $errors[] = 'Vui lòng chọn ngày kết thúc.';
-
-    if ($startDate && $endDate && strtotime($endDate) < strtotime($startDate)) {
-        $errors[] = 'Ngày kết thúc phải sau ngày bắt đầu.';
-    }
-
-    if ($startDate && strtotime($startDate) < strtotime('today')) {
-        $errors[] = 'Ngày bắt đầu không thể là ngày trong quá khứ.';
-    }
+    if (!$studyDate) $errors[] = 'Vui lòng chọn buổi học.';
 
     if (!empty($errors)) {
         http_response_code(422);
@@ -174,12 +210,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     }
 
+    // Kiểm tra đã có đơn nghỉ cho buổi này chưa
+    try {
+        $stmtCheck = $pdo->prepare("
+            SELECT COUNT(*) FROM leave_requests
+            WHERE student_id = ? AND class_id = ? AND start_date = ? AND status IN ('pending','approved')
+        ");
+        $stmtCheck->execute([$studentId, $classId, $studyDate]);
+        if ((int) $stmtCheck->fetchColumn() > 0) {
+            http_response_code(409);
+            echo json_encode(['status' => 'error', 'message' => 'Bạn đã gửi đơn nghỉ cho buổi học này rồi.']);
+            exit;
+        }
+    } catch (PDOException $e) {}
+
     try {
         $stmt = $pdo->prepare("
             INSERT INTO leave_requests (student_id, class_id, reason, start_date, end_date, status, created_at)
             VALUES (?, ?, ?, ?, ?, 'pending', NOW())
         ");
-        $stmt->execute([$studentId, $classId, $reason, $startDate, $endDate]);
+        $stmt->execute([$studentId, $classId, $reason, $studyDate, $studyDate]);
 
         echo json_encode([
             'status'  => 'success',

@@ -99,6 +99,10 @@
           <i class="fa-solid fa-calendar-xmark text-lg transition-transform group-hover:scale-110"></i>
           <span>Đơn xin nghỉ</span>
         </router-link>
+        <router-link to="/user/makeup-class" active-class="bg-emerald-50 text-emerald-600" class="flex items-center gap-4 px-6 py-4 rounded-2xl font-headline text-[14px] font-black tracking-tight group shadow-sm transition-all text-[#C2C9D1] hover:text-[#1A1C1B] hover:bg-slate-50">
+          <i class="fa-solid fa-rotate-right text-lg transition-transform group-hover:scale-110"></i>
+          <span>Đăng ký học bù</span>
+        </router-link>
         <router-link to="/user/support" active-class="bg-emerald-50 text-emerald-600" class="flex items-center gap-4 px-6 py-4 rounded-2xl font-headline text-[14px] font-black tracking-tight group shadow-sm transition-all text-[#C2C9D1] hover:text-[#1A1C1B] hover:bg-slate-50">
           <i class="fa-solid fa-life-ring text-lg transition-transform group-hover:scale-110"></i>
           <span>Hỗ trợ</span>
@@ -187,10 +191,7 @@ const profileMessage = ref('')
 const profileMessageType = ref('success')
 
 // ── Menu Sidebar ──
-const navItems = [
-  { label: 'Nộp đơn', icon: 'fa-solid fa-calendar-minus' },
-  { label: 'Học bù', icon: 'fa-solid fa-rotate-right' },
-]
+const navItems = []
 
 // ── Computed ──
 const avatarUrl = computed(() => {
