@@ -13,6 +13,12 @@ import UserMakeUpClass from '../views/user/UserMakeUpClass.vue'
 import UserSupport from '../views/user/UserSupport.vue'
 import SupportView from '../views/user/SupportView.vue'
 import ContactView from '../views/user/ContactView.vue'
+import TeacherLayout from '../views/teacher/TeacherLayout.vue'
+import TeacherDashboard from '../views/teacher/TeacherDashboard.vue'
+import TeacherSchedule from '../views/teacher/TeacherSchedule.vue'
+import TeacherClasses from '../views/teacher/TeacherClasses.vue'
+import TeacherClassDetail from '../views/teacher/TeacherClassDetail.vue'
+import TeacherAssignments from '../views/teacher/TeacherAssignments.vue'
 import AdminLayout from '../views/admin/AdminLayout.vue'
 import AdminOverview from '../views/admin/AdminOverview.vue'
 import UserManagerView from '../views/admin/UserManagerView.vue'
@@ -70,6 +76,37 @@ const router = createRouter({
     { path: '/about', name: 'about', component: AboutView },
     { path: '/support', name: 'support', component: SupportView },
     { path: '/contact', name: 'contact', component: ContactView },
+    {
+      path: '/teacher',
+      component: TeacherLayout,
+      children: [
+        {
+          path: 'dashboard',
+          name: 'teacher-dashboard',
+          component: TeacherDashboard
+        },
+        {
+          path: 'schedule',
+          name: 'teacher-schedule',
+          component: TeacherSchedule
+        },
+        {
+          path: 'classes',
+          name: 'teacher-classes',
+          component: TeacherClasses
+        },
+        {
+          path: 'classes/:id',
+          name: 'teacher-class-detail',
+          component: TeacherClassDetail
+        },
+        {
+          path: 'assignments',
+          name: 'teacher-assignments',
+          component: TeacherAssignments
+        }
+      ]
+    },
     {
       path: '/admin',
       component: AdminLayout,
@@ -159,8 +196,16 @@ router.beforeEach((to, from, next) => {
     if (!user) {
       return next('/login')
     }
-
     if (user.role !== 'admin') {
+      return next('/')
+    }
+  }
+
+  if (to.path.startsWith('/teacher')) {
+    if (!user) {
+      return next('/login')
+    }
+    if (user.role !== 'instructor') {
       return next('/')
     }
   }
@@ -169,14 +214,18 @@ router.beforeEach((to, from, next) => {
     if (!user) {
       return next('/login')
     }
-
     if (user.role === 'admin') {
       return next('/admin')
+    }
+    if (user.role === 'instructor') {
+      return next('/teacher/dashboard')
     }
   }
 
   if ((to.path === '/login' || to.path === '/register') && user) {
-    return next(user.role === 'admin' ? '/admin' : '/user/dashboard')
+    if (user.role === 'admin') return next('/admin')
+    if (user.role === 'instructor') return next('/teacher/dashboard')
+    return next('/user/dashboard')
   }
 
   next()

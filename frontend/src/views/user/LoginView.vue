@@ -188,7 +188,13 @@ const handleSubmit = async () => {
       successMessage.value = 'Welcome home! Redirecting...'
       setAuthSession({ token: result.token, user: result.user })
       setTimeout(() => {
-        router.push(result.user.role === 'admin' ? '/admin' : '/user/dashboard')
+        if (result.user.role === 'admin') {
+          router.push('/admin')
+        } else if (result.user.role === 'instructor') {
+          router.push('/teacher/dashboard')
+        } else {
+          router.push('/user/dashboard')
+        }
       }, 1000)
     } else {
       errorMessage.value = result.message || 'Invalid credentials. Please try again.'
