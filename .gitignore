@@ -1,0 +1,2 @@
+# Database configuration (chứa mật khẩu - KHÔNG được push lên Git)
+backend/config/db.php
