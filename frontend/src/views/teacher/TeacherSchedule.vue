@@ -46,9 +46,9 @@
     <!-- ── Weekly View Grid ── -->
     <div v-if="viewMode === 'weekly' && !isLoading" class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-7 gap-4 mb-12">
       <div v-for="(day, index) in scheduleData" :key="index" class="flex flex-col">
-        <div class="border-b-2 pb-4 mb-6 transition-all" :class="[ day.isActive ? 'border-primary' : 'border-slate-100' ]">
-          <p class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-1" :class="{'text-primary': day.isActive}">{{ day.day }}</p>
-          <p class="text-2xl font-headline font-black" :class="day.isActive ? 'text-primary' : 'text-slate-900'">{{ day.date }}</p>
+        <div class="border-b-2 pb-4 mb-6 transition-all" :class="[ day.isActive ? 'border-emerald-500' : 'border-slate-100' ]">
+          <p class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-1" :class="{'text-emerald-500': day.isActive}">{{ day.day }}</p>
+          <p class="text-2xl font-headline font-black" :class="day.isActive ? 'text-emerald-500' : 'text-slate-900'">{{ day.date }}</p>
         </div>
 
         <div class="flex-1 flex flex-col gap-5">
@@ -59,19 +59,22 @@
 
           <div v-for="(cls, cIdx) in day.classes" :key="cIdx" 
                class="rounded-[2.5rem] p-6 relative transition-all duration-300 group/card"
-               :class="cls.isPrimary ? 'bg-gradient-to-br from-emerald-600 to-emerald-500 text-white shadow-xl shadow-emerald-500/20' : 'bg-white text-slate-900 shadow-sm border border-slate-50 hover:shadow-md'">
+               :class="[
+                 cls.isPrimary ? 'bg-gradient-to-br from-emerald-600 to-emerald-500 text-white shadow-xl shadow-emerald-500/20' : 'bg-white text-slate-900 shadow-sm border border-slate-50 hover:shadow-md',
+                 cls.isPast && !cls.isPrimary ? 'opacity-60 grayscale-[40%]' : ''
+               ]">
             <div class="flex items-center justify-between mb-4">
               <span class="text-[9px] font-black uppercase tracking-[0.2em] px-2.5 py-1 rounded-md" 
-                    :class="cls.isPrimary ? 'bg-white/20 text-white' : 'bg-emerald-50 text-emerald-500'">
+                    :class="cls.isPrimary ? 'bg-white/20 text-white' : (cls.isPast ? 'bg-slate-100 text-slate-500' : 'bg-emerald-50 text-emerald-500')">
                 {{ cls.type }}
               </span>
               <button class="opacity-50 hover:opacity-100 transition-opacity">
                 <i class="fa-solid fa-ellipsis" :class="cls.isPrimary ? 'text-white' : 'text-slate-400'"></i>
               </button>
             </div>
-            <div v-if="cls.isPrimary" class="absolute top-6 right-6 w-2.5 h-2.5 bg-primary rounded-full shadow-[0_0_12px_var(--color-primary)]"></div>
-            <h3 class="font-headline font-black text-[17px] leading-tight mb-5 tracking-tight pr-4">{{ cls.title }}</h3>
-            <div class="space-y-2 mb-6 text-xs font-semibold" :class="cls.isPrimary ? 'text-emerald-50' : 'text-slate-500'">
+            <div v-if="cls.isPrimary" class="absolute top-6 right-6 w-2.5 h-2.5 bg-emerald-300 rounded-full shadow-[0_0_12px_#34d399]"></div>
+            <h3 class="font-headline font-black text-[17px] leading-tight mb-5 tracking-tight pr-4" :class="{'text-slate-500': cls.isPast && !cls.isPrimary}">{{ cls.title }}</h3>
+            <div class="space-y-2 mb-6 text-xs font-semibold" :class="cls.isPrimary ? 'text-emerald-50' : (cls.isPast ? 'text-slate-400' : 'text-slate-500')">
               <div class="flex items-center gap-2">
                 <i class="fa-regular fa-clock opacity-70"></i>
                 <span>{{ cls.time }}</span>
@@ -81,8 +84,12 @@
                 <span>{{ cls.location }}</span>
               </div>
             </div>
-            <button v-if="cls.isPrimary" @click="handleJoinClass(cls)" class="w-full bg-primary/20 hover:bg-primary/30 border border-white/20 text-white rounded-xl py-3 text-sm font-bold transition-colors">Vào Lớp</button>
-            <button v-else @click="$router.push('/teacher/classes/' + cls.id)" class="w-full bg-slate-50 hover:bg-slate-100 border border-slate-100 text-slate-700 rounded-xl py-3 text-sm font-bold transition-colors">Xem Chi Tiết</button>
+            <button v-if="cls.isPrimary" @click="handleJoinClass(cls)" class="w-full bg-white/20 hover:bg-white/30 border border-white/20 text-white rounded-xl py-3 text-sm font-bold transition-colors">Vào Lớp</button>
+            <button v-else @click="$router.push('/teacher/classes/' + cls.id)" 
+                    class="w-full border rounded-xl py-3 text-sm font-bold transition-colors"
+                    :class="cls.isPast ? 'bg-slate-50 border-slate-100 text-slate-400 hover:bg-slate-100' : 'bg-slate-50 hover:bg-slate-100 border border-slate-100 text-slate-700'">
+              {{ cls.isPast ? 'Xem Lại' : 'Xem Chi Tiết' }}
+            </button>
           </div>
         </div>
       </div>
@@ -111,9 +118,9 @@
             <div class="space-y-1.5 overflow-y-auto max-h-[100px] no-scrollbar">
               <div v-for="cls in cell.schedules" :key="cls.id"
                    class="px-2 py-1.5 rounded-lg text-[9px] font-bold border truncate transition-all cursor-pointer hover:shadow-md"
-                   :class="cls.status === 'completed' ? 'bg-slate-50 border-slate-100 text-slate-400' : 'bg-emerald-50 border-emerald-100 text-emerald-700 hover:bg-emerald-100'"
+                   :class="cls.isPast ? 'bg-slate-50 border-slate-100 text-slate-400' : 'bg-emerald-50 border-emerald-100 text-emerald-700 hover:bg-emerald-100 hover:shadow-emerald-500/10'"
                    @click="$router.push('/teacher/classes/' + (cls.class_id || cls.id))">
-                <span class="opacity-70 mr-1">{{ cls.start_time }}</span>
+                <span class="opacity-60 mr-1">{{ cls.start_time }}</span>
                 {{ cls.class_name }}
               </div>
             </div>

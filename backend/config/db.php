@@ -14,8 +14,13 @@ $options = [
     PDO::ATTR_EMULATE_PREPARES   => false,                  // Bảo mật chống SQL Injection
 ];
 
+// Set timezone for PHP
+date_default_timezone_set('Asia/Ho_Chi_Minh');
+
 try {
     $pdo = new PDO($dsn, $user, $pass, $options);
+    // Set timezone for MySQL session
+    $pdo->exec("SET time_zone = '+07:00';");
 } catch (\PDOException $e) {
     // Nếu lỗi, trả về JSON để Frontend Vue.js có thể đọc được
     header('Content-Type: application/json');

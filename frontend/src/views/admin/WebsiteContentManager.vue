@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="h-full flex flex-col p-6 animate__animated animate__fadeIn">
     <div class="flex flex-col md:flex-row justify-end items-start md:items-center mb-6 gap-4">
       <button
@@ -301,7 +301,7 @@
                       <p class="text-sm font-bold text-slate-800">Chọn ảnh từ máy tính</p>
                       <p class="mt-1 text-xs text-slate-500">Hỗ trợ JPG, PNG, WEBP, GIF. Tối đa 5MB. Ảnh sẽ được tải lên khi bấm Lưu.</p>
                     </div>
-                    <label class="inline-flex cursor-pointer items-center justify-center gap-2 rounded-xl bg-[#7AE582] px-4 py-2 text-sm font-bold text-slate-900 hover:bg-emerald-300 transition">
+                    <label class="inline-flex cursor-pointer items-center justify-center gap-2 rounded-xl text-white px-4 py-2 text-sm font-bold shadow-lg shadow-emerald-200 focus:outline-none hover:-translate-y-0.5 transition-all duration-300" style="background: linear-gradient(135deg, #7ae582 0%, #16a34a 100%)">
                       <i class="fa-solid fa-image"></i> Chọn ảnh
                       <input type="file" accept="image/*" class="hidden" @change="handleImageFileChange" />
                     </label>
@@ -364,7 +364,8 @@
             <button
               type="submit"
               :disabled="isUploadingImage"
-              class="px-5 py-2.5 rounded-xl font-bold text-slate-900 bg-[#7AE582] hover:bg-emerald-300 transition shadow-md disabled:cursor-not-allowed disabled:opacity-60"
+              class="px-5 py-2.5 rounded-xl font-bold text-white shadow-lg shadow-emerald-200 hover:-translate-y-0.5 transition-all duration-300 disabled:cursor-not-allowed disabled:opacity-60"
+              style="background: linear-gradient(135deg, #7ae582 0%, #16a34a 100%)"
             >
               <i :class="isUploadingImage ? 'fa-solid fa-spinner fa-spin mr-1' : 'fa-solid fa-floppy-disk mr-1'"></i>
               {{ isUploadingImage ? 'Đang tải ảnh...' : 'Lưu thông tin' }}

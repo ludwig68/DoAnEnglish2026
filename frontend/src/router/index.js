@@ -32,6 +32,7 @@ import ScheduleManager from '../views/admin/ScheduleManager.vue'
 import ClassManager from '../views/admin/ClassManager.vue'
 import LessonDetail from '../views/admin/LessonDetail.vue'
 import EnrollmentManager from '../views/admin/EnrollmentManager.vue'
+import LeaveMakeupManager from '../views/admin/LeaveMakeupManager.vue'
 import QuizBuilder from '../views/admin/QuizBuilder.vue'
 import { clearAuthSession, getCurrentUser } from '../utils/auth'
 
@@ -104,6 +105,11 @@ const router = createRouter({
           path: 'assignments',
           name: 'teacher-assignments',
           component: TeacherAssignments
+        },
+        {
+          path: 'attendance/:id?',
+          name: 'teacher-attendance',
+          component: () => import('../views/teacher/TeacherAttendance.vue')
         }
       ]
     },
@@ -176,6 +182,11 @@ const router = createRouter({
             path: 'enrollments',
             name: 'admin-enrollments',
             component: EnrollmentManager
+          },
+          {
+            path: 'requests',
+            name: 'admin-requests',
+            component: LeaveMakeupManager
           }
 
 

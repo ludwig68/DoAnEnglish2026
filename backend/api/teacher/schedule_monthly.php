@@ -51,6 +51,10 @@ try {
 
     // Format data cho frontend
     $data = array_map(function($r) {
+        $currentTime = time();
+        $endTimeStr = $r['study_date'] . ' ' . $r['end_time'];
+        $isPast = ($currentTime > strtotime($endTimeStr));
+
         return [
             'id' => $r['id'],
             'class_name' => $r['class_name'],
@@ -60,6 +64,7 @@ try {
             'end_time' => substr($r['end_time'], 0, 5),
             'teaching_type' => $r['teaching_type'],
             'status' => $r['status'],
+            'isPast' => $isPast,
             'room_info' => $r['room_info']
         ];
     }, $schedules);

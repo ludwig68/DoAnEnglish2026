@@ -216,7 +216,8 @@
                     ? 'bg-slate-50 border-slate-200 text-slate-400 cursor-not-allowed'
                     : row.current_students >= row.max_students
                     ? 'bg-red-50 border-red-100 text-red-400 cursor-not-allowed'
-                    : 'bg-[#7AE582] border-emerald-400 text-slate-900 hover:bg-emerald-300 hover:-translate-y-0.5 hover:shadow active:translate-y-0'"
+                    : 'text-white shadow-lg shadow-emerald-200 hover:-translate-y-0.5 transition-all duration-300'"
+                  :style="selectedStudentId && row.current_students < row.max_students ? 'background: linear-gradient(135deg, #7ae582 0%, #16a34a 100%)' : ''"
                 >
                   <i :class="enrollingRowId === row.detail_id ? 'fa-solid fa-circle-notch fa-spin' : 'fa-solid fa-user-plus'"></i>
                   {{ enrollingRowId === row.detail_id ? 'Đang xử lý...' : row.current_students >= row.max_students ? 'Đã đầy' : 'Ghi danh' }}
@@ -404,8 +405,8 @@
           </div>
           <div class="pt-4 border-t border-slate-100 flex gap-3">
             <button @click="saveEditShift" :disabled="editModal.newDetailId === editModal.oldDetailId || !editModal.newDetailId"
-              class="flex-1 py-3 rounded-xl text-sm font-bold text-white transition shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
-              style="background: linear-gradient(135deg,#38bdf8,#0ea5e9)">
+              class="flex-1 py-3 rounded-xl text-sm font-bold text-white transition-all shadow-lg shadow-emerald-200 hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
+              style="background: linear-gradient(135deg, #7ae582 0%, #16a34a 100%)">
               <i class="fa-solid fa-floppy-disk mr-1"></i> Lưu thay đổi
             </button>
             <button @click="editModal.open = false" class="px-6 py-3 rounded-xl text-sm font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 transition">Hủy</button>

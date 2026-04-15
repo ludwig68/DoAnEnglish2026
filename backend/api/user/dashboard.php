@@ -63,10 +63,12 @@ try {
             cl.start_date,
             cl.end_date,
             cl.class_name,
+            cd.detail_name as shift_name,
             e.status
         FROM enrollments e
         INNER JOIN classes cl ON cl.id = e.class_id
         INNER JOIN courses c ON c.id = cl.course_id
+        LEFT JOIN class_details cd ON cd.id = e.class_detail_id
         WHERE e.student_id = ?
         ORDER BY e.enrollment_date DESC, e.id DESC
         LIMIT 5
@@ -100,11 +102,12 @@ try {
             c.class_name,
             co.title as course_title,
             u.full_name as teacher_name,
-            cd.detail_name as lesson_title
+            cd.detail_name as shift_name
         FROM schedules s
         INNER JOIN classes c ON c.id = s.class_id
         INNER JOIN courses co ON co.id = c.course_id
-        INNER JOIN enrollments e ON e.class_id = c.id
+        INNER JOIN enrollments e ON e.class_id = s.class_id 
+            AND (s.class_detail_id IS NULL OR e.class_detail_id = s.class_detail_id)
         LEFT JOIN class_details cd ON cd.id = s.class_detail_id
         LEFT JOIN users u ON u.id = s.teacher_id
         WHERE e.student_id = ? 
@@ -131,6 +134,61 @@ try {
     ");
     $leaderboard = $stmtLeaderboard->fetchAll(PDO::FETCH_ASSOC);
 
+    // Calculate Progress and Stats
+    $totalCompletion = 0;
+    $activeCount = 0;
+    $totalCompletion = 0;
+    $activeCount = 0;
+    $processedCourses = array_map(function ($course) use ($pdo, $studentId, &$totalCompletion, &$activeCount) {
+        // Tính completion_percent: số quiz đã submitted / tổng số quiz trong khóa
+        $completionPercent = 0;
+        try {
+            $stmtTotal = $pdo->prepare("
+                SELECT COUNT(q.id) as total
+                FROM quizzes q
+                INNER JOIN lessons l ON l.id = q.lesson_id
+                WHERE l.course_id = ?
+            ");
+            $stmtTotal->execute([(int) $course['id']]);
+            $totalQuizzes = (int) ($stmtTotal->fetchColumn() ?: 0);
+
+            if ($totalQuizzes > 0) {
+                $stmtDone = $pdo->prepare("
+                    SELECT COUNT(DISTINCT qs.quiz_id) as done
+                    FROM quiz_submissions qs
+                    INNER JOIN quizzes q ON q.id = qs.quiz_id
+                    INNER JOIN lessons l ON l.id = q.lesson_id
+                    WHERE l.course_id = ? AND qs.student_id = ? AND qs.score IS NOT NULL
+                ");
+                $stmtDone->execute([(int) $course['id'], $studentId]);
+                $doneCount = (int) ($stmtDone->fetchColumn() ?: 0);
+                $completionPercent = round(($doneCount / $totalQuizzes) * 100);
+            }
+        } catch (PDOException $e) {
+            $completionPercent = 0;
+        }
+
+        if ($course['status'] === 'active') {
+            $totalCompletion += $completionPercent;
+            $activeCount++;
+        }
+
+        return [
+            'id' => (int) $course['id'],
+            'title' => $course['title'],
+            'level' => $course['level'],
+            'image_url' => resolveImageUrl($course['image_url']),
+            'class_name' => $course['class_name'],
+            'shift_name' => $course['shift_name'],
+            'start_date' => $course['start_date'],
+            'end_date' => $course['end_date'],
+            'status' => $course['status'],
+            'completion_percent' => $completionPercent,
+        ];
+    }, $enrolledCourses);
+
+    $overallProgress = $activeCount > 0 ? round($totalCompletion / $activeCount) : 0;
+
     $payload = [
         'user' => [
             'id' => $studentId,
@@ -145,49 +203,9 @@ try {
             'avgScore' => round((float) ($stats['avg_score'] ?? 0), 1),
             'completedLessons' => (int) ($progress['completed_lessons'] ?? 0),
             'avgQuizScore' => round((float) ($progress['avg_quiz_score'] ?? 0), 1),
+            'overallProgress' => (int) $overallProgress,
         ],
-        'enrolledCourses' => array_map(function ($course) use ($pdo, $studentId) {
-            // Tính completion_percent: số quiz đã submitted / tổng số quiz trong khóa
-            $completionPercent = 0;
-            try {
-                $stmtTotal = $pdo->prepare("
-                    SELECT COUNT(q.id) as total
-                    FROM quizzes q
-                    INNER JOIN lessons l ON l.id = q.lesson_id
-                    WHERE l.course_id = ?
-                ");
-                $stmtTotal->execute([(int)$course['id']]);
-                $totalQuizzes = (int) ($stmtTotal->fetchColumn() ?: 0);
-
-                if ($totalQuizzes > 0) {
-                    $stmtDone = $pdo->prepare("
-                        SELECT COUNT(DISTINCT qs.quiz_id) as done
-                        FROM quiz_submissions qs
-                        INNER JOIN quizzes q ON q.id = qs.quiz_id
-                        INNER JOIN lessons l ON l.id = q.lesson_id
-                        WHERE l.course_id = ? AND qs.student_id = ? AND qs.score IS NOT NULL
-                    ");
-                    $stmtDone->execute([(int)$course['id'], $studentId]);
-                    $doneCount = (int) ($stmtDone->fetchColumn() ?: 0);
-                    $completionPercent = round(($doneCount / $totalQuizzes) * 100);
-                }
-            } catch (PDOException $e) {
-                // quiz_submissions table may not exist yet
-                $completionPercent = 0;
-            }
-
-            return [
-                'id' => (int) $course['id'],
-                'title' => $course['title'],
-                'level' => $course['level'],
-                'image_url' => resolveImageUrl($course['image_url']),
-                'class_name' => $course['class_name'],
-                'start_date' => $course['start_date'],
-                'end_date' => $course['end_date'],
-                'status' => $course['status'],
-                'completion_percent' => $completionPercent,
-            ];
-        }, $enrolledCourses),
+        'enrolledCourses' => $processedCourses,
         'upcomingSchedules' => array_map(function ($sch) {
             return [
                 'id' => (int) $sch['id'],
@@ -198,6 +216,7 @@ try {
                 'room_info' => $sch['room_info'],
                 'class_name' => $sch['class_name'],
                 'course_title' => $sch['course_title'],
+                'shift_name' => $sch['shift_name'],
                 'teacher_name' => $sch['teacher_name'] ?? 'Giảng viên',
             ];
         }, $schedules),
@@ -206,7 +225,7 @@ try {
                 'id' => (int) $entry['id'],
                 'full_name' => $entry['full_name'],
                 'total_points' => (int) $entry['total_points'],
-                'is_current' => false, // Will be set in frontend
+                'is_current' => false,
             ];
         }, $leaderboard),
     ];

@@ -76,7 +76,11 @@ try {
         $stmtTotal->execute([$cls['id']]);
         $totalSessions = (int)$stmtTotal->fetchColumn();
 
-        $stmtDone = $pdo->prepare("SELECT COUNT(*) FROM schedules WHERE class_id = ? AND study_date < CURRENT_DATE");
+        $stmtDone = $pdo->prepare("
+            SELECT COUNT(*) FROM schedules 
+            WHERE class_id = ? 
+              AND (study_date < CURRENT_DATE OR (study_date = CURRENT_DATE AND end_time <= CURRENT_TIME))
+        ");
         $stmtDone->execute([$cls['id']]);
         $doneSessions = (int)$stmtDone->fetchColumn();
         

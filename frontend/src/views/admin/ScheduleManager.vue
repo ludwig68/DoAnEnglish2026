@@ -387,7 +387,7 @@
               <button type="button" @click="closeModal" class="px-5 py-2.5 rounded-xl font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 transition">
                 Đóng
               </button>
-              <button type="submit" class="px-5 py-2.5 rounded-xl font-bold text-slate-900 bg-[#7AE582] hover:bg-emerald-300 transition shadow-md flex items-center gap-1">
+              <button type="submit" class="px-5 py-2.5 rounded-xl font-bold text-white shadow-lg shadow-emerald-200 hover:-translate-y-0.5 transition-all duration-300 flex items-center gap-1" style="background: linear-gradient(135deg, #7ae582 0%, #16a34a 100%)">
                 <i class="fa-solid fa-floppy-disk"></i> Lưu thông tin
               </button>
             </div>

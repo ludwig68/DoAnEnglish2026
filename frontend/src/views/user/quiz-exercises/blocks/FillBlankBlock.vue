@@ -27,9 +27,9 @@
               :placeholder="isAnswerRevealed ? '' : '.....'"
               :disabled="isAnswerRevealed"
             />
-            <span v-if="isAnswerRevealed && !isBlankCorrect(segment.blankIdx)"
+            <span v-if="isAnswerRevealed"
               class="text-[10px] font-black text-emerald-500 mt-1 whitespace-nowrap">
-              ✓ {{ correctAnswers[segment.blankIdx] || '' }}
+              <i class="fa-solid fa-check mr-1"></i>{{ getCorrectHint(segment.blankIdx) }}
             </span>
           </span>
         </template>
@@ -82,6 +82,19 @@ const parsed = computed(() => {
       segments.push({ type: 'blank', blankIdx: blankIdx++ })
     }
   })
+
+  // Fallback: if question_text has no [BLANK] markers, show the full text + 1 input at end
+  if (blankIdx === 0) {
+    // Clear and rebuild: text segment + one blank
+    return {
+      segments: [
+        { type: 'text', text: text },
+        { type: 'blank', blankIdx: 0 }
+      ],
+      blankCount: 1
+    }
+  }
+
   return { segments, blankCount: blankIdx }
 })
 
@@ -105,17 +118,16 @@ const handleInput = () => {
   emit('update-answer', [...localAnswers.value])
 }
 
-const correctAnswers = computed(() => {
-  const opts = props.question?.options || []
-  return opts.map(o => o.option_text)
-})
-
-const vocabBank = computed(() => {
-  // combine options and maybe some distractors if backend sends them
-  const words = correctAnswers.value.filter(Boolean)
-  // simple shuffle
-  return words.sort(() => Math.random() - 0.5)
-})
+// Stable shuffle once per question change
+const vocabBank = ref([])
+watch(() => props.question, () => {
+  const words = (props.question?.options || []).map(o => o.option_text).filter(Boolean)
+  for (let i = words.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [words[i], words[j]] = [words[j], words[i]]
+  }
+  vocabBank.value = words
+}, { immediate: true })
 
 const focusedBlankIdx = ref(null)
 const inputRefs = ref({})
@@ -149,17 +161,46 @@ const insertWord = (word) => {
   }
 }
 
+// Only the options marked as correct (PHP returns is_correct as string "0"/"1", use Number() to handle correctly)
+const correctOptions = computed(() =>
+  (props.question?.options || []).filter(o => Number(o.is_correct) === 1)
+)
+
+// For generic use (backward compat) – first correct option per blank
+const correctAnswers = computed(() =>
+  correctOptions.value.map(o => o.option_text)
+)
+
+// For questions with 1 blank but multiple valid alternatives, show them joined
+const getCorrectHint = (bIdx) => {
+  if (parsed.value.blankCount <= 1 && correctOptions.value.length > 1) {
+    return correctOptions.value.map(o => o.option_text).join(' / ')
+  }
+  return correctOptions.value[bIdx]?.option_text || ''
+}
+
+// isBlankCorrect: for single-blank, accept ANY correct option as valid
 const isBlankCorrect = (bIdx) => {
-  const correct = correctAnswers.value[bIdx]?.toLowerCase().trim() || ''
   const user = (localAnswers.value[bIdx] || '').toLowerCase().trim()
-  return correct !== '' && user !== '' && user === correct
+  if (!user) return false
+
+  if (parsed.value.blankCount <= 1) {
+    // Single blank: any correct option is acceptable
+    return correctOptions.value.some(o =>
+      o.option_text.toLowerCase().trim() === user
+    )
+  }
+
+  // Multi-blank: position-based match against the Nth correct option
+  const correctAtPos = correctOptions.value[bIdx]
+  return !!correctAtPos && correctAtPos.option_text.toLowerCase().trim() === user
 }
 
 const getBlankClass = (bIdx) => {
   if (focusedBlankIdx.value === bIdx) return 'border-emerald-500 text-emerald-700'
   if (props.isAnswerRevealed) {
-    if (isBlankCorrect(bIdx)) return 'border-emerald-400 text-emerald-600'
-    if ((localAnswers.value[bIdx] || '').trim()) return 'border-red-400 text-red-500 line-through'
+    if (isBlankCorrect(bIdx)) return 'border-emerald-200 text-emerald-600'
+    if ((localAnswers.value[bIdx] || '').trim()) return 'border-rose-300 text-rose-500 line-through'
     return 'border-slate-200 text-slate-300'
   }
   if ((localAnswers.value[bIdx] || '').trim()) return 'border-slate-800 text-slate-800'

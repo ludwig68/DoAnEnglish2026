@@ -4,15 +4,15 @@
     <div class="bg-white rounded-[2rem] border border-slate-100 shadow-sm p-6 sm:p-8 flex items-center gap-4 sm:gap-8">
       <!-- Controls -->
       <div class="flex items-center gap-1 sm:gap-3 shrink-0 relative">
-        <button @click="skip(-10)" class="w-10 h-10 flex items-center justify-center rounded-full text-slate-300 hover:text-[#008035] hover:bg-green-50 transition-colors relative">
+        <button @click="skip(-10)" class="w-10 h-10 flex items-center justify-center rounded-full text-slate-300 hover:text-emerald-600 hover:bg-green-50 transition-colors relative">
           <i class="fa-solid fa-arrow-rotate-left text-xl"></i>
           <span class="absolute text-[8px] font-black mt-1 text-slate-400">10</span>
         </button>
         <button @click="togglePlay"
-          class="w-14 h-14 sm:w-16 sm:h-16 bg-[#008035] rounded-full flex items-center justify-center text-white shadow-[0_8px_20px_rgba(0,128,53,0.3)] hover:scale-105 active:scale-95 transition-all">
+          class="w-14 h-14 sm:w-16 sm:h-16 bg-emerald-600 rounded-full flex items-center justify-center text-white shadow-[0_8px_20px_rgba(16,185,129,0.3)] hover:scale-105 active:scale-95 transition-all">
           <i :class="isPlaying ? 'fa-solid fa-pause text-xl' : 'fa-solid fa-play text-xl ml-1'"></i>
         </button>
-        <button @click="skip(10)" class="w-10 h-10 flex items-center justify-center rounded-full text-slate-300 hover:text-[#008035] hover:bg-green-50 transition-colors relative">
+        <button @click="skip(10)" class="w-10 h-10 flex items-center justify-center rounded-full text-slate-300 hover:text-emerald-600 hover:bg-green-50 transition-colors relative">
           <i class="fa-solid fa-arrow-rotate-right text-xl"></i>
           <span class="absolute text-[8px] font-black mt-1 text-slate-400">10</span>
         </button>
@@ -22,7 +22,7 @@
       <div class="flex-1 min-w-0 flex flex-col gap-3">
         <div class="flex items-start justify-between">
           <div class="min-w-0 pr-4">
-            <p class="text-[13px] sm:text-[14px] font-headline font-black uppercase tracking-widest text-[#008035] mb-0.5 truncate">
+            <p class="text-[13px] sm:text-[14px] font-headline font-black uppercase tracking-widest text-emerald-600 mb-0.5 truncate">
               AUDIO SOURCE 01
             </p>
             <p class="text-[12px] sm:text-[13px] font-medium text-slate-500 truncate">
@@ -35,7 +35,7 @@
         </div>
 
         <div class="w-full h-2.5 bg-slate-100 rounded-full overflow-hidden cursor-pointer" @click="seekAudio">
-          <div class="h-full bg-[#008035] rounded-full transition-all duration-300 ease-linear" :style="{ width: audioProgress + '%' }"></div>
+          <div class="h-full bg-emerald-600 rounded-full transition-all duration-300 ease-linear" :style="{ width: audioProgress + '%' }"></div>
         </div>
 
         <div class="flex items-center justify-between mt-1">
@@ -80,6 +80,15 @@
 
       <!-- Editor Card -->
       <div class="bg-white rounded-[2rem] border border-slate-100 shadow-sm relative overflow-hidden group">
+        <!-- Revealed Feedback -->
+        <div v-if="isAnswerRevealed" 
+          class="absolute inset-0 bg-white/95 backdrop-blur-sm z-30 px-8 pt-8 pb-20 overflow-y-auto custom-scrollbar">
+          <p class="text-[10px] font-black uppercase tracking-widest text-emerald-600 mb-4 flex items-center gap-2">
+            <i class="fa-solid fa-wand-magic-sparkles"></i> Kết quả đối soát
+          </p>
+          <div class="text-[16px] leading-[2.2] font-semibold text-slate-700" v-html="diffHtml"></div>
+        </div>
+
         <textarea
           v-model="transcription"
           @input="handleInput"
@@ -90,9 +99,9 @@
         ></textarea>
         
         <!-- Bottom right action -->
-        <div class="absolute bottom-6 right-6 flex items-center justify-end">
-          <button class="flex items-center gap-2 px-5 py-2.5 bg-slate-100 text-slate-700 rounded-full text-[11px] font-black tracking-widest hover:bg-slate-200 transition-colors">
-            <i class="fa-solid fa-spell-check text-slate-500"></i>
+        <div v-if="!isAnswerRevealed" class="absolute bottom-6 right-6 flex items-center justify-end">
+          <button class="flex items-center gap-2 px-5 py-2.5 bg-slate-50 text-slate-500 rounded-full text-[11px] font-black tracking-widest hover:bg-emerald-50 hover:text-emerald-600 transition-all border border-slate-100">
+            <i class="fa-solid fa-spell-check opacity-50"></i>
             CHECK SPELLING
           </button>
         </div>
@@ -187,22 +196,41 @@ const handleInput = () => {
   emit('update-answer', transcription.value)
 }
 
-// Basic diff simply highlights changes; for brevity, we do a word diff or just show original
+// Basic diff simply highlights changes
 const diffHtml = computed(() => {
-  if (!props.question?.answer) return ''
+  // Try to get the canonical answer from props.question.answer or from options
+  let canonicalAnswer = props.question?.answer || ''
+  if (!canonicalAnswer && props.question?.options) {
+    const correctOpt = props.question.options.find(o => Number(o.is_correct) === 1)
+    if (correctOpt) canonicalAnswer = correctOpt.option_text
+  }
+
+  if (!canonicalAnswer) return ''
+
   const tArr = transcription.value.trim().split(/\s+/)
-  const oArr = props.question.answer.trim().split(/\s+/)
+  const oArr = canonicalAnswer.trim().split(/\s+/)
   
   let html = ''
   let i = 0
-  while (i < oArr.length) {
-    if (tArr[i]?.toLowerCase().replace(/[.,!?;:]/g, '') === oArr[i].toLowerCase().replace(/[.,!?;:]/g, '')) {
-      html += `<span class="text-slate-600">${oArr[i]} </span>`
+  const maxLen = Math.max(tArr.length, oArr.length)
+  
+  while (i < maxLen) {
+    const userWord = tArr[i] || ''
+    const correctWord = oArr[i] || ''
+    
+    // Normalize for comparison
+    const normUser = userWord.toLowerCase().replace(/[.,!?;:]/g, '')
+    const normCorrect = correctWord.toLowerCase().replace(/[.,!?;:]/g, '')
+
+    if (normUser === normCorrect && normCorrect !== '') {
+      html += `<span class="text-slate-600">${correctWord} </span>`
     } else {
-      if (tArr[i]) {
-        html += `<span class="bg-red-100 text-red-600 line-through px-1 rounded mx-0.5">${tArr[i]}</span>`
+      if (userWord) {
+        html += `<span class="bg-red-100 text-red-600 line-through px-1 rounded mx-0.5">${userWord}</span>`
       }
-      html += `<span class="bg-emerald-100 text-emerald-700 px-1 rounded mx-0.5">${oArr[i]}</span> `
+      if (correctWord) {
+        html += `<span class="bg-emerald-100 text-emerald-700 px-1 rounded mx-0.5">${correctWord}</span> `
+      }
     }
     i++
   }

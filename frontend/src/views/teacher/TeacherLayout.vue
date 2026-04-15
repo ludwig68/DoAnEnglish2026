@@ -71,7 +71,7 @@
     </div>
 
     <!-- ══ SIDEBAR ══ -->
-    <aside class="fixed left-0 top-0 z-50 flex h-full w-72 flex-col border-r border-[#F1F3F3] bg-white">
+    <aside class="fixed left-0 top-0 z-50 flex h-full w-72 flex-col border-r border-[#F1F3F3] bg-white overflow-y-auto">
       <!-- Logo Trung tâm -->
       <div class="pt-14 px-10 mb-16">
         <div class="flex items-center gap-3.5">
@@ -161,11 +161,13 @@
           <span class="ml-auto text-[8px] font-black uppercase tracking-widest bg-slate-100 text-slate-400 px-2 py-0.5 rounded-full">Soon</span>
         </div>
 
-        <div class="flex items-center gap-4 px-6 py-4 rounded-2xl font-headline text-[14px] font-black tracking-tight text-slate-200 cursor-not-allowed select-none">
-          <i class="fa-solid fa-user-check text-lg w-6"></i>
+        <router-link to="/teacher/attendance"
+          active-class="bg-emerald-50 text-emerald-500"
+          class="flex items-center gap-4 px-6 py-4 rounded-2xl font-headline text-[14px] font-black tracking-tight group shadow-sm transition-all text-[#C2C9D1] hover:text-[#1A1C1B] hover:bg-slate-50"
+          :class="$route.path.startsWith('/teacher/attendance') ? 'bg-emerald-50 text-emerald-500' : ''">
+          <i class="fa-solid fa-user-check text-lg transition-transform group-hover:scale-110 w-6"></i>
           <span>Điểm danh</span>
-          <span class="ml-auto text-[8px] font-black uppercase tracking-widest bg-slate-100 text-slate-400 px-2 py-0.5 rounded-full">Soon</span>
-        </div>
+        </router-link>
       </nav>
 
        <!-- Hồ sơ & Đăng xuất (Dưới cùng Sidebar) -->
@@ -350,4 +352,13 @@ const handleLogout = () => {
 
 .font-headline { font-family: 'Manrope', sans-serif; }
 .font-body { font-family: 'Inter', sans-serif; }
+
+/* Hide scrollbar for sidebar but keep functionality */
+aside::-webkit-scrollbar {
+  display: none;
+}
+aside {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
 </style>

@@ -107,7 +107,7 @@
                   <div class="flex-1 p-6 lg:p-8 flex flex-col justify-between min-w-0">
                     <div class="min-w-0">
                       <div class="flex items-center justify-between mb-3">
-                         <p class="text-[9px] font-black text-emerald-500 uppercase tracking-[0.2em]">{{ course.class_name || 'LỚP HỌC' }}</p>
+                         <p class="text-[9px] font-black text-emerald-500 uppercase tracking-[0.2em]">{{ course.shift_name || course.class_name || 'LỚP HỌC' }}</p>
                          <span class="text-[9px] text-slate-300 font-bold uppercase tracking-widest italic opacity-40">ID: #C{{ course.id }}</span>
                       </div>
                       <h4 class="text-lg lg:text-xl font-headline font-black text-slate-800 mb-3 leading-tight tracking-tight uppercase group-hover:text-emerald-500 transition-colors truncate lg:whitespace-normal lg:line-clamp-2">
@@ -187,8 +187,11 @@
                   <div class="flex-1 min-w-0 pt-0.5">
                     <h4 class="text-[15px] font-black leading-[1.3] group-hover:text-emerald-600 transition-colors line-clamp-2 uppercase tracking-tight"
                       :class="index === 0 ? 'text-slate-800' : 'text-slate-400'">
-                      {{ sch.lesson_title || sch.course_title }}
+                      {{ sch.course_title }}
                     </h4>
+                    <p class="text-[9px] font-black text-emerald-500 uppercase tracking-widest mt-1 opacity-80">
+                      {{ sch.shift_name }}
+                    </p>
                     <div class="mt-3 space-y-1.5">
                       <div class="flex items-center gap-2" :class="index === 0 ? 'text-slate-400' : 'text-slate-300'">
                         <i class="fa-solid fa-clock text-[10px] opacity-60"></i>
@@ -372,7 +375,7 @@ const fetchDashboard = async () => {
       }
       
       // Tính toán phần trăm tiến độ tổng thể (Dự trên khóa học và bài học)
-      const targetPerc = stats.value.activeCourses > 0 ? 80 : 0
+      const targetPerc = result.data.stats.overallProgress || 0
       setTimeout(() => { goalPercentage.value = targetPerc }, 600)
     } else {
       errorMessage.value = result.message || 'Hệ thống không thể tải dữ liệu Dashboard.'
@@ -391,8 +394,6 @@ const handleRefreshEvent = () => fetchDashboard()
 onMounted(() => {
   fetchDashboard()
   window.addEventListener('refresh-dashboard', handleRefreshEvent)
-  // Kích hoạt hiệu ứng vẽ vòng tròn mục tiêu sau khi trang mount
-  setTimeout(() => { goalPercentage.value = 80 }, 600)
 })
 
 onUnmounted(() => {

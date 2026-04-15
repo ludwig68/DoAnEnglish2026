@@ -36,6 +36,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
             SELECT 
                 mr.id as makeup_id,
                 mr.status,
+                mr.admin_note,
                 s.id as schedule_id,
                 s.study_date,
                 s.start_time,
@@ -43,37 +44,55 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
                 s.room_info,
                 c.class_name,
                 co.title as course_title,
-                cd.detail_name as lesson_title
+                co.id as course_id
             FROM makeup_registrations mr
             JOIN schedules s ON mr.target_schedule_id = s.id
             JOIN classes c ON s.class_id = c.id
             JOIN courses co ON c.course_id = co.id
-            LEFT JOIN class_details cd ON s.class_detail_id = cd.id
             WHERE mr.student_id = ? AND mr.status != 'cancelled'
             ORDER BY s.study_date ASC, s.start_time ASC
         ");
         $stmtRegs->execute([$studentId]);
         $registrations = $stmtRegs->fetchAll(PDO::FETCH_ASSOC);
 
-        // Map format registered
-        $registered = array_map(function ($r) {
-            return [
+        // Map format registered + tìm lesson title thật
+        $registered = [];
+        foreach ($registrations as $r) {
+            // Tính session index của target_schedule
+            $stmtIdx = $pdo->prepare("
+                SELECT COUNT(*) FROM schedules 
+                WHERE class_id = (SELECT class_id FROM schedules WHERE id = ?) 
+                  AND (class_detail_id = (SELECT class_detail_id FROM schedules WHERE id = ?) OR class_detail_id IS NULL)
+                  AND study_date <= (SELECT study_date FROM schedules WHERE id = ?)
+                  AND status != 'canceled'
+            ");
+            $stmtIdx->execute([$r['schedule_id'], $r['schedule_id'], $r['schedule_id']]);
+            $sessionIndex = (int) $stmtIdx->fetchColumn();
+
+            // Lấy tên bài học
+            $stmtLesson = $pdo->prepare("SELECT title FROM lessons WHERE course_id = ? AND order_number = ? LIMIT 1");
+            $stmtLesson->execute([$r['course_id'], $sessionIndex]);
+            $lessonDetail = $stmtLesson->fetch(PDO::FETCH_ASSOC);
+
+            $registered[] = [
                 'id' => (int) $r['makeup_id'],
                 'schedule_id' => (int) $r['schedule_id'],
                 'course_title' => $r['course_title'],
-                'lesson_title' => $r['lesson_title'],
+                'lesson_title' => $lessonDetail ? $lessonDetail['title'] : "Bài $sessionIndex",
                 'class_name' => $r['class_name'],
                 'study_date' => $r['study_date'],
                 'start_time' => substr($r['start_time'], 0, 5),
                 'end_time' => substr($r['end_time'], 0, 5),
                 'room_info' => $r['room_info'],
+                'session_index' => $sessionIndex,
+                'status' => $r['status'],
+                'admin_note' => $r['admin_note']
             ];
-        }, $registrations);
+        }
 
         $registeredScheduleIds = array_column($registered, 'schedule_id');
 
         // 2. Lấy danh sách các lớp khả dụng để học bù.
-        // Hiển thị các schedule sắp tới, thuộc các khóa học mà học viên đang tham gia, nhưng không phải lớp của học viên đó
         $stmtAvail = $pdo->prepare("
             SELECT 
                 s.id,
@@ -81,27 +100,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
                 s.start_time,
                 s.end_time,
                 s.room_info,
+                s.class_id,
+                s.class_detail_id,
                 c.class_name,
                 co.title as course_title,
-                cd.detail_name as lesson_title,
+                co.id as course_id,
                 u.full_name as teacher_name
             FROM schedules s
             JOIN classes c ON s.class_id = c.id
             JOIN courses co ON c.course_id = co.id
-            LEFT JOIN class_details cd ON s.class_detail_id = cd.id
             LEFT JOIN users u ON s.teacher_id = u.id
             WHERE s.study_date >= CURRENT_DATE
-              -- Lấy khóa học sinh viên đang enrolled
               AND co.id IN (
                   SELECT c2.course_id 
                   FROM enrollments e 
                   JOIN classes c2 ON e.class_id = c2.id 
                   WHERE e.student_id = ? AND e.status = 'active'
               )
-              -- Không lấy lớp chính của sinh viên
-              AND s.class_id NOT IN (
-                  SELECT class_id FROM enrollments WHERE student_id = ? AND status = 'active'
-              )
+              AND (s.class_detail_id IS NULL OR s.class_detail_id NOT IN (
+                  SELECT class_detail_id FROM enrollments WHERE student_id = ? AND status = 'active'
+              ))
             ORDER BY s.study_date ASC, s.start_time ASC
         ");
         $stmtAvail->execute([$studentId, $studentId]);
@@ -109,17 +127,34 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
 
         $available = [];
         foreach ($availSchedules as $sch) {
-            if (in_array((int)$sch['id'], $registeredScheduleIds)) continue; // Filter out already registered
-            
+            if (in_array((int)$sch['id'], $registeredScheduleIds)) continue; 
+
+            // Tính session index
+            $stmtIdx = $pdo->prepare("
+                SELECT COUNT(*) FROM schedules 
+                WHERE class_id = ? 
+                  AND (class_detail_id = ? OR class_detail_id IS NULL)
+                  AND study_date <= ?
+                  AND status != 'canceled'
+            ");
+            $stmtIdx->execute([$sch['class_id'], $sch['class_detail_id'], $sch['study_date']]);
+            $sessionIndex = (int) $stmtIdx->fetchColumn();
+
+            // Lấy tên bài học
+            $stmtLesson = $pdo->prepare("SELECT title FROM lessons WHERE course_id = ? AND order_number = ? LIMIT 1");
+            $stmtLesson->execute([$sch['course_id'], $sessionIndex]);
+            $lessonDetail = $stmtLesson->fetch(PDO::FETCH_ASSOC);
+
             $available[] = [
                 'id' => (int) $sch['id'],
                 'course_title' => $sch['course_title'],
-                'lesson_title' => $sch['lesson_title'] ?: 'Bài học',
+                'lesson_title' => $lessonDetail ? $lessonDetail['title'] : "Bài $sessionIndex",
                 'teacher_name' => $sch['teacher_name'],
                 'study_date' => $sch['study_date'],
                 'start_time' => substr($sch['start_time'], 0, 5),
                 'end_time' => substr($sch['end_time'], 0, 5),
                 'room_info' => $sch['room_info'] ?: 'Chưa xếp phòng',
+                'session_index' => $sessionIndex
             ];
         }
 
@@ -130,30 +165,52 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
                 s.id as missed_schedule_id,
                 s.study_date,
                 s.start_time,
-                cd.detail_name as lesson_title,
+                s.class_id,
+                s.class_detail_id,
                 c.class_name,
-                co.title as course_title
+                co.title as course_title,
+                co.id as course_id
             FROM leave_requests lr
-            JOIN schedules s ON lr.class_id = s.class_id AND lr.start_date = s.study_date
+            INNER JOIN enrollments e ON e.student_id = lr.student_id AND e.class_id = lr.class_id
+            INNER JOIN schedules s ON s.class_id = lr.class_id 
+                AND s.study_date = lr.start_date 
+                AND (s.class_detail_id = e.class_detail_id OR s.class_detail_id IS NULL)
             JOIN classes c ON s.class_id = c.id
             JOIN courses co ON c.course_id = co.id
-            LEFT JOIN class_details cd ON s.class_detail_id = cd.id
-            WHERE lr.student_id = ? AND lr.status = 'approved'
+            WHERE lr.student_id = ? AND lr.status = 'approved' AND e.status = 'active'
             ORDER BY s.study_date DESC
         ");
         $stmtMissed->execute([$studentId]);
         $missedRows = $stmtMissed->fetchAll(PDO::FETCH_ASSOC);
 
-        $missedSessions = array_map(function ($r) {
-            return [
+        $missedSessions = [];
+        foreach ($missedRows as $r) {
+            // Tính session index
+            $stmtIdx = $pdo->prepare("
+                SELECT COUNT(*) FROM schedules 
+                WHERE class_id = ? 
+                  AND (class_detail_id = ? OR class_detail_id IS NULL)
+                  AND study_date <= ?
+                  AND status != 'canceled'
+            ");
+            $stmtIdx->execute([$r['class_id'], $r['class_detail_id'], $r['study_date']]);
+            $sessionIndex = (int) $stmtIdx->fetchColumn();
+
+            // Lấy tên bài học
+            $stmtLesson = $pdo->prepare("SELECT title FROM lessons WHERE course_id = ? AND order_number = ? LIMIT 1");
+            $stmtLesson->execute([$r['course_id'], $sessionIndex]);
+            $lessonDetail = $stmtLesson->fetch(PDO::FETCH_ASSOC);
+
+            $missedSessions[] = [
                 'leave_request_id' => (int) $r['leave_request_id'],
                 'missed_schedule_id' => (int) $r['missed_schedule_id'],
                 'course_title' => $r['course_title'],
-                'lesson_title' => $r['lesson_title'] ?: $r['class_name'],
+                'lesson_title' => $lessonDetail ? $lessonDetail['title'] : "Bài $sessionIndex",
                 'study_date' => $r['study_date'],
-                'start_time' => substr($r['start_time'], 0, 5)
+                'start_time' => substr($r['start_time'], 0, 5),
+                'session_index' => $sessionIndex
             ];
-        }, $missedRows);
+        }
 
         echo json_encode([
             'status' => 'success',
@@ -184,6 +241,55 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     try {
+        // --- NEW: Validation Session Index ---
+        if ($leaveRequestId && $targetScheduleId) {
+            // 1. Lấy thông tin buổi nghỉ
+            $stmtLR = $pdo->prepare("
+                SELECT lr.start_date, lr.class_id, e.class_detail_id 
+                FROM leave_requests lr
+                JOIN enrollments e ON e.student_id = lr.student_id AND e.class_id = lr.class_id
+                WHERE lr.id = ? AND lr.student_id = ?
+            ");
+            $stmtLR->execute([$leaveRequestId, $studentId]);
+            $lr = $stmtLR->fetch(PDO::FETCH_ASSOC);
+
+            if ($lr) {
+                // Tính index buổi nghỉ
+                $stmtIdxMissed = $pdo->prepare("
+                    SELECT COUNT(*) FROM schedules 
+                    WHERE class_id = ? 
+                      AND (class_detail_id = ? OR class_detail_id IS NULL)
+                      AND study_date <= ?
+                      AND status != 'canceled'
+                ");
+                $stmtIdxMissed->execute([$lr['class_id'], $lr['class_detail_id'], $lr['start_date']]);
+                $missedIdx = (int) $stmtIdxMissed->fetchColumn();
+
+                // Tính index buổi muốn học bù
+                $stmtTS = $pdo->prepare("SELECT class_id, class_detail_id, study_date FROM schedules WHERE id = ?");
+                $stmtTS->execute([$targetScheduleId]);
+                $ts = $stmtTS->fetch(PDO::FETCH_ASSOC);
+
+                if ($ts) {
+                    $stmtIdxTarget = $pdo->prepare("
+                        SELECT COUNT(*) FROM schedules 
+                        WHERE class_id = ? 
+                          AND (class_detail_id = ? OR class_detail_id IS NULL)
+                          AND study_date <= ?
+                          AND status != 'canceled'
+                    ");
+                    $stmtIdxTarget->execute([$ts['class_id'], $ts['class_detail_id'], $ts['study_date']]);
+                    $targetIdx = (int) $stmtIdxTarget->fetchColumn();
+
+                    if ($missedIdx !== $targetIdx) {
+                        http_response_code(422);
+                        echo json_encode(['status' => 'error', 'message' => "Bài học không khớp. Bạn phải chọn buổi học bù có cùng nội dung (Bài $missedIdx)."]);
+                        exit;
+                    }
+                }
+            }
+        }
+
         // Check if already registered for this specific missed session?
         // Usually, a leave_request can only be made up ONCE.
         if ($leaveRequestId) {

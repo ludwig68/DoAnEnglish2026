@@ -160,7 +160,7 @@
                 <div class="w-10 h-10 rounded-xl bg-indigo-100 text-indigo-600 flex items-center justify-center shadow-inner"><i class="fa-solid fa-file-signature"></i></div>
                 Bài tập Post-class
               </h3>
-              <button @click="isAssignmentModalOpen = true" class="px-5 py-2.5 bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-bold rounded-xl hover:shadow-lg hover:shadow-indigo-500/30 transition-all duration-300 hover:-translate-y-0.5 active:scale-95 flex items-center gap-2 shadow-sm w-fit">
+              <button @click="isAssignmentModalOpen = true" class="px-5 py-2.5 text-white font-bold rounded-xl shadow-lg shadow-emerald-200 hover:-translate-y-0.5 transition-all duration-300 active:scale-95 flex items-center gap-2 w-fit" style="background: linear-gradient(135deg, #7ae582 0%, #16a34a 100%)">
                 <i class="fa-solid fa-plus"></i> Giao bài tập
               </button>
             </div>
@@ -259,7 +259,7 @@
           
           <div class="flex justify-end gap-3 pt-6 border-t border-slate-100">
             <button type="button" @click="isAssignmentModalOpen = false; modalError=''" class="px-6 py-3 rounded-xl font-bold text-slate-600 bg-white border-2 border-slate-200 hover:border-slate-300 hover:bg-slate-50 transition-all active:scale-95">Hủy</button>
-            <button type="submit" class="px-8 py-3 rounded-xl font-bold text-white bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-400 hover:to-purple-400 transition-all shadow-lg shadow-indigo-500/30 active:scale-95 flex items-center gap-2">
+            <button type="submit" class="px-8 py-3 rounded-xl font-bold text-white shadow-lg shadow-emerald-200 hover:-translate-y-0.5 transition-all duration-300 active:scale-95 flex items-center gap-2" style="background: linear-gradient(135deg, #7ae582 0%, #16a34a 100%)">
               <i class="fa-solid fa-paper-plane"></i> Giao bài
             </button>
           </div>

@@ -30,140 +30,136 @@
       </div>
 
       <!-- Quick Stats -->
-      <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
         <article
           v-for="card in overviewCards"
           :key="card.label"
-          class="relative overflow-hidden rounded-[1.5rem] bg-white p-6 border border-slate-100 shadow-[0_2px_10px_rgb(0,0,0,0.02)] transition-all hover:shadow-[0_8px_30px_rgb(0,0,0,0.06)] hover:-translate-y-1 group"
+          class="relative overflow-hidden rounded-[2.5rem] bg-white p-8 border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] transition-all hover:shadow-[0_15px_45px_rgb(0,0,0,0.08)] hover:-translate-y-1.5 group cursor-default"
         >
-          <div class="flex justify-between items-start">
-            <div>
-              <p class="text-[0.65rem] font-bold uppercase tracking-widest text-slate-400 mb-2">{{ card.label }}</p>
-              <h3 class="text-4xl font-black text-slate-800">{{ card.value }}</h3>
-            </div>
-            <div class="w-12 h-12 rounded-xl flex items-center justify-center text-xl transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3" :class="card.iconClass">
+          <div class="flex justify-between items-start mb-6">
+            <div class="w-12 h-12 rounded-2xl flex items-center justify-center text-xl transition-all duration-300 group-hover:scale-110 shadow-sm border border-opacity-50" :class="card.tokenClass">
               <i :class="card.icon"></i>
             </div>
+            <span class="text-[42px] font-headline font-black text-slate-100 group-hover:opacity-100 transition-all opacity-40 leading-none tracking-tighter">{{ card.value.toString().padStart(2, '0') }}</span>
           </div>
-          <p class="mt-4 text-xs font-medium text-slate-500">{{ card.description }}</p>
+          <div>
+            <p class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-2 group-hover:text-emerald-600 transition-colors">{{ card.label }}</p>
+            <h3 class="text-[16px] font-black text-slate-800 leading-snug">{{ card.description }}</h3>
+          </div>
+          
+          <!-- Decorative gradient edge -->
           <div class="absolute bottom-0 left-0 w-full h-1 opacity-0 group-hover:opacity-100 transition-opacity" :class="card.borderClass"></div>
         </article>
       </section>
 
       <!-- Main Layout 2 Cột -->
-      <section class="grid gap-8 xl:grid-cols-[2fr_1fr]">
+      <section class="grid gap-8 xl:grid-cols-12 mb-12">
         
-        <!-- CÁC MODULE QUẢN LÝ -->
-        <div class="rounded-[2rem] bg-white border border-slate-100 shadow-[0_2px_10px_rgb(0,0,0,0.02)] p-6 md:p-8">
-          <div class="flex items-center justify-between mb-8">
-            <div>
-              <h2 class="text-xl font-black text-slate-800">Cấu trúc Trung tâm</h2>
-              <p class="text-sm font-medium text-slate-500 mt-1">Quản lý và thiết lập các danh mục tính năng.</p>
+        <!-- LEFT: Quản lý bài tập + Cấu trúc Trung tâm (8 cols) -->
+        <div class="xl:col-span-8 space-y-12">
+          
+
+          <!-- Cấu trúc Trung tâm (Modules) -->
+          <div class="rounded-[2.5rem] bg-white border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-10">
+            <div class="flex items-center justify-between mb-10">
+              <div>
+                <h2 class="text-[22px] font-headline font-black text-slate-800 tracking-tight">Cấu trúc Trung tâm</h2>
+                <p class="text-[13px] font-medium text-slate-500 mt-1">Quản lý và thiết lập các danh mục tính năng cốt lõi.</p>
+              </div>
+              <div class="px-5 py-2 bg-emerald-50 rounded-full border border-emerald-100">
+                <span class="text-[11px] font-black text-emerald-600 uppercase tracking-widest">{{ modules.length }} MỤC</span>
+              </div>
             </div>
-            <span class="rounded-full bg-slate-50 border border-slate-200 px-4 py-1.5 text-xs font-bold text-slate-600">{{ modules.length }} Mục</span>
-          </div>
 
-          <div class="grid gap-5 sm:grid-cols-2">
-            <component
-              :is="module.to ? 'router-link' : 'div'"
-              v-for="module in modules"
-              :key="module.key"
-              :to="module.to"
-              class="relative p-5 rounded-[1.25rem] border transition-all duration-300 outline-none flex flex-col justify-between overflow-hidden"
-              :class="[
-                module.to ? 'cursor-pointer hover:shadow-md hover:-translate-y-1 group hover:border-transparent focus:ring-2 focus:ring-emerald-400' : '',
-                moduleCardClass(module.accent)
-              ]"
-            >
-              <div class="flex justify-between items-start mb-4 relative z-10">
-                <div class="w-11 h-11 rounded-xl bg-white shadow-sm border border-slate-50 flex items-center justify-center text-lg transition-transform duration-300 group-hover:scale-110 group-hover:-rotate-3" :class="moduleIconClass(module.accent)">
-                  <i :class="moduleIcon(module.key)"></i>
+            <div class="grid gap-6 sm:grid-cols-2">
+              <component
+                :is="module.to ? 'router-link' : 'div'"
+                v-for="module in modules"
+                :key="module.key"
+                :to="module.to"
+                class="relative p-6 rounded-[2rem] border transition-all duration-300 outline-none flex flex-col justify-between overflow-hidden cursor-pointer h-[180px]"
+                :class="[
+                  module.to ? 'hover:shadow-md hover:-translate-y-1 group hover:border-emerald-100' : 'opacity-80',
+                  moduleCardClass(module.accent)
+                ]"
+              >
+                <div class="flex justify-between items-start mb-4 relative z-10">
+                  <div class="w-12 h-12 rounded-2xl bg-white shadow-sm border border-slate-50 flex items-center justify-center text-xl transition-transform duration-300 group-hover:scale-110" :class="moduleIconClass(module.accent)">
+                    <i :class="moduleIcon(module.key)"></i>
+                  </div>
+                  <div class="text-[9px] font-black uppercase tracking-widest px-3 py-1.5 rounded-xl bg-white border border-slate-50 text-slate-400 shadow-sm">
+                    {{ module.unit }}
+                  </div>
                 </div>
-                <div class="text-[0.6rem] font-bold uppercase tracking-widest px-2.5 py-1 rounded-md bg-white border border-slate-100 text-slate-500 shadow-sm">
-                  {{ module.unit }}
+                
+                <div class="relative z-10">
+                  <div class="flex items-center justify-between">
+                    <h3 class="text-[17px] font-black text-slate-800 group-hover:text-emerald-700 transition-colors uppercase tracking-tight">{{ module.title }}</h3>
+                    <div class="text-[26px] font-headline font-black text-slate-800">{{ formatNumber(module.count) }}</div>
+                  </div>
                 </div>
-              </div>
-              
-              <div class="relative z-10">
-                <h3 class="text-lg font-black text-slate-800 group-hover:text-emerald-700 transition-colors">{{ module.title }}</h3>
-                <p class="text-[0.7rem] font-medium text-slate-500 mt-1 line-clamp-1">{{ module.description }}</p>
-              </div>
 
-              <div class="mt-5 flex items-end justify-between relative z-10">
-                <div class="text-3xl font-black text-slate-800">{{ formatNumber(module.count) }}</div>
-                <div v-if="module.to" class="w-8 h-8 rounded-full bg-white flex items-center justify-center text-slate-300 shadow-sm transition-colors group-hover:bg-[#7AE582] group-hover:text-slate-900 border border-slate-100">
-                   <i class="fa-solid fa-arrow-right text-xs"></i>
+                <!-- Decorative Arrow -->
+                <div v-if="module.to" class="absolute bottom-6 right-6 w-8 h-8 rounded-full bg-white flex items-center justify-center text-slate-200 shadow-sm transition-all group-hover:bg-emerald-500 group-hover:text-white border border-slate-50">
+                    <i class="fa-solid fa-arrow-right text-[10px]"></i>
                 </div>
-              </div>
-            </component>
+              </component>
+            </div>
           </div>
         </div>
 
-        <!-- CỘT BÊN PHẢI -->
-        <div class="space-y-8">
+        <!-- RIGHT: Lưu ý + Sức khỏe hệ thống (4 cols) -->
+        <div class="xl:col-span-4 space-y-8">
 
            <!-- THÔNG BÁO / ƯU TIÊN -->
-          <div class="rounded-[2rem] bg-white border border-slate-100 shadow-[0_2px_10px_rgb(0,0,0,0.02)] p-6 md:p-8 relative overflow-hidden">
-            <!-- Cam mờ trang trí -->
-            <div class="absolute -top-10 -right-10 w-40 h-40 bg-orange-400 opacity-5 rounded-full blur-3xl pointer-events-none"></div>
-            
-            <div class="flex items-center gap-3 mb-6 relative z-10">
-               <div class="w-10 h-10 rounded-xl bg-orange-50 text-orange-500 flex items-center justify-center text-lg shadow-sm border border-orange-100">
+          <div class="rounded-[2.5rem] bg-white border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-10 relative overflow-hidden h-fit">
+            <div class="flex items-center gap-4 mb-8">
+               <div class="w-12 h-12 rounded-2xl bg-orange-50 text-orange-500 flex items-center justify-center text-xl shadow-sm border border-orange-100">
                   <i class="fa-solid fa-bell"></i>
                </div>
-               <h2 class="text-xl font-black text-slate-800">Cần lưu ý hôm nay</h2>
+               <h2 class="text-[20px] font-headline font-black text-slate-800 tracking-tight leading-tight">Cần xử lý <br><span class="text-slate-400 text-[14px]">trong ngày</span></h2>
             </div>
 
-            <div class="space-y-4 relative z-10">
+            <div class="space-y-4">
               <article
                 v-for="item in priorities"
                 :key="item.title"
-                class="rounded-[1.25rem] border border-slate-100 p-4 transition-colors hover:bg-slate-50 flex items-center gap-4 bg-white shadow-sm"
+                class="rounded-3xl border border-slate-50 p-5 transition-all hover:shadow-sm hover:border-slate-100 flex items-center gap-4 bg-slate-50/30 group"
               >
-                <div class="w-12 h-12 rounded-full flex items-center justify-center shrink-0 border" :class="priorityIconBgClass(item.level)">
+                <div class="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 border bg-white shadow-sm transition-transform group-hover:scale-105" :class="priorityIconBgClass(item.level)">
                   <i :class="priorityIcon(item.level)"></i>
                 </div>
                 <div class="flex-1 min-w-0">
-                  <div class="flex items-center gap-2 mb-1">
-                    <h3 class="text-sm font-black text-slate-800 truncate">{{ item.title }}</h3>
-                    <span class="px-2 py-0.5 rounded text-[0.6rem] font-bold uppercase tracking-widest shrink-0" :class="priorityBadgeClass(item.level)">
+                   <h3 class="text-[13px] font-black text-slate-800 mb-0.5 truncate">{{ item.title }}</h3>
+                   <span class="text-[9px] font-black uppercase tracking-widest shrink-0" :class="priorityBadgeClass(item.level)">
                       {{ item.level }}
-                    </span>
-                  </div>
-                  <p class="text-xs text-slate-500 truncate">{{ item.description }}</p>
+                   </span>
                 </div>
-                <div class="text-xl font-black text-slate-800 pl-2">
+                <div class="text-[22px] font-headline font-black text-slate-800">
                   {{ formatNumber(item.count) }}
                 </div>
               </article>
-
-              <div v-if="priorities.length === 0" class="text-center py-8">
-                <div class="w-16 h-16 bg-emerald-50 border border-emerald-100 text-[#16a34a] rounded-full flex items-center justify-center mx-auto mb-4 shadow-inner">
-                  <i class="fa-solid fa-check-double text-2xl"></i>
-                </div>
-                <p class="text-sm font-black text-slate-800">Tuyệt vời!</p>
-                <p class="text-[0.8rem] font-medium text-slate-500 mt-1">Chưa có vấn đề khẩn cấp nào cần xử lý.</p>
-              </div>
             </div>
           </div>
 
           <!-- SỨC KHỎE HỆ THỐNG / KPI -->
-          <div class="rounded-[2rem] bg-white border border-slate-100 shadow-[0_2px_10px_rgb(0,0,0,0.02)] p-6 md:p-8">
-            <div class="flex items-center gap-3 mb-6">
-               <div class="w-10 h-10 rounded-xl bg-rose-50 text-rose-500 flex items-center justify-center text-lg shadow-sm border border-rose-100">
+          <div class="rounded-[2.5rem] bg-white border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-10 h-fit">
+            <div class="flex items-center gap-4 mb-10">
+               <div class="w-12 h-12 rounded-2xl bg-rose-50 text-rose-500 flex items-center justify-center text-xl shadow-sm border border-rose-100">
                   <i class="fa-solid fa-heart-pulse"></i>
                </div>
-               <h2 class="text-xl font-black text-slate-800">Sức khỏe hệ thống</h2>
+               <h2 class="text-[20px] font-headline font-black text-slate-800 tracking-tight">Sức khỏe hệ thống</h2>
             </div>
 
-            <div class="space-y-6">
-              <div v-for="item in kpis" :key="item.label">
-                <div class="flex justify-between items-center text-sm mb-2">
-                  <span class="font-bold text-slate-600">{{ item.label }}</span>
-                  <span class="font-black text-slate-800">{{ item.value }}%</span>
+            <div class="space-y-8">
+              <div v-for="item in kpis" :key="item.label" class="space-y-3">
+                <div class="flex justify-between items-center">
+                  <span class="text-[13px] font-bold text-slate-600">{{ item.label }}</span>
+                  <span class="text-[12px] font-black text-emerald-600">{{ item.value }}%</span>
                 </div>
-                <div class="h-3 rounded-full bg-slate-100 overflow-hidden shadow-inner border border-slate-200">
-                  <div class="h-full rounded-full transition-all duration-1000" :class="getKpiColorGrad(item.value)" :style="{ width: `${item.value}%` }"></div>
+                <div class="h-2 rounded-full bg-slate-100 overflow-hidden shadow-inner border border-slate-200">
+                   <!-- Cố định màu xanh nhẹ emerald-400 theo yêu cầu -->
+                  <div class="h-full rounded-full transition-all duration-1000 bg-emerald-400" :style="{ width: `${item.value}%` }"></div>
                 </div>
               </div>
             </div>
@@ -199,35 +195,31 @@ const kpis = computed(() => dashboard.value.kpis || [])
 const overviewCards = computed(() => ([
   {
     label: 'Tổng học viên',
-    value: formatNumber(summary.value.students_total),
+    value: summary.value.students_total,
     description: 'Nguồn thu chính của trung tâm',
-    icon: 'fa-solid fa-user-graduate',
-    iconClass: 'bg-indigo-50 text-indigo-500 border border-indigo-100',
-    borderClass: 'bg-indigo-400'
+    icon: 'fa-solid fa-graduation-cap',
+    tokenClass: 'bg-indigo-50 text-indigo-500 border-indigo-100',
   },
   {
     label: 'Khóa học',
-    value: formatNumber(summary.value.courses_total),
+    value: summary.value.courses_total,
     description: 'Chương trình đào tạo hiện hành',
-    icon: 'fa-solid fa-book-open',
-    iconClass: 'bg-emerald-50 text-emerald-500 border border-emerald-100',
-    borderClass: 'bg-emerald-400'
+    icon: 'fa-solid fa-book',
+    tokenClass: 'bg-emerald-50 text-emerald-500 border-emerald-100',
   },
   {
     label: 'Giảng viên',
-    value: formatNumber(summary.value.instructors_total),
+    value: summary.value.instructors_total,
     description: 'Nguồn nhân lực giảng dạy',
-    icon: 'fa-solid fa-chalkboard-user',
-    iconClass: 'bg-sky-50 text-sky-500 border border-sky-100',
-    borderClass: 'bg-sky-400'
+    icon: 'fa-solid fa-user-tie',
+    tokenClass: 'bg-sky-50 text-sky-500 border-sky-100',
   },
   {
     label: 'Cần xử lý',
-    value: formatNumber(summary.value.pending_tasks_total),
+    value: summary.value.pending_tasks_total,
     description: 'Việc cần theo dõi trong ngày',
     icon: 'fa-solid fa-bell',
-    iconClass: 'bg-orange-50 text-orange-500 border border-orange-100',
-    borderClass: 'bg-orange-400'
+    tokenClass: 'bg-orange-50 text-orange-500 border-orange-100',
   },
 ]))
 
@@ -317,12 +309,48 @@ const priorityIcon = (level) => {
 }
 
 const getKpiColorGrad = (value) => {
-  if (value < 50) return 'bg-gradient-to-r from-rose-400 to-red-500'
-  if (value < 80) return 'bg-gradient-to-r from-amber-400 to-orange-400'
-  return 'bg-gradient-to-r from-[#7AE582] to-emerald-500'
+  return 'bg-emerald-400'
 }
 
 onMounted(() => {
   loadDashboard()
 })
 </script>
+
+<style scoped>
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Manrope:wght@600;700;800;900&display=swap");
+
+.font-headline {
+  font-family: "Manrope", sans-serif;
+}
+.font-body {
+  font-family: "Inter", sans-serif;
+}
+
+/* Shadow card premium */
+.ambient-shadow {
+  box-shadow: 0 55px 150px -25px rgba(26, 28, 27, 0.08);
+}
+
+/* Hide scrollbar */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
+
+/* Line clamp utility */
+.line-clamp-1 {
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Grid layout fix */
+.xl\:grid-cols-12 {
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+}
+</style>

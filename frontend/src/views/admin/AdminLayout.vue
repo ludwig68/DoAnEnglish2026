@@ -190,6 +190,12 @@ const navSections = [
         to: "/admin/schedules",
         description: "Theo dõi thông tin giảng viên và phân công giảng dạy.",
       },
+      {
+        label: "Nghi học & Học bù",
+        icon: "fa-solid fa-calendar-check",
+        to: "/admin/requests",
+        description: "Duyệt yêu cầu nghỉ học và đăng ký học bù của học viên.",
+      },
     ],
   },
   {
@@ -271,6 +277,10 @@ const routeMetaMap = {
     title: "Quản lý nội dung trang web",
     description: "Cập nhật nội dung hiển thị cho các trang trên website.",
   },  
+  "/admin/requests": {
+    title: "Quản lý Nghỉ học & Học bù",
+    description: "Duyệt đơn nghỉ học, hồ sơ học bù và cập nhật tình trạng chuyên cần thực tế.",
+  },
 };
 
 const pageTitle = computed(

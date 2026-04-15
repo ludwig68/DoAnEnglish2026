@@ -58,10 +58,12 @@ try {
             cl.id AS class_id,
             e.class_detail_id,
             cl.class_name,
+            cd.detail_name AS shift_name,
             e.status AS enrollment_status
         FROM enrollments e
         INNER JOIN classes cl ON cl.id = e.class_id
         INNER JOIN courses c ON c.id = cl.course_id
+        LEFT JOIN class_details cd ON cd.id = e.class_detail_id
         WHERE e.student_id = ?
         ORDER BY e.enrollment_date DESC
     ");
@@ -75,17 +77,11 @@ try {
         $classId = (int) $course['class_id'];
         $classDetailId = $course['class_detail_id'] ? (int) $course['class_detail_id'] : null;
 
-        // 1.1 Lấy toàn bộ lịch học của lớp này để tính deadline
-        // Thử lấy theo class_detail_id trước, nếu không có thì lấy chung theo class_id
-        $stmtSched = $pdo->prepare("SELECT study_date FROM schedules WHERE class_id = ? AND class_detail_id = ? ORDER BY study_date ASC");
+        // 1.1 Lấy lịch học theo đúng ca học (class_detail_id) để tính deadline
+        // Lưu ý: Nếu ca học chưa được set lịch cụ thể, ta không nên lấy bừa lịch của ca khác.
+        $stmtSched = $pdo->prepare("SELECT study_date FROM schedules WHERE class_id = ? AND (class_detail_id = ? OR class_detail_id IS NULL) ORDER BY study_date ASC");
         $stmtSched->execute([$classId, $classDetailId]);
         $scheduleDates = $stmtSched->fetchAll(PDO::FETCH_COLUMN);
-
-        if (empty($scheduleDates)) {
-            $stmtSched = $pdo->prepare("SELECT study_date FROM schedules WHERE class_id = ? ORDER BY study_date ASC");
-            $stmtSched->execute([$classId]);
-            $scheduleDates = $stmtSched->fetchAll(PDO::FETCH_COLUMN);
-        }
 
         // 2. Lấy danh sách lessons của khóa học
         $stmtLessons = $pdo->prepare("
@@ -157,7 +153,7 @@ try {
                 $score = null;
                 try {
                     $stmtSub = $pdo->prepare("
-                        SELECT s.id, s.score, s.submitted_at
+                        SELECT s.id, s.score, s.status, s.submitted_at
                         FROM quiz_submissions s
                         WHERE s.quiz_id = ? AND s.student_id = ?
                         ORDER BY s.submitted_at DESC
@@ -168,8 +164,8 @@ try {
 
                     if ($submission) {
                         $score = $submission['score'] !== null ? (float) $submission['score'] : null;
-                        $status = $score !== null ? 'completed' : 'in_progress';
-                        if ($status === 'completed') $completedCount++;
+                        $status = $submission['status'] ?? 'completed';
+                        if ($status === 'completed' || $status === 'pending_grading') $completedCount++;
                     }
                 } catch (PDOException $e) {
                     // Bảng quiz_submissions chưa tồn tại → mặc định pending
@@ -242,7 +238,7 @@ try {
             ];
 
             // Cập nhật cho lesson kế tiếp
-            $previousCompleted = $completionPercent === 100;
+            $previousCompleted = $completionPercent >= 100;
         }
 
         $result[] = [

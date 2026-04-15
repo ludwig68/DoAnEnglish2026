@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="h-full flex flex-col p-6 animate__animated animate__fadeIn">
     <div class="flex flex-col md:flex-row justify-end items-start md:items-center mb-6 gap-4">
       <button
@@ -138,7 +138,8 @@
             </button>
             <button
               type="submit"
-              class="px-5 py-2.5 rounded-xl font-bold text-slate-900 bg-[#7AE582] hover:bg-emerald-300 transition shadow-md"
+              class="px-5 py-2.5 rounded-xl font-bold text-white shadow-lg shadow-emerald-200 hover:-translate-y-0.5 transition-all duration-300"
+              style="background: linear-gradient(135deg, #7ae582 0%, #16a34a 100%)"
             >
               {{ modalMode === "add" ? "Tạo danh mục" : "Lưu thay đổi" }}
             </button>
@@ -341,5 +342,3 @@ const confirmDelete = async (category) => {
   overflow: hidden;
 }
 </style>
-
-

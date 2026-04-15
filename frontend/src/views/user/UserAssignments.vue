@@ -37,7 +37,7 @@
           <div class="mb-12">
             <div class="flex items-center gap-3 mb-3">
               <span class="px-3 py-1 bg-emerald-50 text-emerald-600 text-[9px] font-black uppercase tracking-[0.15em] rounded-lg border border-emerald-100/50">{{ course.level || 'Khóa học' }}</span>
-              <span class="text-[10px] text-slate-300 font-bold uppercase tracking-widest">{{ course.class_name }}</span>
+              <span class="text-[10px] text-emerald-500 font-black uppercase tracking-widest">{{ course.shift_name || course.class_name }}</span>
             </div>
             <h2 class="text-3xl lg:text-4xl font-headline font-black text-slate-800 tracking-tight leading-tight mb-3">
               {{ course.course_title }}
@@ -251,7 +251,7 @@
                 </span>
                 
                 <!-- Status/Deadline Text -->
-                <span v-if="assignment.status === 'completed'" class="text-[11px] font-bold text-slate-400">
+                <span v-if="assignment.status === 'completed' || assignment.status === 'pending_grading'" class="text-[11px] font-bold text-slate-400">
                   Đã hoàn thành {{ formatDate(assignment.deadline) }}
                 </span>
                 <span v-else-if="assignment.status === 'in_progress'" class="text-[11px] font-bold text-red-500 flex items-center gap-1.5">
@@ -287,14 +287,15 @@
             <div class="shrink-0 flex items-center gap-8 w-full md:w-auto mt-4 md:mt-0 justify-between md:justify-end border-t md:border-t-0 border-slate-100 pt-6 md:pt-0">
               
               <!-- Thể hiện kết quả nếu đã làm -->
-              <div v-if="assignment.status === 'completed'" class="flex flex-col items-center mr-2">
+              <div v-if="assignment.status === 'completed' || assignment.status === 'pending_grading'" class="flex flex-col items-center mr-2">
                 <span class="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] leading-none mb-1.5">Kết quả</span>
-                <span class="text-[2.5rem] font-headline font-black text-emerald-500 leading-none">{{ assignment.score || '8.0' }}</span>
+                <span v-if="assignment.status === 'pending_grading'" class="text-[12px] font-black text-amber-500 uppercase">Chờ chấm</span>
+                <span v-else class="text-[2.5rem] font-headline font-black text-emerald-500 leading-none">{{ assignment.score ?? 0 }}</span>
               </div>
 
               <!-- Nút bấm -->
-              <button v-if="assignment.status === 'completed'" @click="launchExercise(assignment)" class="px-8 py-3.5 bg-emerald-50 text-emerald-700 border border-emerald-100 rounded-[1.25rem] text-[13px] font-black hover:bg-emerald-100 hover:text-emerald-800 transition-colors shadow-sm">
-                Làm lại
+              <button v-if="assignment.status === 'completed' || assignment.status === 'pending_grading'" @click="launchExercise(assignment)" class="px-8 py-3.5 bg-emerald-50 text-emerald-700 border border-emerald-100 rounded-[1.25rem] text-[13px] font-black hover:bg-emerald-100 hover:text-emerald-800 transition-colors shadow-sm">
+                {{ assignment.status === 'pending_grading' ? 'Xem lại bài' : 'Làm lại' }}
               </button>
               <button v-else @click="launchExercise(assignment)" class="px-10 py-3.5 bg-[#16a34a] text-white rounded-[1.25rem] text-[13px] font-black shadow-[0_5px_15px_rgba(22,163,74,0.25)] hover:shadow-[0_8px_25px_rgba(22,163,74,0.35)] hover:bg-[#15803d] hover:-translate-y-0.5 transition-all outline-none">
                 Làm bài ngay

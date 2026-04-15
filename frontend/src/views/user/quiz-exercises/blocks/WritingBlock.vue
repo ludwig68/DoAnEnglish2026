@@ -5,7 +5,7 @@
     <div class="bg-white rounded-[2rem] border border-slate-100 shadow-sm p-8 flex flex-col gap-5">
       <!-- Badge Row -->
       <div class="flex items-center gap-3 text-[10px] font-black tracking-widest">
-        <span class="px-3 py-1.5 bg-[#86EFAC]/40 text-[#047857] rounded-full uppercase shadow-sm">
+        <span class="px-3 py-1.5 bg-emerald-100 text-emerald-700 rounded-full uppercase shadow-sm">
           ESSAY PROMPT
         </span>
         <span class="text-slate-400 flex items-center gap-2">

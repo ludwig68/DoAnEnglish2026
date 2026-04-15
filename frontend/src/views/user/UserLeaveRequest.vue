@@ -186,7 +186,7 @@
                   <div class="flex-1 min-w-0 pb-4">
                     <div class="flex items-center justify-between gap-3 mb-1.5">
                       <p class="text-[13px] font-headline font-black text-slate-700 truncate">
-                        {{ req.level || '' }} – {{ formatDateShort(req.start_date) }}
+                        {{ req.lesson_title }} – {{ formatDateShort(req.start_date) }}
                       </p>
                       <span class="px-2.5 py-1 text-[8px] font-black uppercase tracking-widest rounded-lg shrink-0"
                         :class="getStatusBadgeClass(req.status)">

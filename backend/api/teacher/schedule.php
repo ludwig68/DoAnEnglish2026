@@ -62,6 +62,7 @@ try {
             $startTimeStr = $dateStr . ' ' . $r['start_time'];
             $endTimeStr = $dateStr . ' ' . $r['end_time'];
             $isOngoing = ($currentTime >= strtotime($startTimeStr) && $currentTime <= strtotime($endTimeStr));
+            $isPast = ($currentTime > strtotime($endTimeStr));
 
             return [
                 'id' => $r['id'],
@@ -70,6 +71,7 @@ try {
                 'time' => substr($r['start_time'], 0, 5) . " - " . substr($r['end_time'], 0, 5),
                 'location' => $r['room_info'] ?: ($r['teaching_type'] === 'online' ? 'Online (Zoom)' : 'Phòng học'),
                 'isPrimary' => $isOngoing,
+                'isPast' => $isPast,
                 'isOnline' => ($r['teaching_type'] === 'online'),
                 'status' => $r['status']
             ];

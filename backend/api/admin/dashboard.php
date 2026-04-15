@@ -50,13 +50,15 @@ try {
         'contacts_total' => (int) fetchScalar($pdo, "SELECT COUNT(*) FROM contacts"),
         'contacts_unreplied' => (int) fetchScalar($pdo, "SELECT COUNT(*) FROM contacts WHERE is_replied = 0"),
         'website_contents_total' => (int) fetchScalar($pdo, "SELECT COUNT(*) FROM website_contents"),
-        'assignments_total' => (int) fetchScalar($pdo, "SELECT COUNT(*) FROM assignments"),
+        'assignments_total' => (int) fetchScalar($pdo, "SELECT COUNT(*) FROM quizzes"),
         'classes_total' => (int) fetchScalar($pdo, "SELECT COUNT(*) FROM classes"),
         'active_classes_total' => (int) fetchScalar($pdo, "SELECT COUNT(*) FROM classes WHERE CURDATE() BETWEEN start_date AND end_date"),
         'enrollments_total' => (int) fetchScalar($pdo, "SELECT COUNT(*) FROM enrollments"),
         'active_enrollments_total' => (int) fetchScalar($pdo, "SELECT COUNT(*) FROM enrollments WHERE status = 'active'"),
         'completed_enrollments_total' => (int) fetchScalar($pdo, "SELECT COUNT(*) FROM enrollments WHERE status = 'completed'"),
         'submissions_total' => (int) fetchScalar($pdo, "SELECT COUNT(*) FROM submissions"),
+        'leave_requests_pending' => (int) fetchScalar($pdo, "SELECT COUNT(*) FROM leave_requests WHERE status = 'pending'"),
+        'makeup_registrations_pending' => (int) fetchScalar($pdo, "SELECT COUNT(*) FROM makeup_registrations WHERE status = 'registered'"),
     ];
 
     $latestContentDate = fetchScalar($pdo, "SELECT MAX(updated_at) FROM website_contents");
@@ -85,7 +87,10 @@ try {
     ");
     $recentContacts = $stmtRecentContacts->fetchAll(PDO::FETCH_ASSOC);
 
-    $pendingTasks = $counts['consultations_pending'] + $counts['contacts_unreplied'];
+    $pendingTasks = $counts['consultations_pending'] + 
+                    $counts['contacts_unreplied'] + 
+                    $counts['leave_requests_pending'] + 
+                    $counts['makeup_registrations_pending'];
 
     echo json_encode([
         'status' => 'success',
@@ -98,6 +103,10 @@ try {
                 'pending_tasks_total' => $pendingTasks,
                 'featured_courses_total' => $counts['featured_courses_total'],
                 'latest_content_date' => $latestContentDate ?: null,
+                'assignments_total' => $counts['assignments_total'],
+                'submissions_total' => $counts['submissions_total'],
+                'leave_requests_pending' => $counts['leave_requests_pending'],
+                'makeup_registrations_pending' => $counts['makeup_registrations_pending'],
             ],
             'modules' => [
                 [
@@ -169,10 +178,11 @@ try {
                 [
                     'key' => 'assignments',
                     'title' => 'Quản lý bài tập',
-                    'description' => 'Theo dõi số lượng bài tập đang có trên hệ thống.',
+                    'description' => 'Theo dõi số lượng bài tập (quiz) đang có trên hệ thống.',
                     'count' => $counts['assignments_total'],
                     'unit' => 'bài tập',
                     'accent' => 'fuchsia',
+                    'to' => '/admin/quiz-builder',
                 ],
                 [
                     'key' => 'instructors',

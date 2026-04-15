@@ -37,66 +37,121 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
             SELECT 
                 lr.id, lr.class_id, lr.reason, lr.start_date, lr.end_date,
                 lr.status, lr.admin_note, lr.created_at,
-                c.class_name, co.title as course_title, co.level,
+                c.class_name, co.title as course_title, co.id as course_id, co.level,
+                s_start.id as schedule_id,
                 s_start.start_time as session_start_time,
-                s_start.end_time as session_end_time
+                s_start.end_time as session_end_time,
+                s_start.class_detail_id
             FROM leave_requests lr
             LEFT JOIN classes c ON c.id = lr.class_id
             LEFT JOIN courses co ON co.id = c.course_id
+            LEFT JOIN enrollments e ON e.student_id = lr.student_id AND e.class_id = lr.class_id
             LEFT JOIN schedules s_start ON s_start.class_id = lr.class_id AND s_start.study_date = lr.start_date
+                AND (s_start.class_detail_id = e.class_detail_id OR s_start.class_detail_id IS NULL)
             WHERE lr.student_id = ?
             ORDER BY lr.created_at DESC
         ");
         $stmt->execute([$studentId]);
-        $requests = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $requestsRaw = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        $requests = [];
+        foreach ($requestsRaw as $r) {
+            $lessonTitle = "Buổi học";
+            if ($r['schedule_id']) {
+                // Tính session index
+                $stmtIdx = $pdo->prepare("
+                    SELECT COUNT(*) FROM schedules 
+                    WHERE class_id = ? 
+                      AND (class_detail_id = ? OR class_detail_id IS NULL)
+                      AND study_date <= ?
+                      AND status != 'canceled'
+                ");
+                $stmtIdx->execute([$r['class_id'], $r['class_detail_id'], $r['start_date']]);
+                $sessionIndex = (int) $stmtIdx->fetchColumn();
+
+                // Lấy tên bài học
+                $stmtLesson = $pdo->prepare("SELECT title FROM lessons WHERE course_id = ? AND order_number = ? LIMIT 1");
+                $stmtLesson->execute([$r['course_id'], $sessionIndex]);
+                $lessonDetail = $stmtLesson->fetch(PDO::FETCH_ASSOC);
+                $lessonTitle = $lessonDetail ? $lessonDetail['title'] : "Bài $sessionIndex";
+            }
+            $r['lesson_title'] = $lessonTitle;
+            $requests[] = $r;
+        }
 
         // 2. Danh sách lớp enrolled + lịch học sắp tới
         $stmtClasses = $pdo->prepare("
             SELECT 
                 cl.id as class_id,
+                cl.course_id,
+                e.class_detail_id,
                 cl.class_name,
+                cd.detail_name as shift_name,
                 co.title as course_title,
                 co.level
             FROM enrollments e
             INNER JOIN classes cl ON cl.id = e.class_id
             INNER JOIN courses co ON co.id = cl.course_id
+            LEFT JOIN class_details cd ON cd.id = e.class_detail_id
             WHERE e.student_id = ? AND e.status = 'active'
             ORDER BY e.enrollment_date DESC
         ");
         $stmtClasses->execute([$studentId]);
         $enrolledClasses = $stmtClasses->fetchAll(PDO::FETCH_ASSOC);
 
-        // 3. Lấy lịch học sắp tới cho TẤT CẢ lớp đã enrolled
-        $classIds = array_column($enrolledClasses, 'class_id');
+        // 3. Lấy lịch học sắp tới cho TẤT CẢ lớp đã enrolled (theo đúng ca học)
         $schedulesMap = []; // class_id -> [schedules]
+        $totalSchedules = 0;
 
-        if (!empty($classIds)) {
-            $placeholders = implode(',', array_fill(0, count($classIds), '?'));
+        foreach ($enrolledClasses as $class) {
+            $cid = (int) $class['class_id'];
+            $courseId = (int) ($class['course_id'] ?? 0);
+            $cdid = $class['class_detail_id'] ? (int) $class['class_detail_id'] : null;
+
+            // Lấy lịch sắp tới
             $stmtSchedules = $pdo->prepare("
                 SELECT 
-                    s.id, s.class_id, s.study_date, s.start_time, s.end_time,
+                    s.id, s.study_date, s.start_time, s.end_time,
                     s.teaching_type, s.room_info,
-                    cd.detail_name as lesson_title,
+                    s.class_detail_id,
                     u.full_name as teacher_name
                 FROM schedules s
-                LEFT JOIN class_details cd ON cd.id = s.class_detail_id
                 LEFT JOIN users u ON u.id = s.teacher_id
-                WHERE s.class_id IN ($placeholders)
+                WHERE s.class_id = ? 
+                  AND (s.class_detail_id = ? OR s.class_detail_id IS NULL)
                   AND s.study_date >= CURRENT_DATE
                 ORDER BY s.study_date ASC, s.start_time ASC
             ");
-            $stmtSchedules->execute($classIds);
+            $stmtSchedules->execute([$cid, $cdid]);
+            $schs = $stmtSchedules->fetchAll(PDO::FETCH_ASSOC);
 
-            foreach ($stmtSchedules->fetchAll(PDO::FETCH_ASSOC) as $sch) {
-                $cid = (int) $sch['class_id'];
+            foreach ($schs as $sch) {
+                // Tính session index
+                $stmtIdx = $pdo->prepare("
+                    SELECT COUNT(*) FROM schedules 
+                    WHERE class_id = ? 
+                      AND (class_detail_id = ? OR class_detail_id IS NULL)
+                      AND study_date <= ?
+                      AND status != 'canceled'
+                ");
+                $stmtIdx->execute([$cid, $sch['class_detail_id'], $sch['study_date']]);
+                $sessionIndex = (int) $stmtIdx->fetchColumn();
+
+                // Lấy tên bài học
+                $stmtLesson = $pdo->prepare("SELECT title FROM lessons WHERE course_id = ? AND order_number = ? LIMIT 1");
+                $stmtLesson->execute([$courseId, $sessionIndex]);
+                $lessonDetail = $stmtLesson->fetch(PDO::FETCH_ASSOC);
 
                 // Kiểm tra đã có đơn nghỉ pending/approved cho buổi này chưa
-                $stmtCheck = $pdo->prepare("
-                    SELECT COUNT(*) FROM leave_requests
-                    WHERE student_id = ? AND class_id = ? AND start_date = ? AND status IN ('pending','approved')
-                ");
-                $stmtCheck->execute([$studentId, $cid, $sch['study_date']]);
-                $alreadyRequested = (int) $stmtCheck->fetchColumn() > 0;
+                $alreadyRequested = false;
+                try {
+                    $stmtCheck = $pdo->prepare("
+                        SELECT COUNT(*) FROM leave_requests
+                        WHERE student_id = ? AND class_id = ? AND start_date = ? AND status IN ('pending','approved')
+                    ");
+                    $stmtCheck->execute([$studentId, $cid, $sch['study_date']]);
+                    $alreadyRequested = (int) $stmtCheck->fetchColumn() > 0;
+                } catch (Exception $e) {}
 
                 $schedulesMap[$cid][] = [
                     'id'            => (int) $sch['id'],
@@ -105,27 +160,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
                     'end_time'      => substr($sch['end_time'], 0, 5),
                     'teaching_type' => $sch['teaching_type'],
                     'room_info'     => $sch['room_info'],
-                    'lesson_title'  => $sch['lesson_title'],
+                    'lesson_title'  => $lessonDetail ? $lessonDetail['title'] : "Bài $sessionIndex",
                     'teacher_name'  => $sch['teacher_name'],
                     'already_requested' => $alreadyRequested,
                 ];
             }
+
+            // Tính tổng số buổi đã diễn ra (để tính stats)
+            $stmtCount = $pdo->prepare("
+                SELECT COUNT(*) FROM schedules 
+                WHERE class_id = ? 
+                  AND (class_detail_id = ? OR class_detail_id IS NULL)
+                  AND study_date <= CURRENT_DATE
+            ");
+            $stmtCount->execute([$cid, $cdid]);
+            $totalSchedules += (int) $stmtCount->fetchColumn();
         }
 
         // 4. Thống kê chuyên cần 
-        $totalSchedules = 0;
         $totalLeaves = 0;
         try {
-            if (!empty($classIds)) {
-                $placeholders = implode(',', array_fill(0, count($classIds), '?'));
-                $stmtTotal = $pdo->prepare("
-                    SELECT COUNT(*) FROM schedules 
-                    WHERE class_id IN ($placeholders) AND study_date <= CURRENT_DATE
-                ");
-                $stmtTotal->execute($classIds);
-                $totalSchedules = (int) $stmtTotal->fetchColumn();
-            }
-
             $stmtLeaves = $pdo->prepare("
                 SELECT COUNT(*) FROM leave_requests
                 WHERE student_id = ? AND status = 'approved'
@@ -147,6 +201,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
                         'class_id'     => (int) $r['class_id'],
                         'class_name'   => $r['class_name'],
                         'course_title' => $r['course_title'],
+                        'lesson_title' => $r['lesson_title'],
                         'level'        => $r['level'],
                         'reason'       => $r['reason'],
                         'start_date'   => $r['start_date'],
@@ -162,9 +217,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
                     return [
                         'class_id'     => $cid,
                         'class_name'   => $c['class_name'],
+                        'shift_name'   => $c['shift_name'],
                         'course_title' => $c['course_title'],
                         'level'        => $c['level'],
-                        'label'        => $c['course_title'] . ' - ' . $c['class_name'] . ' (' . ($c['level'] ?: 'N/A') . ')',
+                        'label'        => $c['course_title'] . ' - ' . ($c['shift_name'] ?: $c['class_name']),
                         'schedules'    => $schedulesMap[$cid] ?? [],
                     ];
                 }, $enrolledClasses),

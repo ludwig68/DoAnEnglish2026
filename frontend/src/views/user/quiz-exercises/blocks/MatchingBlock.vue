@@ -17,30 +17,48 @@
               class="rounded-[1.5rem] border-2 p-5 transition-all duration-300 cursor-pointer select-none"
               :class="getLeftCardClass(idx)"
             >
-              <p class="text-[9px] font-black uppercase tracking-[0.2em] mb-1.5"
-                :class="selectedLeft === idx ? 'text-emerald-500' : (localAnswers[idx] !== undefined ? 'text-emerald-400' : 'text-slate-400')">
-                Cụm {{ String(idx + 1).padStart(2, '0') }}
-              </p>
-              <div class="flex items-center justify-between gap-3">
-                <h3 class="text-[15px] font-headline font-black leading-snug"
-                  :class="selectedLeft === idx ? 'text-emerald-700' : (localAnswers[idx] !== undefined ? 'text-slate-700' : 'text-slate-800')">
-                  {{ pair.option_text }}
-                </h3>
-
-                <div class="shrink-0">
-                  <div v-if="isAnswerRevealed && localAnswers[idx] !== undefined && isCorrectMatch(idx)"
-                    class="w-8 h-8 bg-emerald-500 rounded-xl flex items-center justify-center shadow-[0_4px_8px_rgba(22,163,74,0.3)]">
-                    <i class="fa-solid fa-check text-white text-xs"></i>
-                  </div>
-                  <div v-else-if="isAnswerRevealed && localAnswers[idx] !== undefined && !isCorrectMatch(idx)"
-                    class="w-8 h-8 bg-red-400 rounded-xl flex items-center justify-center">
-                    <i class="fa-solid fa-xmark text-white text-xs"></i>
-                  </div>
-                  <div v-else-if="!isAnswerRevealed && localAnswers[idx] !== undefined"
-                    class="w-7 h-7 bg-emerald-100 border border-emerald-200 rounded-xl flex items-center justify-center">
-                    <i class="fa-solid fa-link text-emerald-500 text-[10px]"></i>
-                  </div>
+              <div class="flex items-center justify-between mb-2">
+                <p class="text-[9px] font-black uppercase tracking-[0.2em]"
+                  :class="selectedLeft === idx ? 'text-emerald-500' : (localAnswers[pair.id] !== undefined ? 'text-emerald-400' : 'text-slate-400')">
+                  Cụm {{ String(idx + 1).padStart(2, '0') }}
+                </p>
+                <div v-if="isAnswerRevealed" class="flex items-center gap-1.5">
+                  <template v-if="localAnswers[pair.id] === undefined">
+                     <span class="text-[9px] font-black uppercase text-slate-400">Chưa làm</span>
+                     <div class="w-6 h-6 bg-slate-100 rounded-lg flex items-center justify-center">
+                        <i class="fa-solid fa-minus text-slate-300 text-[10px]"></i>
+                     </div>
+                  </template>
+                  <template v-else>
+                    <span v-if="!isCorrectMatch(idx)" class="text-[9px] font-black uppercase text-rose-400">Sai</span>
+                    <span v-else class="text-[9px] font-black uppercase text-emerald-500">Đúng</span>
+                    <div class="shrink-0">
+                      <div v-if="isCorrectMatch(idx)"
+                        class="w-6 h-6 bg-emerald-100 border border-emerald-300 rounded-lg flex items-center justify-center">
+                        <i class="fa-solid fa-check text-emerald-600 text-[10px]"></i>
+                      </div>
+                      <div v-else
+                        class="w-6 h-6 bg-rose-200 rounded-lg flex items-center justify-center">
+                        <i class="fa-solid fa-xmark text-rose-500 text-[10px]"></i>
+                      </div>
+                    </div>
+                  </template>
                 </div>
+                <div v-else-if="localAnswers[pair.id] !== undefined"
+                  class="w-6 h-6 bg-emerald-100 border border-emerald-200 rounded-lg flex items-center justify-center">
+                  <i class="fa-solid fa-link text-emerald-500 text-[8px]"></i>
+                </div>
+              </div>
+
+              <h3 class="text-[15px] font-headline font-black leading-snug"
+                :class="selectedLeft === idx ? 'text-emerald-700' : (localAnswers[pair.id] !== undefined ? 'text-slate-700' : 'text-slate-800')">
+                {{ pair.option_text }}
+              </h3>
+              
+              <!-- Revealed solution below term -->
+              <div v-if="isAnswerRevealed" class="mt-3 pt-3 border-t border-slate-50">
+                 <p class="text-[10px] uppercase font-black tracking-widest text-slate-300 mb-1">Đáp án đúng:</p>
+                 <p class="text-[13px] font-bold text-emerald-600">{{ pair.match_text }}</p>
               </div>
             </div>
           </div>
@@ -75,12 +93,13 @@
               </div>
 
               <!-- Link icon when selected + active left -->
-              <div v-if="selectedLeft !== null && !isMatched(dIdx)"
+              <div v-if="!isAnswerRevealed && selectedLeft !== null && !isMatched(dIdx)"
                 class="ml-3 w-6 h-6 rounded-lg bg-emerald-50 border border-emerald-200 flex items-center justify-center shrink-0 opacity-50">
                 <i class="fa-solid fa-link text-emerald-400 text-[8px]"></i>
               </div>
-              <div v-else-if="isMatched(dIdx) && !isAnswerRevealed"
-                class="ml-3 w-6 h-6 rounded-xl bg-emerald-500 shadow-[0_2px_8px_rgba(16,185,129,0.3)] flex items-center justify-center shrink-0">
+              <div v-else-if="isMatched(dIdx)"
+                class="ml-3 w-6 h-6 rounded-xl bg-emerald-600 shadow-[0_2px_8px_rgba(16,185,129,0.3)] flex items-center justify-center shrink-0"
+                :class="isAnswerRevealed ? (isCorrectMatchByRight(dIdx) ? 'bg-emerald-500' : 'bg-rose-400') : ''">
                 <span class="text-white text-[10px] font-black">{{ String(getMatchedLeftIdx(dIdx) + 1).padStart(2, '0') }}</span>
               </div>
             </div>
@@ -89,28 +108,7 @@
       </div>
     </div>
 
-    <!-- Correct Answers After Submit -->
-    <div v-if="isAnswerRevealed" class="mt-4 bg-white rounded-[2rem] border border-slate-100 p-8 shadow-sm">
-      <p class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-6">Kết quả chi tiết</p>
-      <div class="space-y-3">
-        <div v-for="(pair, idx) in pairs" :key="pair.id || idx"
-          class="flex items-start gap-4 p-4 rounded-2xl border text-[12px]"
-          :class="isCorrectMatch(idx) ? 'border-emerald-100 bg-emerald-50/60' : 'border-red-100 bg-red-50/50'">
-          <div class="w-6 h-6 rounded-lg flex items-center justify-center shrink-0"
-            :class="isCorrectMatch(idx) ? 'bg-emerald-500' : 'bg-red-400'">
-            <i :class="isCorrectMatch(idx) ? 'fa-solid fa-check' : 'fa-solid fa-xmark'" class="text-white text-[8px]"></i>
-          </div>
-          <div class="flex-1 min-w-0">
-            <span class="font-black text-slate-700">{{ pair.option_text }}</span>
-            <span class="mx-2 text-slate-300">→</span>
-            <span class="font-bold text-slate-500">{{ pair.match_text }}</span>
-            <p v-if="!isCorrectMatch(idx)" class="mt-1 text-red-500 font-bold">
-              Đáp án của bạn: {{ localAnswers[idx] !== undefined ? shuffledRight[localAnswers[idx]]?.match_text : 'Chưa ghép' }}
-            </p>
-          </div>
-        </div>
-      </div>
-    </div>
+    <!-- Detailed results removed here as they are now integrated into cards -->
   </div>
 </template>
 
@@ -129,51 +127,75 @@ const pairs = computed(() => {
   return (props.question?.options || []).filter(o => o.match_text)
 })
 
-const localAnswers = ref({}) // leftIdx -> rightIdx in shuffledRight
-
-// We must securely shuffle right side ONCE per question so it's stable
+const localAnswers = ref({}) // qId -> match_text
 const shuffledRight = ref([])
+const selectedLeft = ref(null) // index in pairs
+
+const isCorrectMatch = (leftIdx) => {
+  const pair = pairs.value[leftIdx]
+  if (!pair) return false
+  const userMatchText = localAnswers.value[pair.id]
+  if (userMatchText === undefined) return false
+  
+  // Lenient comparison
+  return String(userMatchText).trim().toLowerCase() === String(pair.match_text).trim().toLowerCase()
+}
+
+const isCorrectMatchByRight = (rightIdx) => {
+  const leftIdx = getMatchedLeftIdx(rightIdx)
+  if (leftIdx === null) return false
+  return isCorrectMatch(leftIdx)
+}
 
 const shuffleRight = () => {
-  if (props.isAnswerRevealed) return
   let arr = pairs.value.map((p, i) => ({ ...p, originalIdx: i }))
-  for (let i = arr.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1))
-    ;[arr[i], arr[j]] = [arr[j], arr[i]]
+  // Only shuffle if NOT revealed
+  if (!props.isAnswerRevealed) {
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1))
+      ;[arr[i], arr[j]] = [arr[j], arr[i]]
+    }
+    // Only clear if not revealed
+    localAnswers.value = {}
+    emit('update-answer', {})
   }
   shuffledRight.value = arr
-  // Remap localAnswers if they existed?
-  // Since we don't want to break existing answers, it's safer to just clear answers when shuffling manually
-  localAnswers.value = {}
-  emit('update-answer', {})
 }
 
 onMounted(() => {
   shuffleRight()
-  // Hydrate saved answers if any
-  if (Object.keys(props.savedAnswer || {}).length > 0) {
+  if (props.savedAnswer && typeof props.savedAnswer === 'object') {
     localAnswers.value = { ...props.savedAnswer }
   }
 })
 
-const selectedLeft = ref(null)
+watch(() => props.question?.id, () => {
+  shuffleRight()
+  if (props.savedAnswer && typeof props.savedAnswer === 'object') {
+    localAnswers.value = { ...props.savedAnswer }
+  } else {
+    localAnswers.value = {}
+  }
+})
 
 const selectLeft = (idx) => {
   if (selectedLeft.value === idx) {
     selectedLeft.value = null
   } else {
     selectedLeft.value = idx
-    if (localAnswers.value[idx] !== undefined) {
-      delete localAnswers.value[idx]
+    const leftId = pairs.value[idx]?.id
+    if (leftId && localAnswers.value[leftId] !== undefined) {
+      delete localAnswers.value[leftId]
       emit('update-answer', { ...localAnswers.value })
     }
   }
 }
 
 const selectRight = (idx) => {
+  const rightItem = shuffledRight.value[idx]
   if (selectedLeft.value === null) {
-    // If clicking a right card that is already matched, unmatch it
-    const pairEntry = Object.entries(localAnswers.value).find(([_, rIdx]) => rIdx === idx)
+    // Deselect if already matched
+    const pairEntry = Object.entries(localAnswers.value).find(([_, text]) => text === rightItem.match_text)
     if (pairEntry) {
       delete localAnswers.value[pairEntry[0]]
       emit('update-answer', { ...localAnswers.value })
@@ -181,40 +203,44 @@ const selectRight = (idx) => {
     return
   }
   
-  // Unlink if right side is already linked
-  const existingPair = Object.entries(localAnswers.value).find(([_, rIdx]) => rIdx === idx)
+  const leftId = pairs.value[selectedLeft.value]?.id
+  if (!leftId) return
+
+  // Unlink if this right item was used elsewhere
+  const existingPair = Object.entries(localAnswers.value).find(([_, text]) => text === rightItem.match_text)
   if (existingPair) {
     delete localAnswers.value[existingPair[0]]
   }
   
-  localAnswers.value[selectedLeft.value] = idx
+  localAnswers.value[leftId] = rightItem.match_text
   selectedLeft.value = null
   emit('update-answer', { ...localAnswers.value })
 }
 
 const isMatched = (rightIdx) => {
-  return Object.values(localAnswers.value).includes(rightIdx)
+  const text = shuffledRight.value[rightIdx]?.match_text
+  if (!text) return false
+  return Object.values(localAnswers.value).includes(text)
 }
 
 const getMatchedLeftIdx = (rightIdx) => {
-  const match = Object.entries(localAnswers.value).find(([l, r]) => r === rightIdx)
-  if (match) return parseInt(match[0])
+  const text = shuffledRight.value[rightIdx]?.match_text
+  const match = Object.entries(localAnswers.value).find(([_, rText]) => rText === text)
+  if (match) {
+    const leftId = parseInt(match[0])
+    return pairs.value.findIndex(p => p.id === leftId)
+  }
   return null
 }
 
-const isCorrectMatch = (leftIdx) => {
-  const userRIdx = localAnswers.value[leftIdx]
-  if (userRIdx === undefined) return false
-  return shuffledRight.value[userRIdx]?.originalIdx === leftIdx
-}
-
 const getLeftCardClass = (idx) => {
+  const pair = pairs.value[idx]
   if (selectedLeft.value === idx) return 'border-emerald-500 shadow-[0_8px_20px_rgba(16,185,129,0.15)] bg-white'
   if (props.isAnswerRevealed) {
-    if (localAnswers.value[idx] === undefined) return 'border-red-200 bg-red-50/50'
-    return isCorrectMatch(idx) ? 'border-emerald-200 bg-emerald-50/30' : 'border-red-300 bg-red-50'
+    if (!pair || localAnswers.value[pair.id] === undefined) return 'border-rose-100 bg-rose-50/50'
+    return isCorrectMatch(idx) ? 'border-emerald-200 bg-emerald-50/30' : 'border-rose-200 bg-rose-50'
   }
-  if (localAnswers.value[idx] !== undefined) return 'border-emerald-200 bg-emerald-50/30 hover:border-emerald-300'
+  if (pair && localAnswers.value[pair.id] !== undefined) return 'border-emerald-200 bg-emerald-50/30 hover:border-emerald-300'
   return 'border-slate-100 bg-white hover:border-emerald-300 hover:shadow-sm'
 }
 
@@ -222,8 +248,7 @@ const getRightCardClass = (idx) => {
   if (selectedLeft.value !== null && !isMatched(idx)) return 'border-slate-200 bg-slate-50 border-dashed cursor-pointer hover:border-emerald-400 hover:bg-emerald-50/50'
   if (isMatched(idx)) {
     if (props.isAnswerRevealed) {
-      const leftIdx = Object.entries(localAnswers.value).find(e => e[1] === idx)?.[0]
-      return isCorrectMatch(leftIdx) ? 'border-emerald-200 bg-emerald-50/30' : 'border-red-300 bg-red-50'
+      return isCorrectMatchByRight(idx) ? 'border-emerald-200 bg-emerald-50/30' : 'border-rose-200 bg-rose-50'
     }
     return 'border-emerald-200 bg-emerald-50/30 cursor-pointer hover:border-emerald-300'
   }

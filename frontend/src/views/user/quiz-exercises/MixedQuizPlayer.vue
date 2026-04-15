@@ -33,15 +33,38 @@
               :class="timeLeft < 300 ? 'bg-red-500 animate-pulse' : 'bg-emerald-500'"></div>
             <span class="text-[13px] font-black tabular-nums">{{ formattedTime }}</span>
           </div>
-          <button @click="handleSubmitFinal" :disabled="isSubmitting || isRevealed"
+          <button @click="handleSubmitFinal" :disabled="isSubmitting || isRevealed || isWritingLocked"
             class="px-5 py-2 text-white rounded-xl text-[11px] font-black uppercase tracking-widest transition-all shadow-md group"
-            :class="isRevealed ? 'bg-slate-300' : 'bg-emerald-600 hover:bg-emerald-700'">
+            :class="isRevealed || isWritingLocked ? 'bg-slate-300 cursor-not-allowed' : 'bg-emerald-600 hover:bg-emerald-700'">
             <span v-if="isSubmitting"><i class="fa-solid fa-circle-notch fa-spin mr-1"></i>Đang nộp...</span>
+            <span v-else-if="isWritingLocked"><i class="fa-solid fa-lock mr-1"></i>Đã nộp</span>
             <span v-else>{{ isRevealed ? 'Đã nộp bài' : 'Nộp bài' }}</span>
           </button>
         </div>
       </div>
     </header>
+
+    <!-- Writing Locked Banner -->
+    <div v-if="isWritingLocked"
+      class="bg-amber-50 border-b border-amber-200 px-6 py-3 flex items-center justify-between gap-4 shrink-0 z-10">
+      <div class="flex items-center gap-3">
+        <i class="fa-solid fa-lock text-amber-500"></i>
+        <span class="text-[13px] font-bold text-amber-700">
+          Bài tự luận đã được nộp — chỉ được nộp một lần. Bạn có thể xem lại bài viết của mình.
+        </span>
+        <span v-if="prevSubmission?.sub_status === 'pending_grading'"
+          class="px-3 py-1 bg-amber-200 text-amber-700 rounded-full text-[10px] font-black uppercase tracking-wider">
+          <i class="fa-solid fa-hourglass-half mr-1"></i> Chờ giảng viên chấm
+        </span>
+        <span v-else-if="prevSubmission?.sub_status === 'completed'"
+          class="px-3 py-1 bg-emerald-100 text-emerald-700 rounded-full text-[10px] font-black uppercase tracking-wider">
+          <i class="fa-solid fa-check-circle mr-1"></i> Điểm: {{ prevSubmission.score }}/10
+        </span>
+      </div>
+      <button @click="$emit('close')" class="text-amber-500 hover:text-amber-700 font-black text-[12px] uppercase tracking-widest">
+        Quay lại
+      </button>
+    </div>
 
     <!-- ═══ MAIN LAYOUT ═══ -->
     <div class="flex-1 flex overflow-hidden relative">
@@ -53,7 +76,7 @@
           v-for="(q, idx) in questions"
           :key="q.id || idx"
           @click="jumpToQuestion(idx)"
-          class="w-12 h-12 rounded-xl text-[14px] font-black transition-all border-2 relative"
+          class="w-12 h-12 text-[14px] font-black relative"
           :class="getMapDotClass(idx)"
         >
           {{ idx + 1 }}
@@ -149,19 +172,32 @@
           </div>
           <h3 class="text-2xl font-headline font-black text-slate-800 mb-3">Đã nộp bài!</h3>
           <div class="flex items-center justify-center gap-4 mb-4">
-            <div class="text-center">
-              <div class="text-[36px] font-headline font-black leading-none" :class="submittedScore >= 5 ? 'text-emerald-500' : 'text-red-500'">{{ submittedScore }}</div>
-              <div class="text-[9px] font-black uppercase tracking-widest text-slate-400 mt-1">Điểm / 10</div>
-            </div>
-            <div class="w-px h-10 bg-slate-100"></div>
-            <div class="text-center">
-              <div class="text-[36px] font-headline font-black text-slate-700 leading-none">{{ submittedCorrect }}<span class="text-[18px] text-slate-300">/{{ submittedTotal }}</span></div>
-              <div class="text-[9px] font-black uppercase tracking-widest text-slate-400 mt-1">Câu đúng</div>
-            </div>
+            <!-- Case 1: All objective questions (No writing) -->
+            <template v-if="!hasWritingResponse">
+              <div class="text-center">
+                <div class="text-[36px] font-headline font-black leading-none" :class="submittedScore >= (submittedTotal/2) ? 'text-emerald-500' : 'text-red-500'">
+                  {{ Math.round(submittedScore) }}<span class="text-[18px] text-slate-300">/{{ submittedTotal }}</span>
+                </div>
+                <div class="text-[9px] font-black uppercase tracking-widest text-slate-400 mt-1">
+                  Tổng điểm đạt được
+                </div>
+              </div>
+              <div class="w-px h-10 bg-slate-100"></div>
+              <div class="text-center">
+                <div class="text-[36px] font-headline font-black text-slate-700 leading-none">{{ submittedCorrect }}<span class="text-[18px] text-slate-300">/{{ submittedTotal }}</span></div>
+                <div class="text-[9px] font-black uppercase tracking-widest text-slate-400 mt-1">Câu đúng</div>
+              </div>
+            </template>
+
+            <!-- Case 2: Quiz with Writing (Pending) -->
+            <template v-else>
+              <div class="py-4 text-center">
+                <p class="text-[11px] font-black uppercase tracking-widest text-amber-600">Bài thi đang chờ chấm</p>
+              </div>
+            </template>
           </div>
-          <p class="text-[13px] text-slate-400 font-medium mb-8 leading-relaxed">
-            Bạn đã nộp bài thi thành công. Xem lại để kiểm tra từng câu hoặc quay về danh sách bài tập.
-          </p>
+
+
           <p v-if="submitError" class="text-[12px] text-red-500 font-bold mb-4 bg-red-50 rounded-xl p-3">
             <i class="fa-solid fa-triangle-exclamation mr-1"></i>{{ submitError }}
           </p>
@@ -211,6 +247,12 @@ const submitError = ref('')
 const submittedScore = ref(0)
 const submittedCorrect = ref(0)
 const submittedTotal = ref(0)
+const hasWritingResponse = ref(false)
+const questionResults = ref({}) // qId -> isCorrect (bool or 'pending')
+
+// Previous submission state
+const prevSubmission = ref(null)  // { score, sub_status, answers_json, submitted_at }
+const isWritingLocked = ref(false) // true if quiz has essay and already submitted once
 
 const totalQuestions = computed(() => questions.value.length)
 const currentQuestion = computed(() => questions.value[currentIndex.value] || null)
@@ -227,7 +269,14 @@ const formattedTime = computed(() => {
 })
 
 const startTimer = () => {
+  if (isRevealed.value || isWritingLocked.value) return
+  
   timerInterval = setInterval(() => {
+    if (isRevealed.value || isWritingLocked.value) {
+      stopTimer()
+      return
+    }
+    
     if (timeLeft.value > 0) {
       timeLeft.value--
     } else {
@@ -240,9 +289,11 @@ const stopTimer = () => {
   if (timerInterval) { clearInterval(timerInterval); timerInterval = null }
 }
 
-onMounted(() => {
-  fetchQuestions()
-  startTimer()
+onMounted(async () => {
+  await fetchQuestions()
+  if (!isRevealed.value && !isWritingLocked.value) {
+    startTimer()
+  }
 })
 onUnmounted(() => {
   stopTimer()
@@ -252,11 +303,34 @@ const fetchQuestions = async () => {
   if (!props.quiz?.id) { isLoadingQuestions.value = false; return }
 
   try {
-    const res = await apiFetch(`user/quiz_detail.php?quiz_id=${props.quiz.id}`)
-    const data = await res.json()
-    if (data.status === 'success') {
-      questions.value = data.data.questions || []
+    // Load questions and previous submission in parallel
+    const [qRes, subRes] = await Promise.all([
+      apiFetch(`user/quiz_detail.php?quiz_id=${props.quiz.id}`),
+      apiFetch(`user/quiz_submissions.php?quiz_id=${props.quiz.id}`)
+    ])
+    const [qData, subData] = await Promise.all([qRes.json(), subRes.json()])
+
+    if (qData.status === 'success') {
+      questions.value = qData.data.questions || []
     }
+
+    if (subData.status === 'success' && subData.submitted) {
+      prevSubmission.value = subData
+      submittedScore.value = subData.score ?? 0
+
+      // Check if quiz has writing questions → lock resubmission
+      const hasEssay = questions.value.some(q => q.question_type === 'writing' || q.question_type === 'essay')
+      if (hasEssay) {
+        isWritingLocked.value = true
+        isRevealed.value = true
+        // Restore previous answers for review
+        try {
+          const prevAnswers = JSON.parse(subData.answers_json || '{}')
+          userAnswers.value = prevAnswers
+        } catch(e) {}
+      }
+    }
+
   } catch (err) {
     console.error(err)
   } finally {
@@ -351,29 +425,45 @@ const progressPercent = computed(() => {
 })
 
 const getMapDotClass = (idx) => {
-  if (currentIndex.value === idx) {
-    return 'border-emerald-500 bg-emerald-50 text-emerald-700 shadow-[0_4px_10px_rgba(16,185,129,0.2)] scale-110'
-  }
+  const q = questions.value[idx]
+  const isCurrent = currentIndex.value === idx
+  const result = (isRevealed.value && q) ? questionResults.value[q.id] : null
+
+  // 1. Base style (colors)
+  let baseStyle = ''
   if (isRevealed.value) {
-    // Basic reveal status logic: we don't calculate correct/incorrect easily here because it depends on the block
-    // We'll just show answered or not initially.
-    if (isQuestionAnswered(idx)) {
-      return 'border-emerald-200 bg-emerald-100/50 text-emerald-600'
+    if (result === 'pending') {
+      baseStyle = 'bg-amber-50 text-amber-600 border-amber-200'       // Writing - pending
+    } else if (result === 'skipped') {
+      baseStyle = 'bg-slate-50 text-slate-300 border-slate-100'        // Not answered
+    } else if (result === true) {
+      baseStyle = 'bg-emerald-100 text-emerald-700 border-emerald-300' // Correct - soft green
+    } else if (result === false) {
+      baseStyle = 'bg-rose-100 text-rose-500 border-rose-200'          // Wrong - soft rose
     } else {
-      return 'border-red-200 bg-red-50 text-red-500'
+      baseStyle = 'bg-slate-50 text-slate-300 border-slate-100'        // Unknown/not graded
+    }
+  } else {
+    // Current taking quiz style
+    if (reviewMarked.value.has(idx)) {
+      baseStyle = 'border-amber-300 bg-amber-50 text-amber-600'
+    } else if (isQuestionAnswered(idx)) {
+      baseStyle = 'border-slate-300 bg-slate-100 text-slate-600'
+    } else {
+      baseStyle = 'border-slate-100 text-slate-400 hover:border-slate-300 hover:bg-slate-50'
     }
   }
-  if (reviewMarked.value.has(idx)) {
-    return 'border-amber-300 bg-amber-50 text-amber-600'
-  }
-  if (isQuestionAnswered(idx)) {
-    return 'border-slate-300 bg-slate-100 text-slate-600'
-  }
-  return 'border-slate-100 text-slate-400 hover:border-slate-300 hover:bg-slate-50'
+
+  // 2. Active highlight
+  const activeStyle = isCurrent 
+    ? 'ring-4 ring-slate-900 ring-offset-2 z-10 scale-110 shadow-xl' 
+    : 'border-2'
+
+  return `${baseStyle} ${activeStyle} rounded-2xl flex items-center justify-center transition-all duration-300`
 }
 
 const handleSubmitFinal = async () => {
-  if (isRevealed.value) return
+  if (isRevealed.value || isWritingLocked.value) return
   isSubmitting.value = true
   submitError.value = ''
   
@@ -386,10 +476,23 @@ const handleSubmitFinal = async () => {
       })
     })
     const result = await res.json()
+
+    if (result.locked) {
+      // Essay already submitted — force lock
+      isWritingLocked.value = true
+      isRevealed.value = true
+      submitError.value = 'Bài tự luận chỉ được nộp một lần.'
+      isSubmitting.value = false
+      stopTimer()
+      return
+    }
+
     if (result.status === 'success') {
       submittedScore.value = result.score ?? 0
       submittedCorrect.value = result.correct ?? 0
       submittedTotal.value = result.total ?? 0
+      hasWritingResponse.value = !!result.has_writing
+      questionResults.value = result.results || {}
     } else {
       submitError.value = result.message || 'Lỗi khi lưu bài thi trên máy chủ.'
       submittedScore.value = 0
@@ -412,11 +515,8 @@ const handleSubmitFinal = async () => {
 .font-headline { font-family: 'Manrope', sans-serif; }
 .font-body { font-family: 'Inter', sans-serif; }
 
-.custom-scrollbar::-webkit-scrollbar { width: 6px; }
-.custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-.custom-scrollbar::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
-.custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #cbd5e1; }
-.custom-scrollbar { scrollbar-width: thin; scrollbar-color: #e2e8f0 transparent; }
+.custom-scrollbar::-webkit-scrollbar { display: none; }
+.custom-scrollbar { scrollbar-width: none; -ms-overflow-style: none; }
 
 .fade-enter-active, .fade-leave-active { transition: opacity 0.3s; }
 .fade-enter-from, .fade-leave-to { opacity: 0; }
