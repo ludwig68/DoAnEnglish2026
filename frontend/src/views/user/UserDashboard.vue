@@ -133,7 +133,7 @@
                       </div>
 
                       <div class="flex items-center justify-end">
-                         <router-link to="/user/assignments" class="px-6 py-3 bg-slate-900 text-white rounded-xl text-[10px] font-black uppercase tracking-[0.2em] text-center hover:bg-emerald-500 transition-all active:scale-95 duration-500 shadow-md">
+                         <router-link :to="`/user/assignments?courseId=${course.id}`" class="px-6 py-3 bg-slate-900 text-white rounded-xl text-[10px] font-black uppercase tracking-[0.2em] text-center hover:bg-emerald-500 transition-all active:scale-95 duration-500 shadow-md">
                             Làm bài tập
                          </router-link>
                       </div>

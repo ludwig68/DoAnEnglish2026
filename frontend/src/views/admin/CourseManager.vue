@@ -213,33 +213,64 @@
                         <div
                           v-for="(lesson, idx) in expandedLessons"
                           :key="lesson.id"
-                          class="lesson-item group/lesson flex items-center gap-3 rounded-xl border border-slate-100 bg-slate-50/60 px-4 py-3 hover:border-emerald-200 hover:bg-emerald-50/40 transition-all"
+                          class="lesson-item group/lesson rounded-xl border border-slate-100 bg-slate-50/60 hover:border-emerald-200 hover:bg-emerald-50/40 transition-all"
                         >
-                          <span class="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-700 text-xs font-black flex items-center justify-center shrink-0">
-                            {{ idx + 1 }}
-                          </span>
-                          <div class="flex-1 min-w-0">
-                            <p class="text-sm font-semibold text-slate-800 truncate">{{ lesson.title }}</p>
-                            <p v-if="lesson.video_url" class="text-xs text-slate-400 mt-0.5 truncate">
-                              <i class="fa-brands fa-youtube text-red-400 mr-1"></i>{{ lesson.video_url }}
-                            </p>
+                          <div class="flex items-center gap-3 px-4 py-3">
+                            <span class="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-700 text-xs font-black flex items-center justify-center shrink-0">
+                              {{ idx + 1 }}
+                            </span>
+                            <div class="flex-1 min-w-0">
+                              <p class="text-sm font-semibold text-slate-800 truncate">{{ lesson.title }}</p>
+                              <p v-if="lesson.video_url" class="text-xs text-slate-400 mt-0.5 truncate">
+                                <i class="fa-brands fa-youtube text-red-400 mr-1"></i>{{ lesson.video_url }}
+                              </p>
+                            </div>
+                            <!-- Action buttons -->
+                            <div class="flex items-center gap-1.5 shrink-0 opacity-0 group-hover/lesson:opacity-100 transition-opacity">
+                              <button
+                                @click="openMaterialUpload(lesson, course)"
+                                class="w-7 h-7 rounded-lg bg-amber-50 text-amber-500 hover:bg-amber-500 hover:text-white flex items-center justify-center transition-colors"
+                                title="Tải tài liệu"
+                              >
+                                <i class="fa-solid fa-cloud-arrow-up text-[0.6rem]"></i>
+                              </button>
+                              <button
+                                @click="openEditLessonModal(lesson, course)"
+                                class="w-7 h-7 rounded-lg bg-blue-50 text-blue-500 hover:bg-blue-500 hover:text-white flex items-center justify-center transition-colors"
+                                title="Sửa bài học"
+                              >
+                                <i class="fa-solid fa-pen text-[0.6rem]"></i>
+                              </button>
+                              <button
+                                @click="confirmDeleteLesson(lesson, course)"
+                                class="w-7 h-7 rounded-lg bg-red-50 text-red-500 hover:bg-red-500 hover:text-white flex items-center justify-center transition-colors"
+                                title="Xóa bài học"
+                              >
+                                <i class="fa-solid fa-trash-can text-[0.6rem]"></i>
+                              </button>
+                            </div>
                           </div>
-                          <!-- Action buttons: edit + delete -->
-                          <div class="flex items-center gap-1.5 shrink-0 opacity-0 group-hover/lesson:opacity-100 transition-opacity">
-                            <button
-                              @click="openEditLessonModal(lesson, course)"
-                              class="w-7 h-7 rounded-lg bg-blue-50 text-blue-500 hover:bg-blue-500 hover:text-white flex items-center justify-center transition-colors"
-                              title="Sửa bài học"
-                            >
-                              <i class="fa-solid fa-pen text-[0.6rem]"></i>
-                            </button>
-                            <button
-                              @click="confirmDeleteLesson(lesson, course)"
-                              class="w-7 h-7 rounded-lg bg-red-50 text-red-500 hover:bg-red-500 hover:text-white flex items-center justify-center transition-colors"
-                              title="Xóa bài học"
-                            >
-                              <i class="fa-solid fa-trash-can text-[0.6rem]"></i>
-                            </button>
+
+                          <!-- Materials attached to this lesson -->
+                          <div v-if="lessonMaterials[lesson.id] && lessonMaterials[lesson.id].length > 0" class="px-4 pb-3 pt-0">
+                            <div class="ml-10 space-y-1.5">
+                              <div v-for="mat in lessonMaterials[lesson.id]" :key="mat.id"
+                                class="flex items-center gap-2.5 px-3 py-2 rounded-lg bg-white border border-slate-100 hover:border-emerald-200 transition-all group/mat">
+                                <i :class="getFileIcon(mat.file_type)" class="text-sm shrink-0"></i>
+                                <div class="flex-1 min-w-0">
+                                  <p class="text-xs font-semibold text-slate-700 truncate">{{ mat.title }}</p>
+                                  <p class="text-[0.6rem] text-slate-400">{{ formatFileSize(mat.file_size) }}</p>
+                                </div>
+                                <a :href="getFileUrl(mat.file_url)" target="_blank"
+                                  class="w-6 h-6 rounded-md bg-slate-50 text-slate-400 hover:bg-emerald-50 hover:text-emerald-600 flex items-center justify-center transition-colors shrink-0" title="Xem">
+                                  <i class="fa-solid fa-arrow-up-right-from-square text-[0.5rem]"></i>
+                                </a>
+                                <button @click="deleteMaterial(mat.id, lesson.id)"
+                                  class="w-6 h-6 rounded-md bg-slate-50 text-slate-400 hover:bg-red-50 hover:text-red-500 flex items-center justify-center transition-colors shrink-0 opacity-0 group-hover/mat:opacity-100" title="Xóa">
+                                  <i class="fa-solid fa-trash-can text-[0.5rem]"></i>
+                                </button>
+                              </div>
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -693,13 +724,100 @@
         </form>
       </div>
     </div>
+    <!-- Modal Upload Tài liệu -->
+    <div
+      v-if="isMaterialModalOpen"
+      class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate__animated animate__fadeIn animate__faster"
+    >
+      <div
+        class="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden animate__animated animate__zoomIn animate__faster"
+      >
+        <div
+          class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-amber-50/50"
+        >
+          <h3 class="text-lg font-bold text-amber-800 flex items-center gap-2">
+            <i class="fa-solid fa-cloud-arrow-up text-amber-600"></i> Tải tài liệu lên
+          </h3>
+          <button
+            @click="closeMaterialModal"
+            class="text-slate-400 hover:text-red-500 transition"
+          >
+            <i class="fa-solid fa-xmark text-xl"></i>
+          </button>
+        </div>
+
+        <div class="p-6 space-y-5">
+          <!-- Context info -->
+          <div class="bg-amber-50 rounded-xl p-4 border border-amber-100 flex items-center gap-4">
+            <div class="w-10 h-10 rounded-lg bg-white flex items-center justify-center text-amber-600 shadow-sm shrink-0">
+              <i class="fa-solid fa-book-open"></i>
+            </div>
+            <div>
+              <p class="text-[0.65rem] font-bold text-amber-600 uppercase tracking-widest">Bài học</p>
+              <p class="text-sm font-black text-slate-800 line-clamp-1">{{ materialUploadContext.lessonTitle }}</p>
+              <p class="text-[0.6rem] text-slate-500 mt-0.5">Khóa: {{ materialUploadContext.courseTitle }}</p>
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1"
+              >Tên tài liệu <span class="text-red-500">*</span></label
+            >
+            <input
+              v-model="materialForm.title"
+              type="text"
+              required
+              placeholder="VD: Slide bài 1 - Ngữ pháp"
+              class="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400/50"
+            />
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1"
+              >Chọn file <span class="text-red-500">*</span></label
+            >
+            <input
+              type="file"
+              ref="materialFileInput"
+              accept=".pdf,.mp3,.wav,.ogg,.m4a,.mp4,.webm,.doc,.docx,.pptx,.xlsx,.jpg,.jpeg,.png,.webp,.gif"
+              class="block w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-600 file:mr-4 file:rounded-full file:border-0 file:bg-amber-50 file:px-3 file:py-2 file:text-sm file:font-bold file:text-amber-700"
+              @change="handleMaterialFileChange"
+            />
+            <p class="mt-1.5 text-xs text-slate-400">PDF, Audio (MP3/WAV), Video (MP4), Word, PPT, Excel, Ảnh. Tối đa 50MB.</p>
+          </div>
+
+          <div v-if="materialUploadError" class="p-3 bg-red-50 border border-red-200 rounded-xl text-red-700 text-xs font-medium flex items-center gap-2">
+            <i class="fa-solid fa-circle-exclamation"></i> {{ materialUploadError }}
+          </div>
+
+          <div class="pt-3 flex justify-end gap-3 border-t border-slate-100">
+            <button
+              type="button"
+              @click="closeMaterialModal"
+              class="px-5 py-2.5 rounded-xl font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 transition"
+            >
+              Hủy bỏ
+            </button>
+            <button
+              @click="submitMaterialUpload"
+              :disabled="isUploadingMaterial"
+              class="px-5 py-2.5 rounded-xl font-bold flex items-center gap-2 text-white shadow-lg shadow-amber-200 hover:-translate-y-0.5 transition-all duration-300 disabled:opacity-60"
+              style="background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)"
+            >
+              <i :class="isUploadingMaterial ? 'fa-solid fa-spinner animate-spin' : 'fa-solid fa-cloud-arrow-up'"></i>
+              {{ isUploadingMaterial ? 'Đang tải...' : 'Tải lên' }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup>
-import { computed, onMounted, ref } from "vue";
+import { computed, onMounted, ref, reactive } from "vue";
 import { useRouter } from "vue-router";
-import { apiFetch } from "../../utils/api";
+import { apiFetch, getFileUrl } from "../../utils/api";
 import { clearAuthSession } from "../../utils/auth";
 import { openConfirm } from "../../utils/confirm";
 
@@ -1066,8 +1184,9 @@ const toggleExpand = async (course) => {
         expandedLessons.value = result.data.lessons || []
       }
     }
+    await loadLessonMaterials(course.id)
   } catch (e) {
-    console.error('Không thể tải bài học:', e)
+    console.error('Không thể tải dữ liệu:', e)
   } finally {
     isLoadingLessons.value = false
   }
@@ -1225,6 +1344,169 @@ const confirmDeleteLesson = async (lesson, course) => {
   } catch (e) {
     alert('Không thể kết nối máy chủ.')
   }
+}
+
+// --- MATERIALS MANAGEMENT ---
+const isMaterialModalOpen = ref(false)
+const isUploadingMaterial = ref(false)
+const materialUploadError = ref('')
+const materialFileInput = ref(null)
+const selectedMaterialFile = ref(null)
+const materialForm = ref({ title: '' })
+const materialUploadContext = ref({ courseId: null, lessonId: null, courseTitle: '', lessonTitle: '' })
+const lessonMaterials = reactive({})
+
+const openMaterialUpload = (lesson, course) => {
+  materialUploadContext.value = {
+    courseId: course.id,
+    lessonId: lesson.id,
+    courseTitle: course.title,
+    lessonTitle: lesson.title
+  }
+  materialForm.value = { title: '' }
+  selectedMaterialFile.value = null
+  materialUploadError.value = ''
+  isMaterialModalOpen.value = true
+}
+
+const closeMaterialModal = () => {
+  isMaterialModalOpen.value = false
+  selectedMaterialFile.value = null
+  materialUploadError.value = ''
+}
+
+const handleMaterialFileChange = (e) => {
+  const file = e.target.files?.[0]
+  if (!file) { selectedMaterialFile.value = null; return }
+  if (file.size > 50 * 1024 * 1024) {
+    materialUploadError.value = 'File quá lớn (tối đa 50MB).'
+    selectedMaterialFile.value = null
+    return
+  }
+  materialUploadError.value = ''
+  selectedMaterialFile.value = file
+  if (!materialForm.value.title) {
+    materialForm.value.title = file.name.replace(/\.[^/.]+$/, '')
+  }
+}
+
+const submitMaterialUpload = async () => {
+  if (!materialForm.value.title.trim()) {
+    materialUploadError.value = 'Vui lòng nhập tên tài liệu.'
+    return
+  }
+  if (!selectedMaterialFile.value) {
+    materialUploadError.value = 'Vui lòng chọn file tài liệu.'
+    return
+  }
+
+  isUploadingMaterial.value = true
+  materialUploadError.value = ''
+
+  try {
+    // Step 1: Upload file
+    const formData = new FormData()
+    formData.append('file', selectedMaterialFile.value)
+
+    const uploadRes = await apiFetch('admin/upload_material.php', {
+      method: 'POST',
+      body: formData
+    })
+    const uploadResult = await uploadRes.json()
+    if (uploadResult.status !== 'success') {
+      materialUploadError.value = uploadResult.message || 'Lỗi khi tải file.'
+      return
+    }
+
+    // Step 2: Save record
+    const saveRes = await apiFetch('admin/materials.php', {
+      method: 'POST',
+      body: JSON.stringify({
+        course_id: materialUploadContext.value.courseId,
+        lesson_id: materialUploadContext.value.lessonId,
+        title: materialForm.value.title.trim(),
+        file_type: uploadResult.data.file_type,
+        file_url: uploadResult.data.file_url,
+        file_size: uploadResult.data.file_size,
+        original_name: uploadResult.data.original_name,
+      })
+    })
+    const saveResult = await saveRes.json()
+    if (saveResult.status === 'success') {
+      closeMaterialModal()
+      loadLessonMaterials(materialUploadContext.value.courseId)
+    } else {
+      materialUploadError.value = saveResult.message
+    }
+  } catch (err) {
+    materialUploadError.value = 'Lỗi kết nối máy chủ.'
+  } finally {
+    isUploadingMaterial.value = false
+  }
+}
+
+const loadLessonMaterials = async (courseId) => {
+  try {
+    const res = await apiFetch(`admin/materials.php?course_id=${courseId}`)
+    const result = await res.json()
+    if (result.status === 'success') {
+      // Group by lesson_id
+      const grouped = {}
+      for (const mat of result.data) {
+        const lid = mat.lesson_id || 0
+        if (!grouped[lid]) grouped[lid] = []
+        grouped[lid].push(mat)
+      }
+      // Merge into reactive object
+      for (const key of Object.keys(grouped)) {
+        lessonMaterials[key] = grouped[key]
+      }
+    }
+  } catch {}
+}
+
+const deleteMaterial = async (matId, lessonId) => {
+  const confirmed = await openConfirm({
+    title: 'Xóa tài liệu',
+    message: 'Bạn có chắc muốn xóa tài liệu này? File sẽ bị xóa vĩnh viễn.',
+    confirmText: 'Xóa',
+    cancelText: 'Hủy',
+    tone: 'danger'
+  })
+  if (!confirmed) return
+
+  try {
+    const res = await apiFetch(`admin/materials.php?id=${matId}`, { method: 'DELETE' })
+    const result = await res.json()
+    if (result.status === 'success') {
+      if (lessonMaterials[lessonId]) {
+        lessonMaterials[lessonId] = lessonMaterials[lessonId].filter(m => m.id !== matId)
+      }
+    } else {
+      alert('Lỗi: ' + result.message)
+    }
+  } catch {
+    alert('Lỗi kết nối.')
+  }
+}
+
+const getFileIcon = (type) => {
+  const icons = {
+    pdf: 'fa-solid fa-file-pdf text-red-500',
+    audio: 'fa-solid fa-file-audio text-blue-500',
+    video: 'fa-solid fa-file-video text-purple-500',
+    document: 'fa-solid fa-file-word text-blue-600',
+    image: 'fa-solid fa-file-image text-emerald-500',
+    other: 'fa-solid fa-file text-slate-400'
+  }
+  return icons[type] || icons.other
+}
+
+const formatFileSize = (bytes) => {
+  if (!bytes) return ''
+  if (bytes < 1024) return bytes + ' B'
+  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB'
+  return (bytes / (1024 * 1024)).toFixed(1) + ' MB'
 }
 
 const formatCurrency = (value) =>

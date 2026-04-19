@@ -266,7 +266,9 @@
                 <!-- Custom Slider -->
                 <div class="relative h-2.5 bg-white rounded-full border border-slate-100 shadow-sm overflow-hidden group-hover:border-emerald-200 transition-colors">
                   <input type="range" min="0" max="10" step="0.5" v-model.number="rubric.score"
-                    class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-50">
+                    :disabled="isGraded"
+                    class="absolute inset-0 w-full h-full opacity-0 z-50 transition-all"
+                    :class="isGraded ? 'cursor-not-allowed' : 'cursor-pointer'">
                   <div 
                     class="h-full rounded-full transition-all duration-300 relative"
                     :class="rubric.score >= 7 ? 'bg-emerald-500' : rubric.score >= 5 ? 'bg-amber-400' : 'bg-red-400'"
@@ -301,29 +303,40 @@
                 <i class="fa-solid fa-pen-to-square text-emerald-500"></i> Phản hồi chi tiết
               </h3>
               <textarea v-model="feedbackText" rows="6"
+                :disabled="isGraded"
                 placeholder="Nhập nhận xét xây dựng cho học viên..."
-                class="w-full resize-none rounded-[2rem] border-2 border-transparent bg-white px-6 py-6 text-[13px] font-bold text-slate-700 leading-[1.8] outline-none focus:border-emerald-500/20 focus:ring-4 focus:ring-emerald-500/5 transition-all shadow-sm placeholder:text-slate-200">
+                class="w-full resize-none rounded-[2rem] border-2 border-transparent bg-white px-6 py-6 text-[13px] font-bold text-slate-700 leading-[1.8] outline-none transition-all shadow-sm placeholder:text-slate-200"
+                :class="isGraded ? 'opacity-70 bg-slate-50' : 'focus:border-emerald-500/20 focus:ring-4 focus:ring-emerald-500/5'">
               </textarea>
             </div>
           </div>
 
           <!-- Bottom Actions -->
           <div class="p-8 pt-0 flex gap-4">
-            <button 
-              @click="saveDraft"
-              class="flex-1 py-4 rounded-2xl bg-white border border-slate-100 text-slate-500 text-[11px] font-black uppercase tracking-widest hover:bg-slate-50 hover:text-slate-800 transition-all active:scale-95"
-            >
-              Lưu bản nháp
-            </button>
-            <button 
-              @click="submitGrade" 
-              :disabled="isGrading"
-              class="flex-[1.5] py-4 rounded-2xl text-[11px] font-black uppercase tracking-widest text-white shadow-xl shadow-emerald-200 hover:-translate-y-1 transition-all disabled:opacity-50 flex items-center justify-center gap-3 active:scale-95"
-              style="background: linear-gradient(135deg, #7ae582 0%, #16a34a 100%)"
-            >
-              <span v-if="isGrading" class="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
-              Gửi &amp; Công bố điểm
-            </button>
+            <template v-if="!isGraded">
+              <button 
+                @click="saveDraft"
+                class="flex-1 py-4 rounded-2xl bg-white border border-slate-100 text-slate-500 text-[11px] font-black uppercase tracking-widest hover:bg-slate-50 hover:text-slate-800 transition-all active:scale-95"
+              >
+                Lưu bản nháp
+              </button>
+              <button 
+                @click="submitGrade" 
+                :disabled="isGrading"
+                class="flex-[1.5] py-4 rounded-2xl text-[11px] font-black uppercase tracking-widest text-white bg-emerald-500 hover:bg-emerald-600 shadow-lg shadow-emerald-500/25 hover:shadow-emerald-500/35 hover:-translate-y-1 transition-all disabled:opacity-50 flex items-center justify-center gap-3 active:scale-95"
+              >
+                <span v-if="isGrading" class="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+                Gửi &amp; Công bố điểm
+              </button>
+            </template>
+            <template v-else>
+               <button 
+                @click="gradingModal = false"
+                class="w-full py-4 rounded-2xl text-[11px] font-black uppercase tracking-widest text-white bg-slate-800 hover:bg-slate-900 shadow-lg shadow-slate-900/20 hover:-translate-y-1 transition-all active:scale-95 flex items-center justify-center gap-2"
+              >
+                Đóng
+              </button>
+            </template>
           </div>
 
           <div v-if="gradeSuccess" class="px-8 pb-8 transition-all animate__animated animate__fadeInUp">
@@ -384,6 +397,8 @@ const rubricItems = ref([
 ])
 
 // --- Computed ---
+const isGraded = computed(() => selectedSub.value && selectedSub.value.status === 'completed')
+
 const aggregateScore = computed(() => {
   const total = rubricItems.value.reduce((s, r) => s + Number(r.score), 0)
   return total / rubricItems.value.length
@@ -450,7 +465,10 @@ const openGrader = async (subId) => {
       feedbackText.value = result.data.feedback || ''
       gradeSuccess.value = false
       if (result.data.rubric_data) {
-        const rData = JSON.parse(result.data.rubric_data)
+        // rubric_data có thể là string JSON hoặc object
+        const rData = typeof result.data.rubric_data === 'string'
+          ? JSON.parse(result.data.rubric_data)
+          : result.data.rubric_data
         rubricItems.value.forEach(item => {
           if (rData[item.key] !== undefined) item.score = rData[item.key]
         })

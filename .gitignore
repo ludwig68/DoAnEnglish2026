@@ -1,2 +1,4 @@
 # Database configuration (chứa mật khẩu - KHÔNG được push lên Git)
 backend/config/db.php
+backend/config/jwt.local.php
+backend/config/.jwt_secret

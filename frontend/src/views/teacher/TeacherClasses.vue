@@ -138,8 +138,7 @@
                 <span class="text-emerald-500">{{ progressPct(cls) }}%</span>
               </div>
               <div class="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
-                <div class="h-full rounded-full transition-all duration-1000 ease-out"
-                  style="background: linear-gradient(90deg, #7ae582 0%, #16a34a 100%)"
+                <div class="h-full rounded-full bg-emerald-500 transition-all duration-1000 ease-out"
                   :style="`width: ${progressPct(cls)}%`"></div>
               </div>
             </div>

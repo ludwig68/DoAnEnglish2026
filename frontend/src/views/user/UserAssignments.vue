@@ -30,21 +30,74 @@
           <router-link to="/courses" class="text-[11px] font-black text-emerald-500 uppercase hover:underline">Khám phá khóa học ngay</router-link>
         </div>
 
-        <!-- Duyệt qua từng khóa học -->
-        <div v-for="(course, cIdx) in courses" :key="course.course_id" :class="cIdx > 0 ? 'mt-20' : ''">
-
-          <!-- Tiêu đề khóa học -->
+        <!-- PHASE 1: CHỌN KHÓA HỌC -->
+        <div v-if="!selectedCourseId && courses.length > 1" class="animate__animated animate__fadeIn">
           <div class="mb-12">
-            <div class="flex items-center gap-3 mb-3">
-              <span class="px-3 py-1 bg-emerald-50 text-emerald-600 text-[9px] font-black uppercase tracking-[0.15em] rounded-lg border border-emerald-100/50">{{ course.level || 'Khóa học' }}</span>
-              <span class="text-[10px] text-emerald-500 font-black uppercase tracking-widest">{{ course.shift_name || course.class_name }}</span>
-            </div>
+            <p class="text-[10px] font-black uppercase tracking-[0.3em] text-emerald-500 mb-3">Khóa học của bạn</p>
             <h2 class="text-3xl lg:text-4xl font-headline font-black text-slate-800 tracking-tight leading-tight mb-3">
-              {{ course.course_title }}
+              Chọn Lớp Để Làm Bài
             </h2>
             <p class="text-sm text-slate-400 font-medium leading-relaxed max-w-lg">
-              Lựa chọn bài học bạn muốn rèn luyện hôm nay để đạt được mục tiêu học tập.
+              Bạn đang tham gia nhiều khóa học, vui lòng lựa chọn khóa học bên dưới để tiếp tục.
             </p>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div 
+              v-for="course in courses" :key="course.course_id"
+              @click="selectedCourseId = course.course_id"
+              class="bg-white rounded-[2.5rem] p-8 border border-slate-50 shadow-[0_8px_30px_rgb(0,0,0,0.02)] hover:shadow-2xl hover:shadow-emerald-500/10 hover:-translate-y-2 transition-all duration-500 group cursor-pointer relative overflow-hidden"
+            >
+              <div class="absolute -right-10 -top-10 w-40 h-40 bg-emerald-50 rounded-full blur-3xl group-hover:bg-emerald-100/50 transition-all"></div>
+              <div class="relative z-10">
+                <div class="flex items-center gap-3 mb-6">
+                  <span class="px-3 py-1 bg-emerald-50 text-emerald-600 text-[9px] font-black uppercase tracking-[0.15em] rounded-lg border border-emerald-100/50">{{ course.level || 'Khóa học' }}</span>
+                  <span class="text-[10px] text-emerald-500 font-black uppercase tracking-widest">{{ course.shift_name || course.class_name }}</span>
+                </div>
+                <h3 class="text-xl font-headline font-black text-slate-800 tracking-tight leading-tight mb-4 group-hover:text-emerald-600 transition-colors">
+                  {{ course.course_title }}
+                </h3>
+                <div class="flex flex-col gap-2">
+                  <p class="text-[12px] font-bold text-slate-500 flex items-center gap-2"><i class="fa-solid fa-layer-group opacity-50"></i> {{ course.lessons?.length || 0 }} Chương học</p>
+                </div>
+                
+                <button class="mt-8 w-full py-4 rounded-[1.5rem] bg-slate-50 text-slate-600 font-black text-[11px] uppercase tracking-widest group-hover:bg-emerald-500 group-hover:text-white transition-all flex items-center justify-center gap-2">
+                  Xem bài tập <i class="fa-solid fa-arrow-right-long group-hover:translate-x-1 transition-transform"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- PHASE 2: HIỂN THỊ BÀI TẬP CỦA KHÓA HỌC -->
+        <div v-else-if="activeCourse" class="animate__animated animate__fadeIn">
+
+          <!-- Tiêu đề khóa học -->
+          <div class="mb-12 flex flex-col md:flex-row md:items-end justify-between gap-6 pb-6 border-b border-slate-50">
+            <div>
+              <nav v-if="courses.length > 1" class="mb-4 flex items-center gap-3 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
+                <span @click="selectedCourseId = null" class="hover:text-emerald-500 cursor-pointer transition-colors">
+                  <i class="fa-solid fa-arrow-left mr-1.5"></i>Khóa học khác
+                </span>
+                <i class="fa-solid fa-chevron-right text-[8px] opacity-50"></i>
+                <span class="text-emerald-500">Bài tập</span>
+              </nav>
+
+              <div class="flex items-center gap-3 mb-3">
+                <span class="px-3 py-1 bg-emerald-50 text-emerald-600 text-[9px] font-black uppercase tracking-[0.15em] rounded-lg border border-emerald-100/50">{{ activeCourse.level || 'Khóa học' }}</span>
+                <span class="text-[10px] text-emerald-500 font-black uppercase tracking-widest">{{ activeCourse.shift_name || activeCourse.class_name }}</span>
+              </div>
+              <h2 class="text-3xl lg:text-4xl font-headline font-black text-slate-800 tracking-tight leading-tight mb-3">
+                {{ activeCourse.course_title }}
+              </h2>
+              <p class="text-sm text-slate-400 font-medium leading-relaxed max-w-lg">
+                Lựa chọn bài học bạn muốn rèn luyện hôm nay để đạt được mục tiêu học tập.
+              </p>
+            </div>
+            
+            <button v-if="courses.length > 1" @click="selectedCourseId = null" class="shrink-0 px-6 py-3 rounded-2xl border-2 border-slate-100 hover:border-emerald-500 text-slate-500 hover:text-emerald-600 text-[11px] font-black uppercase tracking-widest transition-all">
+              <i class="fa-solid fa-rotate mr-2"></i>Đổi khóa
+            </button>
           </div>
 
           <div class="grid grid-cols-12 gap-10">
@@ -52,7 +105,7 @@
             <!-- ═══ CỘT CHÍNH: Lesson Cards (8/12) ═══ -->
             <div class="col-span-12 lg:col-span-8">
               <!-- Không có lesson -->
-              <div v-if="course.lessons.length === 0" class="bg-slate-50/50 rounded-[2.5rem] border border-dashed border-slate-200 p-16 text-center">
+              <div v-if="activeCourse.lessons.length === 0" class="bg-slate-50/50 rounded-[2.5rem] border border-dashed border-slate-200 p-16 text-center">
                 <div class="w-14 h-14 bg-white rounded-2xl flex items-center justify-center mx-auto mb-5 text-slate-200 shadow-sm">
                   <i class="fa-solid fa-book text-xl"></i>
                 </div>
@@ -62,9 +115,9 @@
               <!-- Grid lessons -->
               <div v-else class="grid grid-cols-1 sm:grid-cols-2 gap-8">
                 <div
-                  v-for="(lesson, idx) in course.lessons"
+                  v-for="(lesson, idx) in activeCourse.lessons"
                   :key="lesson.id"
-                  @click="!lesson.locked && openLessonDetail(lesson, course)"
+                  @click="!lesson.locked && openLessonDetail(lesson, activeCourse)"
                   class="group relative bg-white rounded-[2rem] border transition-all duration-500 overflow-hidden"
                   :class="[
                     lesson.locked
@@ -188,13 +241,12 @@
                   </button>
                 </div>
               </section>
+            </div> <!-- End CỘT PHỤ -->
+          </div> <!-- End grid -->
+        </div> <!-- End PHASE 2 -->
 
-            </div>
-          </div>
-
-        </div>
-      </div>
-    </div>
+      </div> <!-- End padding wrapper -->
+    </div> <!-- End main content wrapper -->
 
     <!-- ═══ MODAL: Chi tiết bài tập của Lesson ═══ -->
     <div v-if="selectedLesson" class="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 px-4 py-8 backdrop-blur-md" @click.self="closeDetail">
@@ -297,7 +349,7 @@
               <button v-if="assignment.status === 'completed' || assignment.status === 'pending_grading'" @click="launchExercise(assignment)" class="px-8 py-3.5 bg-emerald-50 text-emerald-700 border border-emerald-100 rounded-[1.25rem] text-[13px] font-black hover:bg-emerald-100 hover:text-emerald-800 transition-colors shadow-sm">
                 {{ assignment.status === 'pending_grading' ? 'Xem lại bài' : 'Làm lại' }}
               </button>
-              <button v-else @click="launchExercise(assignment)" class="px-10 py-3.5 bg-[#16a34a] text-white rounded-[1.25rem] text-[13px] font-black shadow-[0_5px_15px_rgba(22,163,74,0.25)] hover:shadow-[0_8px_25px_rgba(22,163,74,0.35)] hover:bg-[#15803d] hover:-translate-y-0.5 transition-all outline-none">
+              <button v-else @click="launchExercise(assignment)" class="px-10 py-3.5 text-[13px] font-black tracking-widest text-white bg-emerald-500 hover:bg-emerald-600 shadow-lg shadow-emerald-500/25 hover:shadow-emerald-500/35 hover:-translate-y-0.5 transition-all duration-300 rounded-[1.25rem] outline-none">
                 Làm bài ngay
               </button>
             </div>
@@ -325,7 +377,7 @@
  * Bảng xếp hạng vẫn dùng mock data.
  */
 import { computed, onMounted, ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import { apiFetch } from '../../utils/api'
 import { clearAuthSession } from '../../utils/auth'
 import { notifyError } from '../../utils/notify'
@@ -340,11 +392,13 @@ const props = defineProps({
 })
 
 const router = useRouter()
+const route = useRoute()
 
 // ── State ──
 const isLoading = ref(true)
 const errorMessage = ref('')
 const courses = ref([])
+const selectedCourseId = ref(null)
 const selectedLesson = ref(null)
 const selectedLessonCourse = ref(null)
 const activeFilter = ref('all')
@@ -352,6 +406,7 @@ const activeExercise = ref(null) // { quiz, courseName }
 
 // ── Computed ──
 const userName = computed(() => props.user?.full_name || 'Học viên')
+const activeCourse = computed(() => courses.value.find(c => c.course_id === selectedCourseId.value) || null)
 
 const filteredAssignments = computed(() => {
   if (!selectedLesson.value) return []
@@ -400,6 +455,12 @@ const fetchAssignments = async () => {
       const newCourses = result.data.courses || []
       courses.value = newCourses
       
+      if (route.query.courseId) {
+        selectedCourseId.value = parseInt(route.query.courseId)
+      } else if (newCourses.length === 1) {
+        selectedCourseId.value = newCourses[0].course_id
+      }
+      
       // Preserve active lesson if modal is open to update progress reactively
       if (selectedLesson.value) {
         for (const c of newCourses) {
@@ -441,9 +502,20 @@ const closeDetail = () => {
 }
 
 const launchExercise = (assignment) => {
+  if (String(assignment.id).startsWith('wa_')) {
+    if (assignment.status === 'completed') {
+      notifySuccess(`Giảng viên đã chấm bài của bạn với số điểm: ${assignment.score || 0}`, 'Đã có kết quả')
+    } else if (assignment.status === 'pending_grading') {
+      notifyWarning('Bài luận của bạn đã được nộp và đang chờ giảng viên chấm điểm.', 'Chờ chấm bài')
+    } else {
+      notifyWarning('Vui lòng nộp bài viết này qua hệ thống Nộp bài tập chuyên dụng (đang hoàn thiện).', 'Đảm bảo chất lượng')
+    }
+    return
+  }
   activeExercise.value = {
     quiz: assignment,
-    courseName: selectedLessonCourse.value?.course_title || ''
+    courseName: selectedLessonCourse.value?.course_title || 'Khóa học',
+    lessonTitle: selectedLesson.value?.title || 'Bài học'
   }
 }
 

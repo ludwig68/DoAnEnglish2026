@@ -144,6 +144,22 @@
           </div>
         </div>
 
+        <router-link to="/teacher/materials"
+          active-class="bg-emerald-50 text-emerald-500"
+          class="flex items-center gap-4 px-6 py-4 rounded-2xl font-headline text-[14px] font-black tracking-tight group shadow-sm transition-all text-[#C2C9D1] hover:text-[#1A1C1B] hover:bg-slate-50"
+          :class="$route.path.startsWith('/teacher/materials') ? 'bg-emerald-50 text-emerald-500' : ''">
+          <i class="fa-solid fa-folder-open text-lg transition-transform group-hover:scale-110 w-6"></i>
+          <span>Tài liệu lớp học</span>
+        </router-link>
+
+        <router-link to="/teacher/attendance"
+          active-class="bg-emerald-50 text-emerald-500"
+          class="flex items-center gap-4 px-6 py-4 rounded-2xl font-headline text-[14px] font-black tracking-tight group shadow-sm transition-all text-[#C2C9D1] hover:text-[#1A1C1B] hover:bg-slate-50"
+          :class="$route.path.startsWith('/teacher/attendance') ? 'bg-emerald-50 text-emerald-500' : ''">
+          <i class="fa-solid fa-user-check text-lg transition-transform group-hover:scale-110 w-6"></i>
+          <span>Điểm danh</span>
+        </router-link>
+
         <!-- ── Divider ── -->
         <div class="pt-4 pb-2">
           <p class="text-[9px] font-black uppercase tracking-[0.2em] text-slate-200 px-4">Sắp ra mắt</p>
@@ -155,19 +171,7 @@
           <span class="ml-auto text-[8px] font-black uppercase tracking-widest bg-slate-100 text-slate-400 px-2 py-0.5 rounded-full">Soon</span>
         </div>
 
-        <div class="flex items-center gap-4 px-6 py-4 rounded-2xl font-headline text-[14px] font-black tracking-tight text-slate-200 cursor-not-allowed select-none">
-          <i class="fa-regular fa-bell text-lg w-6"></i>
-          <span>Thông báo</span>
-          <span class="ml-auto text-[8px] font-black uppercase tracking-widest bg-slate-100 text-slate-400 px-2 py-0.5 rounded-full">Soon</span>
-        </div>
 
-        <router-link to="/teacher/attendance"
-          active-class="bg-emerald-50 text-emerald-500"
-          class="flex items-center gap-4 px-6 py-4 rounded-2xl font-headline text-[14px] font-black tracking-tight group shadow-sm transition-all text-[#C2C9D1] hover:text-[#1A1C1B] hover:bg-slate-50"
-          :class="$route.path.startsWith('/teacher/attendance') ? 'bg-emerald-50 text-emerald-500' : ''">
-          <i class="fa-solid fa-user-check text-lg transition-transform group-hover:scale-110 w-6"></i>
-          <span>Điểm danh</span>
-        </router-link>
       </nav>
 
        <!-- Hồ sơ & Đăng xuất (Dưới cùng Sidebar) -->

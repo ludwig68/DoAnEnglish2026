@@ -179,11 +179,42 @@
       </div>
 
       <!-- ══ TAB: Tài liệu ══ -->
-      <div v-else-if="activeTab === 'resources'" class="bg-white rounded-[2.5rem] border border-slate-50 shadow-sm p-8">
-        <div class="flex items-center justify-center flex-col py-24 text-slate-400">
-          <i class="fa-solid fa-folder-open text-5xl mb-4 opacity-30"></i>
-          <p class="font-black text-lg">Tài liệu lớp học</p>
-          <p class="text-sm mt-1 opacity-70">Chức năng đang được phát triển</p>
+      <div v-else-if="activeTab === 'resources'" class="space-y-6">
+        <div v-if="isLoadingMaterials" class="flex items-center justify-center py-20">
+          <div class="h-6 w-6 animate-spin rounded-full border-2 border-emerald-200 border-t-emerald-500"></div>
+          <span class="ml-2 text-sm text-slate-400">Đang tải tài liệu...</span>
+        </div>
+        
+        <div v-else-if="materialsData.length === 0" class="bg-white rounded-[2.5rem] border border-slate-50 shadow-sm p-8">
+          <div class="flex items-center justify-center flex-col py-24 text-slate-400">
+            <i class="fa-solid fa-folder-open text-5xl mb-4 opacity-30"></i>
+            <p class="font-black text-lg">Tài liệu lớp học</p>
+            <p class="text-sm mt-1 opacity-70">Hiện không có tài liệu nào diễn ra trong khóa học này.</p>
+          </div>
+        </div>
+
+        <div v-else v-for="course in materialsData" :key="course.course_id" class="bg-white rounded-[2.5rem] border border-slate-50 shadow-sm overflow-hidden p-8 space-y-8">
+          <!-- Tài liệu chung của khóa -->
+          <div v-if="course.general_materials && course.general_materials.length > 0">
+            <h3 class="text-[11px] font-black uppercase tracking-[0.15em] text-slate-400 mb-4 flex items-center gap-2">
+              <i class="fa-solid fa-folder text-emerald-400"></i> Tài liệu chung
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <FileCard v-for="mat in course.general_materials" :key="mat.id" :mat="mat" />
+            </div>
+          </div>
+
+          <!-- Tài liệu theo từng Bài học -->
+          <div v-for="lesson in course.lessons" :key="lesson.lesson_id" class="space-y-4">
+             <h3 class="text-sm font-black text-slate-700 flex items-center gap-2 py-2 border-b border-slate-100 border-dashed">
+               <i class="fa-solid fa-layer-group text-emerald-400 text-xs"></i> 
+               {{ lesson.lesson_title }}
+               <span class="text-[10px] font-black bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full ml-2">{{ lesson.materials.length }}</span>
+             </h3>
+             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+               <FileCard v-for="mat in lesson.materials" :key="mat.id" :mat="mat" />
+             </div>
+          </div>
         </div>
       </div>
     </template>
@@ -191,18 +222,21 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { apiFetch } from '../../utils/api'
 import { notifyError } from '../../utils/notify'
+import FileCard from './components/FileCard.vue'
 
 const route = useRoute()
 const classId = route.params.id
 
 const isLoading = ref(true)
+const isLoadingMaterials = ref(false)
 const className = ref('')
 const students = ref([])
 const schedules = ref([])
+const materialsData = ref([])
 const activeTab = ref('students')
 
 const tabs = [
@@ -236,6 +270,27 @@ const loadDetail = async () => {
     isLoading.value = false
   }
 }
+
+const loadMaterials = async () => {
+  isLoadingMaterials.value = true
+  try {
+    const res = await apiFetch(`teacher/materials.php?class_id=${classId}`)
+    const result = await res.json()
+    if (result.status === 'success') {
+      materialsData.value = result.data || []
+    }
+  } catch (error) {
+    console.error("Lỗi tải tài liệu:", error)
+  } finally {
+    isLoadingMaterials.value = false
+  }
+}
+
+watch(activeTab, (newVal) => {
+  if (newVal === 'resources' && materialsData.value.length === 0) {
+    loadMaterials()
+  }
+})
 
 onMounted(loadDetail)
 </script>

@@ -131,6 +131,55 @@
                 :key="currentQuestion.id"
               />
             </keep-alive>
+
+            <!-- ─ Teacher Feedback Box ─ -->
+            <transition name="fade">
+              <div v-if="isRevealed && prevSubmission?.sub_status === 'completed' && (currentQuestion?.question_type === 'writing' || currentQuestion?.question_type === 'essay') && (prevSubmission?.feedback || parsedRubric)" 
+                class="mt-10 bg-white rounded-[2.5rem] border border-slate-100 shadow-xl shadow-emerald-500/5 p-8 relative overflow-hidden group">
+                
+                <!-- Decorative background elements -->
+                <div class="absolute -right-20 -bottom-20 w-64 h-64 bg-emerald-50 rounded-full blur-3xl opacity-50 group-hover:bg-emerald-100 transition-colors duration-700 pointer-events-none"></div>
+
+                <div class="flex flex-col md:flex-row gap-10 relative z-10">
+                  <!-- Rubric Details -->
+                  <div v-if="parsedRubric" class="flex-1 space-y-6">
+                    <h4 class="text-[11px] font-black uppercase tracking-[0.2em] text-emerald-600 flex items-center gap-2 mb-2">
+                      <i class="fa-solid fa-chart-pie"></i> Điểm thành phần
+                    </h4>
+                    
+                    <div v-for="(item, idx) in parsedRubric" :key="idx" class="space-y-3">
+                      <div class="flex items-end justify-between">
+                        <span class="text-[11px] font-black text-slate-600 uppercase tracking-widest">{{ item.label }}</span>
+                        <span class="text-xl font-headline font-black transition-colors"
+                          :class="item.score >= 7 ? 'text-emerald-500' : item.score >= 5 ? 'text-amber-500' : 'text-red-400'">
+                          {{ parseFloat(item.score).toFixed(1) }}
+                        </span>
+                      </div>
+                      <div class="relative h-2 bg-slate-50 rounded-full overflow-hidden border border-slate-100">
+                        <div class="h-full rounded-full transition-all duration-1000"
+                          :class="item.score >= 7 ? 'bg-emerald-500' : item.score >= 5 ? 'bg-amber-400' : 'bg-red-400'"
+                          :style="{ width: `${(item.score / 10) * 100}%` }">
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Text Feedback -->
+                  <div class="flex-1 relative">
+                    <div v-if="parsedRubric" class="absolute -left-5 top-0 bottom-0 w-px bg-slate-100 hidden md:block"></div>
+                    <div class="md:pl-5">
+                      <h4 class="text-[11px] font-black uppercase tracking-[0.2em] text-emerald-600 flex items-center gap-2 mb-4">
+                        <i class="fa-solid fa-comment-dots"></i> Nhận xét từ giảng viên
+                      </h4>
+                      <div class="text-[13px] text-slate-700 leading-[1.8] font-bold whitespace-pre-wrap italic bg-emerald-50/50 p-5 rounded-2xl border border-emerald-100/50 relative">
+                        <i class="fa-solid fa-quote-left absolute -top-3 -left-3 text-2xl text-emerald-200"></i>
+                         {{ prevSubmission?.feedback || 'Chưa có nhận xét chi tiết bằng văn bản.' }}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </transition>
           </div>
         </div>
 
@@ -251,11 +300,34 @@ const hasWritingResponse = ref(false)
 const questionResults = ref({}) // qId -> isCorrect (bool or 'pending')
 
 // Previous submission state
-const prevSubmission = ref(null)  // { score, sub_status, answers_json, submitted_at }
+const prevSubmission = ref(null)  // { score, sub_status, answers_json, submitted_at, feedback, rubric_data }
 const isWritingLocked = ref(false) // true if quiz has essay and already submitted once
 
 const totalQuestions = computed(() => questions.value.length)
 const currentQuestion = computed(() => questions.value[currentIndex.value] || null)
+
+const parsedRubric = computed(() => {
+  if (!prevSubmission.value?.rubric_data) return null;
+  try {
+    const data = typeof prevSubmission.value.rubric_data === 'string'
+      ? JSON.parse(prevSubmission.value.rubric_data)
+      : prevSubmission.value.rubric_data;
+
+    const map = {
+      grammar: 'Độ chính xác ngữ pháp',
+      cohesion: 'Mạch lạc & Liên kết',
+      lexical: 'Tài nguyên từ vựng',
+      task: 'Hoàn thành yêu cầu đề bài'
+    };
+
+    return Object.keys(data).map(key => ({
+      label: map[key] || key,
+      score: data[key]
+    }));
+  } catch(e) {
+    return null;
+  }
+})
 
 // TIMER logic
 const TOTAL_SECONDS = 45 * 60 // Default 45 mins for mixed quiz

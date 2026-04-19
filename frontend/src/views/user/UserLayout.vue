@@ -151,7 +151,47 @@
               <input class="pl-16 pr-10 py-3.5 w-64 bg-slate-50 border border-slate-100 rounded-[1.25rem] focus:ring-2 focus:ring-emerald-400/10 font-body text-[13px] font-medium placeholder:text-[#C2C9D1] transition-all duration-500 hover:w-80 outline-none shadow-none" placeholder="Tìm kiếm tài liệu..." type="text"/>
             </div>
             <div class="flex items-center gap-2 shrink-0">
-              <button class="w-12 h-12 shrink-0 rounded-2xl flex items-center justify-center text-[#C2C9D1] hover:bg-slate-50 hover:text-emerald-500 transition-all duration-300 shadow-none"><i class="fa-solid fa-bell text-lg"></i></button>
+              <!-- Bell Notification Dropdown -->
+              <div class="relative">
+                <button 
+                  @click="toggleNotifications"
+                  class="w-12 h-12 shrink-0 rounded-2xl flex items-center justify-center text-[#C2C9D1] hover:bg-slate-50 hover:text-emerald-500 transition-all duration-300 shadow-none relative transition-transform active:scale-95"
+                >
+                  <i class="fa-solid fa-bell text-lg"></i>
+                  <!-- Unread Badge -->
+                  <span v-if="unreadCount > 0" class="absolute top-2.5 right-2.5 w-4 h-4 bg-red-500 text-white text-[9px] font-black flex items-center justify-center rounded-full border-2 border-white animate-bounce">
+                    {{ unreadCount > 9 ? '9+' : unreadCount }}
+                  </span>
+                </button>
+
+                <!-- Dropdown Menu -->
+                <div v-if="isNotiOpen" 
+                  class="absolute right-0 mt-3 w-80 bg-white rounded-[2rem] shadow-2xl border border-slate-50 overflow-hidden animate-in fade-in slide-in-from-top-4 duration-300 z-50">
+                  <div class="px-6 py-5 border-b border-slate-50 flex items-center justify-between bg-slate-50/50">
+                    <h3 class="text-xs font-black uppercase tracking-widest text-slate-800">Thông báo</h3>
+                    <button @click="markAllAsRead" class="text-[9px] font-black uppercase tracking-widest text-emerald-500 hover:text-emerald-600 transition-colors">Đánh dấu đã đọc</button>
+                  </div>
+
+                  <div class="max-h-[400px] overflow-y-auto no-scrollbar">
+                    <div v-if="notifications.length === 0" class="py-12 flex flex-col items-center justify-center text-slate-300">
+                      <i class="fa-solid fa-bell-slash text-2xl mb-3 opacity-20"></i>
+                      <p class="text-[10px] font-black uppercase tracking-widest">Không có thông báo mới</p>
+                    </div>
+                    <div v-else v-for="noti in notifications" :key="noti.id" 
+                      @click="handleNotiClick(noti)"
+                      class="px-6 py-5 border-b border-slate-50 hover:bg-slate-50 transition-all cursor-pointer group relative">
+                      <div v-if="!noti.is_read" class="absolute left-2 top-1/2 -translate-y-1/2 w-1.5 h-1.5 bg-emerald-500 rounded-full"></div>
+                      <p class="text-[11px] font-black text-slate-900 group-hover:text-emerald-600 transition-colors mb-1">{{ noti.title }}</p>
+                      <p class="text-[11px] text-slate-500 leading-relaxed line-clamp-2 font-medium">{{ noti.message }}</p>
+                      <p class="text-[9px] text-slate-300 font-bold uppercase mt-2">{{ formatTimeAgo(noti.created_at) }}</p>
+                    </div>
+                  </div>
+
+                  <div class="px-6 py-4 bg-slate-50/50 text-center border-t border-slate-50">
+                    <router-link to="/user/assignments" class="text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-slate-800 transition-colors">Xem tất cả</router-link>
+                  </div>
+                </div>
+              </div>
               <button class="w-12 h-12 shrink-0 rounded-2xl flex items-center justify-center text-[#C2C9D1] hover:bg-slate-50 hover:text-emerald-500 transition-all duration-300 shadow-none"><i class="fa-solid fa-envelope text-lg"></i></button>
             </div>
           </div>
@@ -189,6 +229,12 @@ const isSavingProfile = ref(false)
 const profileForm = ref({ full_name: '', email: '', phone: '', new_password: '', confirm_password: '' })
 const profileMessage = ref('')
 const profileMessageType = ref('success')
+
+// ── State: Notifications ──
+const isNotiOpen = ref(false)
+const notifications = ref([])
+const unreadCount = ref(0)
+let notiTimer = null
 
 // ── Menu Sidebar ──
 const navItems = []
@@ -316,15 +362,63 @@ const handleLogout = async () => {
     tone: 'danger'
   })
   if (confirmed) {
+    if (notiTimer) clearInterval(notiTimer)
     clearAuthSession()
     router.push('/login')
     notifySuccess('Đã đăng xuất khỏi hệ thống.')
   }
 }
 
+// ── Notifications Logic ──
+const toggleNotifications = () => {
+  isNotiOpen.value = !isNotiOpen.value
+  if (isNotiOpen.value) {
+    fetchNotifications()
+  }
+}
+
+const fetchNotifications = async () => {
+  try {
+    const response = await apiFetch('user/notifications.php')
+    const result = await response.json()
+    if (result.status === 'success') {
+      notifications.value = result.data.notifications
+      unreadCount.value = result.data.unread_count
+    }
+  } catch {}
+}
+
+const markAllAsRead = async () => {
+  try {
+    await apiFetch('user/notifications.php', { method: 'PUT' })
+    unreadCount.value = 0
+    notifications.value.forEach(n => n.is_read = 1)
+  } catch {}
+}
+
+const handleNotiClick = (noti) => {
+  isNotiOpen.value = false
+  if (noti.link) router.push(noti.link)
+}
+
+const formatTimeAgo = (dateStr) => {
+  if (!dateStr) return ''
+  const date = new Date(dateStr)
+  const now = new Date()
+  const diffInSeconds = Math.floor((now - date) / 1000)
+  
+  if (diffInSeconds < 60) return 'Vừa xong'
+  if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} phút trước`
+  if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)} giờ trước`
+  return date.toLocaleDateString('vi-VN')
+}
+
 // ── Lifecycle ──
 onMounted(() => {
   fetchUserInfo()
+  fetchNotifications()
+  // Poll notifications every 60 seconds
+  notiTimer = setInterval(fetchNotifications, 60000)
 })
 </script>
 

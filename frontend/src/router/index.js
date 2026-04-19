@@ -19,6 +19,7 @@ import TeacherSchedule from '../views/teacher/TeacherSchedule.vue'
 import TeacherClasses from '../views/teacher/TeacherClasses.vue'
 import TeacherClassDetail from '../views/teacher/TeacherClassDetail.vue'
 import TeacherAssignments from '../views/teacher/TeacherAssignments.vue'
+import TeacherMaterials from '../views/teacher/TeacherMaterials.vue'
 import AdminLayout from '../views/admin/AdminLayout.vue'
 import AdminOverview from '../views/admin/AdminOverview.vue'
 import UserManagerView from '../views/admin/UserManagerView.vue'
@@ -105,6 +106,11 @@ const router = createRouter({
           path: 'assignments',
           name: 'teacher-assignments',
           component: TeacherAssignments
+        },
+        {
+          path: 'materials',
+          name: 'teacher-materials',
+          component: TeacherMaterials
         },
         {
           path: 'attendance/:id?',

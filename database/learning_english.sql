@@ -18,13 +18,13 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- Database: `learning_english`
+-- Cơ sở dữ liệu: `learning_english`
 --
 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `academic_warnings`
+-- Cấu trúc bảng `academic_warnings` (Cảnh báo học tập - ví dụ: nghỉ học quá nhiều)
 --
 
 DROP TABLE IF EXISTS `academic_warnings`;
@@ -38,13 +38,14 @@ CREATE TABLE IF NOT EXISTS `academic_warnings` (
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   KEY `idx_student` (`student_id`),
-  KEY `idx_class` (`class_id`)
+  KEY `idx_class` (`class_id`),
+  KEY `idx_schedule` (`schedule_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `announcements`
+-- Cấu trúc bảng `announcements` (Thông báo của lớp học)
 --
 
 DROP TABLE IF EXISTS `announcements`;
@@ -61,7 +62,7 @@ CREATE TABLE IF NOT EXISTS `announcements` (
 -- --------------------------------------------------------
 
 --
--- Table structure for table `assignments`
+-- Cấu trúc bảng `assignments` (Bài tập/Nhiệm vụ giao cho học viên)
 --
 
 DROP TABLE IF EXISTS `assignments`;
@@ -85,7 +86,7 @@ CREATE TABLE IF NOT EXISTS `assignments` (
 -- --------------------------------------------------------
 
 --
--- Table structure for table `attendance_records`
+-- Cấu trúc bảng `attendance_records` (Hồ sơ điểm danh học viên)
 --
 
 DROP TABLE IF EXISTS `attendance_records`;
@@ -103,7 +104,7 @@ CREATE TABLE IF NOT EXISTS `attendance_records` (
 ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
--- Dumping data for table `attendance_records`
+-- Đổ dữ liệu cho bảng `attendance_records`
 --
 
 INSERT INTO `attendance_records` (`id`, `schedule_id`, `student_id`, `status`, `note`, `created_at`) VALUES
@@ -112,7 +113,7 @@ INSERT INTO `attendance_records` (`id`, `schedule_id`, `student_id`, `status`, `
 -- --------------------------------------------------------
 
 --
--- Table structure for table `categories`
+-- Cấu trúc bảng `categories` (Danh mục khóa học - ví dụ: Tiếng Anh Giao Tiếp, Luyện thi IELTS)
 --
 
 DROP TABLE IF EXISTS `categories`;
@@ -125,7 +126,7 @@ CREATE TABLE IF NOT EXISTS `categories` (
 ) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
--- Dumping data for table `categories`
+-- Đổ dữ liệu cho bảng `categories`
 --
 
 INSERT INTO `categories` (`id`, `name`, `description`, `created_at`) VALUES
@@ -137,7 +138,7 @@ INSERT INTO `categories` (`id`, `name`, `description`, `created_at`) VALUES
 -- --------------------------------------------------------
 
 --
--- Table structure for table `classes`
+-- Cấu trúc bảng `classes` (Các lớp học đang hoặc sẽ mở)
 --
 
 DROP TABLE IF EXISTS `classes`;
@@ -156,7 +157,7 @@ CREATE TABLE IF NOT EXISTS `classes` (
 ) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
--- Dumping data for table `classes`
+-- Đổ dữ liệu cho bảng `classes`
 --
 
 INSERT INTO `classes` (`id`, `course_id`, `instructor_id`, `class_name`, `max_capacity`, `start_date`, `end_date`, `created_at`) VALUES
@@ -171,7 +172,7 @@ INSERT INTO `classes` (`id`, `course_id`, `instructor_id`, `class_name`, `max_ca
 -- --------------------------------------------------------
 
 --
--- Table structure for table `class_details`
+-- Cấu trúc bảng `class_details` (Chi tiết các ca dạy của một lớp học)
 --
 
 DROP TABLE IF EXISTS `class_details`;
@@ -182,11 +183,12 @@ CREATE TABLE IF NOT EXISTS `class_details` (
   `max_students` int NOT NULL DEFAULT '20',
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
-  KEY `class_id` (`class_id`)
+  KEY `class_id` (`class_id`),
+  UNIQUE KEY `uq_class_details_id_class` (`id`,`class_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=16 DEFAULT CHARSET=utf8mb4;
 
 --
--- Dumping data for table `class_details`
+-- Đổ dữ liệu cho bảng `class_details`
 --
 
 INSERT INTO `class_details` (`id`, `class_id`, `detail_name`, `max_students`, `created_at`) VALUES
@@ -207,7 +209,7 @@ INSERT INTO `class_details` (`id`, `class_id`, `detail_name`, `max_students`, `c
 -- --------------------------------------------------------
 
 --
--- Table structure for table `consultations`
+-- Cấu trúc bảng `consultations` (Danh sách khách hàng đăng ký tư vấn)
 --
 
 DROP TABLE IF EXISTS `consultations`;
@@ -223,7 +225,7 @@ CREATE TABLE IF NOT EXISTS `consultations` (
 ) ENGINE=InnoDB AUTO_INCREMENT=17 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
--- Dumping data for table `consultations`
+-- Đổ dữ liệu cho bảng `consultations`
 --
 
 INSERT INTO `consultations` (`id`, `full_name`, `phone`, `email`, `note`, `status`, `created_at`) VALUES
@@ -247,7 +249,7 @@ INSERT INTO `consultations` (`id`, `full_name`, `phone`, `email`, `note`, `statu
 -- --------------------------------------------------------
 
 --
--- Table structure for table `contacts`
+-- Cấu trúc bảng `contacts` (Danh sách tin nhắn liên hệ từ trang chủ)
 --
 
 DROP TABLE IF EXISTS `contacts`;
@@ -262,7 +264,7 @@ CREATE TABLE IF NOT EXISTS `contacts` (
 ) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
--- Dumping data for table `contacts`
+-- Đổ dữ liệu cho bảng `contacts`
 --
 
 INSERT INTO `contacts` (`id`, `full_name`, `email`, `message`, `is_replied`, `created_at`) VALUES
@@ -280,7 +282,7 @@ INSERT INTO `contacts` (`id`, `full_name`, `email`, `message`, `is_replied`, `cr
 -- --------------------------------------------------------
 
 --
--- Table structure for table `courses`
+-- Cấu trúc bảng `courses` (Danh sách các khóa học của trung tâm)
 --
 
 DROP TABLE IF EXISTS `courses`;
@@ -301,7 +303,7 @@ CREATE TABLE IF NOT EXISTS `courses` (
 ) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
--- Dumping data for table `courses`
+-- Đổ dữ liệu cho bảng `courses`
 --
 
 INSERT INTO `courses` (`id`, `category_id`, `path_id`, `title`, `description`, `image_url`, `level`, `fee`, `is_featured`, `created_at`) VALUES
@@ -314,7 +316,7 @@ INSERT INTO `courses` (`id`, `category_id`, `path_id`, `title`, `description`, `
 -- --------------------------------------------------------
 
 --
--- Table structure for table `enrollments`
+-- Cấu trúc bảng `enrollments` (Quản lý việc ghi danh của học viên vào lớp học)
 --
 
 DROP TABLE IF EXISTS `enrollments`;
@@ -326,23 +328,64 @@ CREATE TABLE IF NOT EXISTS `enrollments` (
   `status` enum('active','completed','dropped') COLLATE utf8mb4_unicode_ci DEFAULT 'active',
   `enrollment_date` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
+  UNIQUE KEY `uq_enrollments_student_class` (`student_id`,`class_id`),
   KEY `student_id` (`student_id`),
   KEY `class_id` (`class_id`),
-  KEY `fk_enrollments_class_detail` (`class_detail_id`)
+  KEY `fk_enrollments_class_detail` (`class_detail_id`,`class_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
--- Dumping data for table `enrollments`
+-- Đổ dữ liệu cho bảng `enrollments`
 --
 
 INSERT INTO `enrollments` (`id`, `student_id`, `class_id`, `class_detail_id`, `status`, `enrollment_date`) VALUES
 (1, 1, 2, 4, 'active', '2026-03-31 10:06:52'),
-(2, 8, 2, 2, 'active', '2026-03-31 10:55:53');
+(2, 8, 2, 2, 'active', '2026-03-31 10:55:53'),
+(3, 1, 7, NULL, 'active', '2026-04-01 08:00:00'),
+(4, 4, 7, NULL, 'active', '2026-04-01 08:00:00'),
+(5, 7, 7, NULL, 'active', '2026-04-01 08:00:00'),
+(6, 9, 7, NULL, 'active', '2026-04-02 08:00:00'),
+(7, 10, 7, NULL, 'active', '2026-04-02 08:00:00'),
+(8, 11, 7, NULL, 'active', '2026-04-03 08:00:00'),
+(9, 12, 7, NULL, 'active', '2026-04-03 08:00:00'),
+(10, 13, 7, NULL, 'active', '2026-04-04 08:00:00'),
+(11, 1, 8, NULL, 'active', '2026-04-01 08:00:00'),
+(12, 14, 8, NULL, 'active', '2026-04-01 08:00:00'),
+(13, 15, 8, NULL, 'active', '2026-04-02 08:00:00'),
+(14, 16, 8, NULL, 'active', '2026-04-02 08:00:00'),
+(15, 17, 8, NULL, 'active', '2026-04-03 08:00:00'),
+(16, 18, 8, NULL, 'active', '2026-04-03 08:00:00'),
+(17, 1, 9, NULL, 'active', '2026-04-01 08:00:00'),
+(18, 7, 9, NULL, 'active', '2026-04-01 08:00:00'),
+(19, 8, 9, NULL, 'active', '2026-04-01 08:00:00'),
+(20, 10, 9, NULL, 'active', '2026-04-02 08:00:00'),
+(21, 11, 9, NULL, 'active', '2026-04-02 08:00:00'),
+(22, 14, 9, NULL, 'active', '2026-04-03 08:00:00'),
+(23, 15, 9, NULL, 'active', '2026-04-03 08:00:00'),
+(24, 16, 9, NULL, 'active', '2026-04-04 08:00:00'),
+(25, 19, 9, NULL, 'active', '2026-04-04 08:00:00'),
+(26, 1, 10, NULL, 'active', '2026-04-01 08:00:00'),
+(27, 4, 10, NULL, 'active', '2026-04-01 08:00:00'),
+(28, 9, 10, NULL, 'active', '2026-04-02 08:00:00'),
+(29, 12, 10, NULL, 'active', '2026-04-02 08:00:00'),
+(30, 13, 10, NULL, 'active', '2026-04-03 08:00:00'),
+(31, 7, 11, NULL, 'active', '2026-04-01 08:00:00'),
+(32, 8, 11, NULL, 'active', '2026-04-01 08:00:00'),
+(33, 9, 11, NULL, 'active', '2026-04-01 08:00:00'),
+(34, 10, 11, NULL, 'active', '2026-04-02 08:00:00'),
+(35, 11, 11, NULL, 'active', '2026-04-02 08:00:00'),
+(36, 12, 11, NULL, 'active', '2026-04-02 08:00:00'),
+(37, 13, 11, NULL, 'active', '2026-04-03 08:00:00'),
+(38, 14, 11, NULL, 'active', '2026-04-03 08:00:00'),
+(39, 15, 11, NULL, 'active', '2026-04-04 08:00:00'),
+(40, 16, 11, NULL, 'active', '2026-04-04 08:00:00'),
+(41, 17, 11, NULL, 'active', '2026-04-04 08:00:00'),
+(42, 18, 11, NULL, 'active', '2026-04-05 08:00:00');
 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `learning_paths`
+-- Cấu trúc bảng `learning_paths` (Các lộ trình học tập được thiết kế sẵn)
 --
 
 DROP TABLE IF EXISTS `learning_paths`;
@@ -356,7 +399,7 @@ CREATE TABLE IF NOT EXISTS `learning_paths` (
 ) ENGINE=InnoDB AUTO_INCREMENT=21 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
--- Dumping data for table `learning_paths`
+-- Đổ dữ liệu cho bảng `learning_paths`
 --
 
 INSERT INTO `learning_paths` (`id`, `title`, `description`, `target_audience`, `created_at`) VALUES
@@ -383,7 +426,7 @@ INSERT INTO `learning_paths` (`id`, `title`, `description`, `target_audience`, `
 -- --------------------------------------------------------
 
 --
--- Table structure for table `leave_requests`
+-- Cấu trúc bảng `leave_requests` (Danh sách đơn xin nghỉ phép của học viên)
 --
 
 DROP TABLE IF EXISTS `leave_requests`;
@@ -400,11 +443,12 @@ CREATE TABLE IF NOT EXISTS `leave_requests` (
   `updated_at` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   KEY `idx_student` (`student_id`),
+  KEY `idx_class` (`class_id`),
   KEY `idx_status` (`status`)
 ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
--- Dumping data for table `leave_requests`
+-- Đổ dữ liệu cho bảng `leave_requests`
 --
 
 INSERT INTO `leave_requests` (`id`, `student_id`, `class_id`, `reason`, `start_date`, `end_date`, `status`, `admin_note`, `created_at`, `updated_at`) VALUES
@@ -413,7 +457,7 @@ INSERT INTO `leave_requests` (`id`, `student_id`, `class_id`, `reason`, `start_d
 -- --------------------------------------------------------
 
 --
--- Table structure for table `lessons`
+-- Cấu trúc bảng `lessons` (Danh sách các bài học cụ thể trong mỗi khóa học)
 --
 
 DROP TABLE IF EXISTS `lessons`;
@@ -429,7 +473,7 @@ CREATE TABLE IF NOT EXISTS `lessons` (
 ) ENGINE=InnoDB AUTO_INCREMENT=101 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
--- Dumping data for table `lessons`
+-- Đổ dữ liệu cho bảng `lessons`
 --
 
 INSERT INTO `lessons` (`id`, `course_id`, `title`, `video_url`, `order_number`, `created_at`) VALUES
@@ -537,7 +581,7 @@ INSERT INTO `lessons` (`id`, `course_id`, `title`, `video_url`, `order_number`, 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `makeup_registrations`
+-- Cấu trúc bảng `makeup_registrations` (Quản lý đăng ký học bù của học viên)
 --
 
 DROP TABLE IF EXISTS `makeup_registrations`;
@@ -556,7 +600,7 @@ CREATE TABLE IF NOT EXISTS `makeup_registrations` (
 ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
--- Dumping data for table `makeup_registrations`
+-- Đổ dữ liệu cho bảng `makeup_registrations`
 --
 
 INSERT INTO `makeup_registrations` (`id`, `student_id`, `target_schedule_id`, `leave_request_id`, `status`, `admin_note`, `created_at`) VALUES
@@ -565,7 +609,7 @@ INSERT INTO `makeup_registrations` (`id`, `student_id`, `target_schedule_id`, `l
 -- --------------------------------------------------------
 
 --
--- Table structure for table `materials`
+-- Cấu trúc bảng `materials` (Tài liệu cho các buổi học)
 --
 
 DROP TABLE IF EXISTS `materials`;
@@ -585,7 +629,37 @@ CREATE TABLE IF NOT EXISTS `materials` (
 -- --------------------------------------------------------
 
 --
--- Table structure for table `questions`
+-- Cấu trúc bảng `questions` (Ngân hàng câu hỏi cho các bài thực hành/kiểm tra)
+--
+
+--
+-- Cáº¥u trÃºc báº£ng `course_materials` (Kho táº¿p tÃ i liá»‡u theo khÃ³a há»c/bÃ i há»c)
+--
+
+DROP TABLE IF EXISTS `course_materials`;
+CREATE TABLE IF NOT EXISTS `course_materials` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `course_id` int NOT NULL,
+  `lesson_id` int DEFAULT NULL,
+  `schedule_id` int DEFAULT NULL,
+  `title` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `file_type` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'document',
+  `file_url` varchar(500) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `file_size` int NOT NULL DEFAULT '0',
+  `original_name` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `uploaded_by` int DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_course_materials_course` (`course_id`),
+  KEY `idx_course_materials_lesson` (`lesson_id`),
+  KEY `idx_course_materials_schedule` (`schedule_id`),
+  KEY `idx_course_materials_uploaded_by` (`uploaded_by`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Cáº¥u trÃºc báº£ng `questions` (NgÃ¢n hÃ ng cÃ¢u há»i cho cÃ¡c bÃ i thá»±c hÃ nh/kiá»ƒm tra)
 --
 
 DROP TABLE IF EXISTS `questions`;
@@ -604,7 +678,7 @@ CREATE TABLE IF NOT EXISTS `questions` (
 ) ENGINE=InnoDB AUTO_INCREMENT=41 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
--- Dumping data for table `questions`
+-- Đổ dữ liệu cho bảng `questions`
 --
 
 INSERT INTO `questions` (`id`, `quiz_id`, `question_type`, `question_text`, `audio_url`, `hint`, `explanation`, `order_num`, `created_at`) VALUES
@@ -642,7 +716,7 @@ INSERT INTO `questions` (`id`, `quiz_id`, `question_type`, `question_text`, `aud
 -- --------------------------------------------------------
 
 --
--- Table structure for table `question_options`
+-- Cấu trúc bảng `question_options` (Các lựa chọn đáp án tương ứng với mỗi câu hỏi)
 --
 
 DROP TABLE IF EXISTS `question_options`;
@@ -658,7 +732,7 @@ CREATE TABLE IF NOT EXISTS `question_options` (
 ) ENGINE=InnoDB AUTO_INCREMENT=99 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
--- Dumping data for table `question_options`
+-- Đổ dữ liệu cho bảng `question_options`
 --
 
 INSERT INTO `question_options` (`id`, `question_id`, `option_text`, `match_text`, `is_correct`, `order_num`) VALUES
@@ -741,7 +815,7 @@ INSERT INTO `question_options` (`id`, `question_id`, `option_text`, `match_text`
 -- --------------------------------------------------------
 
 --
--- Table structure for table `quizzes`
+-- Cấu trúc bảng `quizzes` (Các bài kiểm tra/thực hành)
 --
 
 DROP TABLE IF EXISTS `quizzes`;
@@ -758,7 +832,7 @@ CREATE TABLE IF NOT EXISTS `quizzes` (
 ) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
--- Dumping data for table `quizzes`
+-- Đổ dữ liệu cho bảng `quizzes`
 --
 
 INSERT INTO `quizzes` (`id`, `lesson_id`, `title`, `category`, `total_points`, `description`, `created_at`) VALUES
@@ -772,7 +846,7 @@ INSERT INTO `quizzes` (`id`, `lesson_id`, `title`, `category`, `total_points`, `
 -- --------------------------------------------------------
 
 --
--- Table structure for table `quiz_submissions`
+-- Cấu trúc bảng `quiz_submissions` (Lưu trữ bài làm và kết quả quiz của học viên)
 --
 
 DROP TABLE IF EXISTS `quiz_submissions`;
@@ -780,30 +854,34 @@ CREATE TABLE IF NOT EXISTS `quiz_submissions` (
   `id` int NOT NULL AUTO_INCREMENT,
   `student_id` int NOT NULL,
   `quiz_id` int NOT NULL,
+  `class_id` int NOT NULL,
   `score` decimal(5,2) DEFAULT NULL,
   `status` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT 'completed',
   `answers_json` longtext COLLATE utf8mb4_unicode_ci,
+  `feedback` text COLLATE utf8mb4_unicode_ci,
+  `rubric_data` longtext COLLATE utf8mb4_unicode_ci,
   `submitted_at` datetime DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_submission` (`student_id`,`quiz_id`),
+  UNIQUE KEY `unique_submission` (`student_id`,`quiz_id`,`class_id`),
   KEY `idx_student` (`student_id`),
-  KEY `idx_quiz` (`quiz_id`)
+  KEY `idx_quiz` (`quiz_id`),
+  KEY `idx_class` (`class_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=47 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
--- Dumping data for table `quiz_submissions`
+-- Đổ dữ liệu cho bảng `quiz_submissions`
 --
 
-INSERT INTO `quiz_submissions` (`id`, `student_id`, `quiz_id`, `score`, `status`, `answers_json`, `submitted_at`) VALUES
-(24, 1, 1, 2.00, 'completed', '{\"1\":1,\"4\":15,\"5\":20,\"6\":[\"hang\"],\"7\":[\"for\"]}', '2026-04-13 01:06:16'),
-(31, 1, 2, 0.00, 'pending_grading', '{\"9\":\"\\u00e1da\",\"10\":\"dsds\"}', '2026-04-13 01:11:59'),
-(32, 1, 7, 1.00, 'completed', '{\"32\":\"I love learning new languages\"}', '2026-04-13 01:46:29'),
-(33, 1, 8, 1.00, 'completed', '{\"36\":{\"84\":\"Stunning\",\"85\":\"Elated\",\"86\":\"Rapid\"}}', '2026-04-13 01:49:25');
+INSERT INTO `quiz_submissions` (`id`, `student_id`, `quiz_id`, `class_id`, `score`, `status`, `answers_json`, `feedback`, `rubric_data`, `submitted_at`) VALUES
+(24, 1, 1, 10, 2.00, 'completed', '{\"1\":1,\"4\":15,\"5\":20,\"6\":[\"hang\"],\"7\":[\"for\"]}', NULL, NULL, '2026-04-13 01:06:16'),
+(31, 1, 2, 10, 0.00, 'pending_grading', '{\"9\":\"\\u00e1da\",\"10\":\"dsds\"}', NULL, NULL, '2026-04-13 01:11:59'),
+(32, 1, 7, 10, 1.00, 'completed', '{\"32\":\"I love learning new languages\"}', NULL, NULL, '2026-04-13 01:46:29'),
+(33, 1, 8, 10, 1.00, 'completed', '{\"36\":{\"84\":\"Stunning\",\"85\":\"Elated\",\"86\":\"Rapid\"}}', NULL, NULL, '2026-04-13 01:49:25');
 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `schedules`
+-- Cấu trúc bảng `schedules` (Lịch học chi tiết từng ngày của các lớp)
 --
 
 DROP TABLE IF EXISTS `schedules`;
@@ -829,7 +907,7 @@ CREATE TABLE IF NOT EXISTS `schedules` (
 ) ENGINE=InnoDB AUTO_INCREMENT=371 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
--- Dumping data for table `schedules`
+-- Đổ dữ liệu cho bảng `schedules`
 --
 
 INSERT INTO `schedules` (`id`, `class_id`, `class_detail_id`, `teacher_id`, `lesson_id`, `study_date`, `start_time`, `end_time`, `teaching_type`, `room_info`, `status`, `attendance_checked`, `note`) VALUES
@@ -876,52 +954,12 @@ INSERT INTO `schedules` (`id`, `class_id`, `class_detail_id`, `teacher_id`, `les
 
 -- --------------------------------------------------------
 
---
--- Table structure for table `student_answers`
---
 
-DROP TABLE IF EXISTS `student_answers`;
-CREATE TABLE IF NOT EXISTS `student_answers` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `attempt_id` int NOT NULL,
-  `question_id` int NOT NULL,
-  `selected_option_id` int DEFAULT NULL COMMENT 'Nếu học sinh làm bài trắc nghiệm',
-  `answer_text` text COLLATE utf8mb4_unicode_ci COMMENT 'Nếu học sinh gõ chữ (Writing / Fill in the blank)',
-  `is_correct` tinyint(1) DEFAULT '0',
-  `points_earned` decimal(5,2) DEFAULT '0.00',
-  `teacher_feedback` json DEFAULT NULL COMMENT 'Lưu định dạng JSON để bóc tách lỗi Grammar, Vocab hiển thị bôi màu',
-  `graded_at` timestamp NULL DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `attempt_id` (`attempt_id`),
-  KEY `question_id` (`question_id`),
-  KEY `selected_option_id` (`selected_option_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `student_attempts`
---
-
-DROP TABLE IF EXISTS `student_attempts`;
-CREATE TABLE IF NOT EXISTS `student_attempts` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `quiz_id` int NOT NULL,
-  `student_id` int NOT NULL,
-  `attempt_number` int DEFAULT '1' COMMENT 'Lần làm thứ mấy',
-  `total_score` decimal(5,2) DEFAULT '0.00',
-  `status` enum('in_progress','completed','graded') COLLATE utf8mb4_unicode_ci DEFAULT 'in_progress',
-  `started_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-  `completed_at` timestamp NULL DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `quiz_id` (`quiz_id`),
-  KEY `student_id` (`student_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- --------------------------------------------------------
-
---
--- Table structure for table `student_vocabulary_progress`
+-- Cấu trúc bảng `student_vocabulary_progress` (Theo dõi tiến độ học từ vựng/flashcard của học viên)
 --
 
 DROP TABLE IF EXISTS `student_vocabulary_progress`;
@@ -943,7 +981,7 @@ CREATE TABLE IF NOT EXISTS `student_vocabulary_progress` (
 -- --------------------------------------------------------
 
 --
--- Table structure for table `submissions`
+-- Cấu trúc bảng `submissions` (Bài tập đã nộp của học viên)
 --
 
 DROP TABLE IF EXISTS `submissions`;
@@ -956,6 +994,7 @@ CREATE TABLE IF NOT EXISTS `submissions` (
   `file_url` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `score` decimal(5,2) DEFAULT NULL,
   `feedback` text COLLATE utf8mb4_unicode_ci,
+  `rubric_data` json DEFAULT NULL COMMENT 'Dữ liệu chấm điểm theo tiêu chí (JSON)',
   `submitted_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   UNIQUE KEY `unique_student_assignment` (`student_id`,`assignment_id`),
@@ -963,10 +1002,33 @@ CREATE TABLE IF NOT EXISTS `submissions` (
   KEY `class_id` (`class_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+--
+-- Đổ dữ liệu mẫu cho bảng `assignments` (Bài tập)
+--
+
+INSERT INTO `assignments` (`id`, `schedule_id`, `lesson_id`, `course_id`, `title`, `description`, `deadline`, `assignment_type`, `created_at`) VALUES
+(1, NULL, NULL, 4, 'IELTS Writing Task 2 - Environment', 'Some people think that environmental problems should be solved on a global scale while others believe it is better to deal with them nationally. Discuss both views and give your opinion. Write at least 250 words.', '2026-04-20 23:59:00', 'post_class', '2026-04-10 08:00:00'),
+(2, NULL, NULL, 4, 'IELTS Writing Task 1 - Bar Chart', 'The bar chart below shows the percentage of Australian men and women in different age groups who did regular physical activity in 2010. Summarise the information by selecting and reporting the main features. Write at least 150 words.', '2026-04-22 23:59:00', 'post_class', '2026-04-12 08:00:00'),
+(3, NULL, NULL, 1, 'Viết đoạn văn giới thiệu bản thân', 'Viết một đoạn văn ngắn (100-150 từ) bằng tiếng Anh giới thiệu về bản thân bạn: tên, tuổi, sở thích, mục tiêu học tiếng Anh.', '2026-04-18 23:59:00', 'post_class', '2026-04-08 08:00:00'),
+(4, NULL, NULL, 2, 'Email Writing - Request for Leave', 'Write a formal email to your manager requesting 3 days of annual leave. Include the reason, dates, and arrangements for your work during your absence. (150-200 words)', '2026-04-25 23:59:00', 'post_class', '2026-04-14 08:00:00'),
+(5, NULL, NULL, 3, 'TOEIC Reading Practice - Email Comprehension', 'Read the given email correspondence between two business partners and answer the 5 comprehension questions below. Write your answers in complete sentences.', '2026-04-21 23:59:00', 'post_class', '2026-04-11 08:00:00');
+
+--
+-- Đổ dữ liệu mẫu cho bảng `submissions` (Bài nộp của học viên)
+--
+
+INSERT INTO `submissions` (`id`, `assignment_id`, `student_id`, `class_id`, `submission_content`, `file_url`, `score`, `feedback`, `rubric_data`, `submitted_at`) VALUES
+(1, 1, 1, 2, '<p>Environmental issues have become a major concern in the modern world. While some argue that these problems should be addressed on a global scale, others believe that national-level solutions are more effective. In my view, a combination of both approaches is necessary to tackle environmental challenges comprehensively.</p><p>On one hand, global cooperation is essential because environmental problems transcend national boundaries. Climate change, for instance, affects every country regardless of their individual contributions to greenhouse gas emissions. International agreements like the Paris Agreement demonstrate that collaborative efforts can lead to meaningful commitments and shared technologies. Moreover, developing nations often lack the resources to address environmental issues independently, making global financial support crucial.</p><p>On the other hand, national governments are better positioned to implement policies tailored to their specific environmental challenges. Each country has unique geographical, economic, and social contexts that require customized solutions. For example, deforestation in Brazil requires different strategies compared to air pollution in China. Furthermore, national governments can enforce regulations more effectively within their jurisdictions and hold local industries accountable.</p><p>In conclusion, I believe that a multi-level approach combining both global and national efforts is the most effective way to address environmental problems. While international cooperation provides the framework and resources, national governments should take responsibility for implementation and enforcement.</p>', NULL, NULL, NULL, NULL, '2026-04-14 10:30:00'),
+(2, 1, 8, 2, '<p>Nowadays environmental problems is very big issue in the world. Some people think global solution is better but other people think national solution more good. I will discuss both side in this essay.</p><p>First, global solution is important because pollution go everywhere. If one country make pollution it affect other country too. So all country need work together to solve this problem. For example climate change is global problem need global solution.</p><p>Second, national solution also important because every country have different problem. Some country have water pollution and some country have air pollution. Government can make law for their own country and punish company that make pollution.</p><p>In my opinion I think both global and national solution is needed because environmental problem is very complicated and need everyone to help solve it.</p>', NULL, NULL, NULL, NULL, '2026-04-14 14:20:00'),
+(3, 2, 1, 2, '<p>The bar chart illustrates the proportion of male and female Australians across various age brackets who engaged in regular physical activity during 2010.</p><p>Overall, it is evident that physical activity participation varied significantly between genders and age groups, with older age groups generally showing higher participation rates. Notably, women in most age groups were more likely to exercise regularly than men.</p><p>Looking at the younger demographics, approximately 52.8% of males and 47.7% of females aged 15-24 participated in regular physical activity. The participation rate dropped for both genders in the 25-34 age group, with males at 42.2% and females at 48.9%.</p><p>In contrast, the 45-54 and 55-64 age groups showed increasing trends, particularly among women. The highest female participation rate was observed in the 55-64 bracket at 53.3%. For males, the peak was in the 65+ category at 46.5%, though this remained lower than the female rate of 47.1% in the same group.</p>', NULL, 7.50, 'Bài viết mạch lạc, có cấu trúc tốt. Cần bổ sung thêm so sánh cụ thể giữa các nhóm tuổi.', '{"grammar": 8.0, "cohesion": 7.5, "lexical": 7.0, "task": 7.5}', '2026-04-13 09:15:00'),
+(4, 3, 1, 7, '<p>My name is Hoang Nhat Truong. I am 22 years old and I am a student at the English Training Center. I live in Ho Chi Minh City with my family.</p><p>In my free time, I enjoy reading books and playing football with my friends. I also like watching English movies because it helps me improve my listening skills. My favorite movie is \"The Shawshank Redemption\".</p><p>I started learning English because I want to get a good job in the future. My goal is to achieve an IELTS score of 7.0 so that I can apply for a scholarship to study abroad. I believe that English is an essential skill in today is globalized world.</p><p>I am very excited to join this class and I hope to make many new friends who share the same passion for learning English.</p>', NULL, NULL, NULL, NULL, '2026-04-15 08:00:00'),
+(5, 4, 1, 8, '<p>Subject: Request for Annual Leave - April 21-23, 2026</p><p>Dear Mr. Johnson,</p><p>I am writing to formally request three days of annual leave from Monday, April 21 to Wednesday, April 23, 2026.</p><p>The reason for my request is that I need to attend a family wedding ceremony in Da Nang. As it is a significant family event, my presence is required for the preparations and the ceremony itself.</p><p>To ensure minimal disruption to our workflow during my absence, I have arranged the following: First, I will complete all pending reports before April 18. Second, I have briefed my colleague, Ms. Nguyen, who has kindly agreed to handle any urgent matters. Third, I will remain reachable via email for any critical issues.</p><p>I would be grateful if you could approve my leave request at your earliest convenience. Please do not hesitate to contact me if you need any further information.</p><p>Thank you for your consideration.</p><p>Best regards,<br>Hoang Nhat Truong</p>', NULL, NULL, NULL, NULL, '2026-04-15 11:45:00'),
+(6, 5, 1, 9, '<p>1. The main purpose of the first email is to inform the business partner about a delay in the shipment of electronic components. Mr. Chen explains that due to unexpected supply chain issues, the delivery will be postponed by approximately two weeks.</p><p>2. Ms. Rodriguez responds by expressing her concern about the delay because it will affect their production schedule for the Q3 product launch.</p><p>3. The compromise they reached was to split the order into two partial shipments. The first batch of 500 units would be sent immediately from existing stock, while the remaining 1,500 units would arrive within the extended timeline.</p><p>4. Mr. Chen offered a 5% discount on the total order value as compensation for the inconvenience caused by the delay.</p><p>5. The tone of the correspondence is professional and collaborative, as both parties work together to find a mutually acceptable solution despite the challenging circumstances.</p>', NULL, NULL, NULL, NULL, '2026-04-16 06:30:00');
+
 -- --------------------------------------------------------
 
 --
--- Table structure for table `users`
+-- Cấu trúc bảng `users` (Danh sách người dùng: Học viên, Giảng viên, Quản trị viên)
 --
 
 DROP TABLE IF EXISTS `users`;
@@ -984,7 +1046,7 @@ CREATE TABLE IF NOT EXISTS `users` (
 ) ENGINE=InnoDB AUTO_INCREMENT=46 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
--- Dumping data for table `users`
+-- Đổ dữ liệu cho bảng `users`
 --
 
 INSERT INTO `users` (`id`, `full_name`, `email`, `password`, `phone`, `role`, `status`, `created_at`) VALUES
@@ -1015,8 +1077,12 @@ INSERT INTO `users` (`id`, `full_name`, `email`, `password`, `phone`, `role`, `s
 -- --------------------------------------------------------
 
 --
--- Table structure for table `user_progress`
+-- Cấu trúc bảng `user_progress` (Theo dõi tiến độ học tập chung của học viên ở từng bài học)
 --
+
+UPDATE `users`
+SET `password` = '$2y$12$WbMCTCIl7Ghavcv.XdUPi.gN/tj6PMqEc3pTQzSQoNoVHhOM571A2'
+WHERE `password` = '123456';
 
 DROP TABLE IF EXISTS `user_progress`;
 CREATE TABLE IF NOT EXISTS `user_progress` (
@@ -1034,7 +1100,7 @@ CREATE TABLE IF NOT EXISTS `user_progress` (
 -- --------------------------------------------------------
 
 --
--- Table structure for table `vocabularies`
+-- Cấu trúc bảng `vocabularies` (Thư viện từ vựng cho từng bài học)
 --
 
 DROP TABLE IF EXISTS `vocabularies`;
@@ -1056,7 +1122,7 @@ CREATE TABLE IF NOT EXISTS `vocabularies` (
 -- --------------------------------------------------------
 
 --
--- Table structure for table `website_contents`
+-- Cấu trúc bảng `website_contents` (Nội dung CMS có thể chỉnh sửa trên giao diện trang chủ)
 --
 
 DROP TABLE IF EXISTS `website_contents`;
@@ -1071,7 +1137,7 @@ CREATE TABLE IF NOT EXISTS `website_contents` (
 ) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
--- Dumping data for table `website_contents`
+-- Đổ dữ liệu cho bảng `website_contents`
 --
 
 INSERT INTO `website_contents` (`id`, `section_key`, `content_type`, `content_value`, `updated_at`) VALUES
@@ -1080,17 +1146,17 @@ INSERT INTO `website_contents` (`id`, `section_key`, `content_type`, `content_va
 (4, 'about_story_image_url', 'image', 'https://simpleenglish.com.vn/wp-content/uploads/2025/02/SIMPLE_BANNER-WEB-1423x620_1902_2-1-scaled.jpg', '2026-03-28 20:30:16');
 
 --
--- Constraints for dumped tables
+-- Các ràng buộc khóa ngoại (Foreign Keys) cho các bảng
 --
 
 --
--- Constraints for table `announcements`
+-- Ràng buộc (Constraints) cho bảng `announcements`
 --
 ALTER TABLE `announcements`
   ADD CONSTRAINT `announcements_ibfk_1` FOREIGN KEY (`class_id`) REFERENCES `classes` (`id`) ON DELETE CASCADE;
 
 --
--- Constraints for table `assignments`
+-- Ràng buộc (Constraints) cho bảng `assignments`
 --
 ALTER TABLE `assignments`
   ADD CONSTRAINT `assignments_ibfk_1` FOREIGN KEY (`lesson_id`) REFERENCES `lessons` (`id`) ON DELETE CASCADE,
@@ -1098,42 +1164,69 @@ ALTER TABLE `assignments`
   ADD CONSTRAINT `fk_assignments_schedule` FOREIGN KEY (`schedule_id`) REFERENCES `schedules` (`id`) ON DELETE CASCADE;
 
 --
--- Constraints for table `classes`
+-- Ràng buộc (Constraints) cho bảng `classes`
 --
 ALTER TABLE `classes`
   ADD CONSTRAINT `classes_ibfk_1` FOREIGN KEY (`course_id`) REFERENCES `courses` (`id`) ON DELETE CASCADE,
-  ADD CONSTRAINT `classes_ibfk_2` FOREIGN KEY (`instructor_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
   ADD CONSTRAINT `fk_classes_instructor` FOREIGN KEY (`instructor_id`) REFERENCES `users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE;
 
 --
--- Constraints for table `class_details`
+-- Ràng buộc (Constraints) cho bảng `class_details`
 --
 ALTER TABLE `class_details`
   ADD CONSTRAINT `class_details_ibfk_1` FOREIGN KEY (`class_id`) REFERENCES `classes` (`id`) ON DELETE CASCADE;
 
 --
--- Constraints for table `courses`
+-- Ràng buộc (Constraints) cho bảng `courses`
 --
 ALTER TABLE `courses`
   ADD CONSTRAINT `courses_ibfk_1` FOREIGN KEY (`category_id`) REFERENCES `categories` (`id`) ON DELETE SET NULL,
   ADD CONSTRAINT `courses_ibfk_2` FOREIGN KEY (`path_id`) REFERENCES `learning_paths` (`id`) ON DELETE SET NULL;
 
 --
--- Constraints for table `enrollments`
+-- Ràng buộc (Constraints) cho bảng `enrollments`
+--
+--
+-- RÃ ng buá»™c (Constraints) cho báº£ng `academic_warnings`
+--
+ALTER TABLE `academic_warnings`
+  ADD CONSTRAINT `fk_academic_warnings_class` FOREIGN KEY (`class_id`) REFERENCES `classes` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `fk_academic_warnings_schedule` FOREIGN KEY (`schedule_id`) REFERENCES `schedules` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `fk_academic_warnings_student` FOREIGN KEY (`student_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
+
+--
+-- RÃ ng buá»™c (Constraints) cho báº£ng `attendance_records`
+--
+ALTER TABLE `attendance_records`
+  ADD CONSTRAINT `fk_attendance_records_schedule` FOREIGN KEY (`schedule_id`) REFERENCES `schedules` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `fk_attendance_records_student` FOREIGN KEY (`student_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
+
+--
+-- RÃ ng buá»™c (Constraints) cho báº£ng `enrollments`
 --
 ALTER TABLE `enrollments`
   ADD CONSTRAINT `enrollments_ibfk_1` FOREIGN KEY (`student_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
   ADD CONSTRAINT `enrollments_ibfk_2` FOREIGN KEY (`class_id`) REFERENCES `classes` (`id`) ON DELETE CASCADE,
-  ADD CONSTRAINT `fk_enrollments_class_detail` FOREIGN KEY (`class_detail_id`) REFERENCES `class_details` (`id`) ON DELETE SET NULL;
+  ADD CONSTRAINT `fk_enrollments_class_detail` FOREIGN KEY (`class_detail_id`, `class_id`) REFERENCES `class_details` (`id`, `class_id`);
 
 --
--- Constraints for table `lessons`
+-- Ràng buộc (Constraints) cho bảng `lessons`
+--
+--
+-- RÃ ng buá»™c (Constraints) cho báº£ng `leave_requests`
+--
+ALTER TABLE `leave_requests`
+  ADD CONSTRAINT `fk_leave_requests_class` FOREIGN KEY (`class_id`) REFERENCES `classes` (`id`) ON DELETE SET NULL,
+  ADD CONSTRAINT `fk_leave_requests_student` FOREIGN KEY (`student_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
+
+--
+-- RÃ ng buá»™c (Constraints) cho báº£ng `lessons`
 --
 ALTER TABLE `lessons`
   ADD CONSTRAINT `lessons_ibfk_1` FOREIGN KEY (`course_id`) REFERENCES `courses` (`id`) ON DELETE CASCADE;
 
 --
--- Constraints for table `makeup_registrations`
+-- Ràng buộc (Constraints) cho bảng `makeup_registrations`
 --
 ALTER TABLE `makeup_registrations`
   ADD CONSTRAINT `fk_makeup_leave_request` FOREIGN KEY (`leave_request_id`) REFERENCES `leave_requests` (`id`) ON DELETE SET NULL,
@@ -1141,64 +1234,73 @@ ALTER TABLE `makeup_registrations`
   ADD CONSTRAINT `fk_makeup_student` FOREIGN KEY (`student_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
 
 --
--- Constraints for table `materials`
+-- Ràng buộc (Constraints) cho bảng `materials`
 --
 ALTER TABLE `materials`
   ADD CONSTRAINT `fk_materials_schedule` FOREIGN KEY (`schedule_id`) REFERENCES `schedules` (`id`) ON DELETE CASCADE,
   ADD CONSTRAINT `materials_ibfk_1` FOREIGN KEY (`class_id`) REFERENCES `classes` (`id`) ON DELETE CASCADE;
 
 --
--- Constraints for table `questions`
+-- Ràng buộc (Constraints) cho bảng `questions`
+--
+--
+-- RÃ ng buá»™c (Constraints) cho báº£ng `course_materials`
+--
+ALTER TABLE `course_materials`
+  ADD CONSTRAINT `fk_course_materials_course` FOREIGN KEY (`course_id`) REFERENCES `courses` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `fk_course_materials_lesson` FOREIGN KEY (`lesson_id`) REFERENCES `lessons` (`id`) ON DELETE SET NULL,
+  ADD CONSTRAINT `fk_course_materials_schedule` FOREIGN KEY (`schedule_id`) REFERENCES `schedules` (`id`) ON DELETE SET NULL,
+  ADD CONSTRAINT `fk_course_materials_uploaded_by` FOREIGN KEY (`uploaded_by`) REFERENCES `users` (`id`) ON DELETE SET NULL;
+
+--
+-- RÃ ng buá»™c (Constraints) cho báº£ng `questions`
 --
 ALTER TABLE `questions`
   ADD CONSTRAINT `questions_ibfk_1` FOREIGN KEY (`quiz_id`) REFERENCES `quizzes` (`id`) ON DELETE CASCADE;
 
 --
--- Constraints for table `question_options`
+-- Ràng buộc (Constraints) cho bảng `question_options`
 --
 ALTER TABLE `question_options`
   ADD CONSTRAINT `question_options_ibfk_1` FOREIGN KEY (`question_id`) REFERENCES `questions` (`id`) ON DELETE CASCADE;
 
 --
--- Constraints for table `quizzes`
+-- Ràng buộc (Constraints) cho bảng `quizzes`
 --
 ALTER TABLE `quizzes`
   ADD CONSTRAINT `quizzes_ibfk_1` FOREIGN KEY (`lesson_id`) REFERENCES `lessons` (`id`) ON DELETE CASCADE;
 
 --
--- Constraints for table `schedules`
+-- Ràng buộc (Constraints) cho bảng `schedules`
+--
+--
+-- RÃ ng buá»™c (Constraints) cho báº£ng `quiz_submissions`
+--
+ALTER TABLE `quiz_submissions`
+  ADD CONSTRAINT `fk_quiz_submissions_class` FOREIGN KEY (`class_id`) REFERENCES `classes` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `fk_quiz_submissions_quiz` FOREIGN KEY (`quiz_id`) REFERENCES `quizzes` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `fk_quiz_submissions_student` FOREIGN KEY (`student_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
+
+--
+-- RÃ ng buá»™c (Constraints) cho báº£ng `schedules`
 --
 ALTER TABLE `schedules`
   ADD CONSTRAINT `fk_schedules_class` FOREIGN KEY (`class_id`) REFERENCES `classes` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   ADD CONSTRAINT `fk_schedules_class_detail` FOREIGN KEY (`class_detail_id`) REFERENCES `class_details` (`id`) ON DELETE CASCADE,
   ADD CONSTRAINT `fk_schedules_lesson` FOREIGN KEY (`lesson_id`) REFERENCES `lessons` (`id`) ON DELETE SET NULL,
-  ADD CONSTRAINT `fk_schedules_teacher` FOREIGN KEY (`teacher_id`) REFERENCES `users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
-  ADD CONSTRAINT `schedules_ibfk_1` FOREIGN KEY (`class_id`) REFERENCES `classes` (`id`) ON DELETE CASCADE;
+  ADD CONSTRAINT `fk_schedules_teacher` FOREIGN KEY (`teacher_id`) REFERENCES `users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+
+
 
 --
--- Constraints for table `student_answers`
---
-ALTER TABLE `student_answers`
-  ADD CONSTRAINT `student_answers_ibfk_1` FOREIGN KEY (`attempt_id`) REFERENCES `student_attempts` (`id`) ON DELETE CASCADE,
-  ADD CONSTRAINT `student_answers_ibfk_2` FOREIGN KEY (`question_id`) REFERENCES `questions` (`id`) ON DELETE CASCADE,
-  ADD CONSTRAINT `student_answers_ibfk_3` FOREIGN KEY (`selected_option_id`) REFERENCES `question_options` (`id`) ON DELETE SET NULL;
-
---
--- Constraints for table `student_attempts`
---
-ALTER TABLE `student_attempts`
-  ADD CONSTRAINT `student_attempts_ibfk_1` FOREIGN KEY (`quiz_id`) REFERENCES `quizzes` (`id`) ON DELETE CASCADE,
-  ADD CONSTRAINT `student_attempts_ibfk_2` FOREIGN KEY (`student_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
-
---
--- Constraints for table `student_vocabulary_progress`
+-- Ràng buộc (Constraints) cho bảng `student_vocabulary_progress`
 --
 ALTER TABLE `student_vocabulary_progress`
   ADD CONSTRAINT `student_vocabulary_progress_ibfk_1` FOREIGN KEY (`student_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
   ADD CONSTRAINT `student_vocabulary_progress_ibfk_2` FOREIGN KEY (`vocab_id`) REFERENCES `vocabularies` (`id`) ON DELETE CASCADE;
 
 --
--- Constraints for table `submissions`
+-- Ràng buộc (Constraints) cho bảng `submissions`
 --
 ALTER TABLE `submissions`
   ADD CONSTRAINT `submissions_ibfk_1` FOREIGN KEY (`assignment_id`) REFERENCES `assignments` (`id`) ON DELETE CASCADE,
@@ -1206,14 +1308,14 @@ ALTER TABLE `submissions`
   ADD CONSTRAINT `submissions_ibfk_3` FOREIGN KEY (`class_id`) REFERENCES `classes` (`id`) ON DELETE CASCADE;
 
 --
--- Constraints for table `user_progress`
+-- Ràng buộc (Constraints) cho bảng `user_progress`
 --
 ALTER TABLE `user_progress`
   ADD CONSTRAINT `user_progress_ibfk_1` FOREIGN KEY (`student_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
   ADD CONSTRAINT `user_progress_ibfk_2` FOREIGN KEY (`lesson_id`) REFERENCES `lessons` (`id`) ON DELETE CASCADE;
 
 --
--- Constraints for table `vocabularies`
+-- Ràng buộc (Constraints) cho bảng `vocabularies`
 --
 ALTER TABLE `vocabularies`
   ADD CONSTRAINT `vocabularies_ibfk_1` FOREIGN KEY (`lesson_id`) REFERENCES `lessons` (`id`) ON DELETE CASCADE;

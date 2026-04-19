@@ -1,127 +1,200 @@
 <?php
 header("Access-Control-Allow-Origin: *");
 header("Content-Type: application/json; charset=UTF-8");
-header("Access-Control-Allow-Methods: GET, POST, DELETE");
+header("Access-Control-Allow-Methods: GET, POST, DELETE, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With");
 
-// Bật khối TRY..CATCH để bắt gọn mọi lỗi SQL
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    http_response_code(200);
+    exit;
+}
+
+require_once __DIR__ . '/../../config/db.php';
+require_once __DIR__ . '/../../utils/JwtHelper.php';
+require_once __DIR__ . '/../../utils/Validator.php';
+
+JwtHelper::requireAuth('admin');
+
+function lessonDetailResponse(int $code, array $payload): void
+{
+    http_response_code($code);
+    echo json_encode($payload, JSON_UNESCAPED_UNICODE);
+    exit;
+}
+
+function loadScheduleContext(PDO $pdo, int $scheduleId): ?array
+{
+    $stmt = $pdo->prepare("
+        SELECT
+            s.*,
+            c.class_name,
+            c.course_id,
+            u.full_name AS teacher_name
+        FROM (
+            SELECT
+                sch.id,
+                sch.class_id,
+                sch.lesson_id,
+                sch.teacher_id,
+                sch.study_date,
+                sch.start_time,
+                sch.end_time,
+                sch.teaching_type,
+                sch.room_info,
+                sch.status,
+                sch.note
+            FROM schedules sch
+            WHERE sch.id = ?
+        ) s
+        INNER JOIN classes c ON c.id = s.class_id
+        LEFT JOIN users u ON u.id = s.teacher_id
+        LIMIT 1
+    ");
+    $stmt->execute([$scheduleId]);
+
+    return $stmt->fetch(PDO::FETCH_ASSOC) ?: null;
+}
+
 try {
-    require_once '../../config/db.php';
-    require_once '../../utils/Validator.php'; // THÊM RÀNG BUỘC Validator
-
     $method = $_SERVER['REQUEST_METHOD'];
-    $schedule_id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
-
-    if ($schedule_id <= 0 && $method == 'GET') {
-        echo json_encode(["status" => "error", "message" => "Thiếu ID buổi học."]);
-        exit;
-    }
 
     if ($method === 'GET') {
-        // 1. Lấy thông tin chung
-        $stmtInfo = $pdo->prepare("
-            SELECT s.*, c.class_name, u.full_name as teacher_name 
-            FROM schedules s 
-            LEFT JOIN classes c ON s.class_id = c.id 
-            LEFT JOIN users u ON s.teacher_id = u.id 
-            WHERE s.id = ?
+        $scheduleId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
+        if ($scheduleId <= 0) {
+            lessonDetailResponse(422, ['status' => 'error', 'message' => 'Thiếu ID buổi học.']);
+        }
+
+        $schedule = loadScheduleContext($pdo, $scheduleId);
+        if (!$schedule) {
+            lessonDetailResponse(404, ['status' => 'error', 'message' => 'Không tìm thấy ca dạy này.']);
+        }
+
+        $stmtMaterials = $pdo->prepare("
+            SELECT *
+            FROM materials
+            WHERE schedule_id = ?
+            ORDER BY uploaded_at DESC, id DESC
         ");
-        $stmtInfo->execute([$schedule_id]);
-        $scheduleInfo = $stmtInfo->fetch(PDO::FETCH_ASSOC);
+        $stmtMaterials->execute([$scheduleId]);
 
-        if (!$scheduleInfo) {
-            echo json_encode(["status" => "error", "message" => "Không tìm thấy ca dạy này."]);
-            exit;
-        }
+        $stmtAssignments = $pdo->prepare("
+            SELECT *
+            FROM assignments
+            WHERE schedule_id = ?
+            ORDER BY created_at DESC, id DESC
+        ");
+        $stmtAssignments->execute([$scheduleId]);
 
-        // 2. Lấy danh sách Tài liệu In-class (Đang để uploaded_at)
-        $stmtMaterials = $pdo->prepare("SELECT * FROM materials WHERE schedule_id = ? ORDER BY uploaded_at DESC");
-        $stmtMaterials->execute([$schedule_id]);
-        $materials = $stmtMaterials->fetchAll(PDO::FETCH_ASSOC);
-
-        // 3. Lấy danh sách Bài tập Post-class
-        $stmtAssignments = $pdo->prepare("SELECT * FROM assignments WHERE schedule_id = ? ORDER BY created_at DESC");
-        $stmtAssignments->execute([$schedule_id]);
-        $assignments = $stmtAssignments->fetchAll(PDO::FETCH_ASSOC);
-
-        echo json_encode([
-            "status" => "success",
-            "schedule" => $scheduleInfo,
-            "materials" => $materials,
-            "assignments" => $assignments
+        lessonDetailResponse(200, [
+            'status' => 'success',
+            'schedule' => $schedule,
+            'materials' => $stmtMaterials->fetchAll(PDO::FETCH_ASSOC),
+            'assignments' => $stmtAssignments->fetchAll(PDO::FETCH_ASSOC),
         ]);
-        exit; // Kết thúc request tại đây để không chạy xuống dướI
     }
 
-    // XỬ LÝ LƯU TÀI LIỆU & BÀI TẬP VÀO DATABASE
-    if ($method === 'POST') {
-        $data = json_decode(file_get_contents("php://input"), true);
-        $action = isset($data['action']) ? $data['action'] : '';
-
-        // 1. Lưu Tài liệu In-class
-        if ($action === 'add_material') {
-            $title = $data['title'] ?? '';
-            $file_url = $data['file_url'] ?? '';
-            $material_type = $data['material_type'] ?? 'document';
-            $sch_id = $data['schedule_id'] ?? 0;
-
-            // Kiểm tra rỗng
-            $checkTitle = Validator::isNotEmpty($title);
-            if ($checkTitle !== true) { echo json_encode(["status" => "error", "message" => "Tên tài liệu: " . $checkTitle]); exit; }
-            
-            $checkUrl = Validator::isNotEmpty($file_url);
-            if ($checkUrl !== true) { echo json_encode(["status" => "error", "message" => "Link liên kết: " . $checkUrl]); exit; }
-
-            // Validate Link Format basic
-            if (!filter_var($file_url, FILTER_VALIDATE_URL)) {
-                echo json_encode(["status" => "error", "message" => "Link tài liệu không đúng định dạng URL (VD: https://...)."]);
-                exit;
-            }
-
-            $stmt = $pdo->prepare("INSERT INTO materials (schedule_id, title, file_url, material_type) VALUES (?, ?, ?, ?)");
-            $stmt->execute([$sch_id, $title, $file_url, $material_type]);
-            echo json_encode(["status" => "success", "message" => "Tải tài liệu lên thành công!"]);
-            exit;
-        }
-
-        // 2. Lưu Bài tập Post-class
-        if ($action === 'add_assignment') {
-            $title = $data['title'] ?? '';
-            $desc = $data['description'] ?? '';
-            $deadline = $data['deadline'] ?? '';
-            $sch_id = $data['schedule_id'] ?? 0;
-
-            // Kiểm tra rỗng
-            $checkTitle = Validator::isNotEmpty($title);
-            if ($checkTitle !== true) { echo json_encode(["status" => "error", "message" => "Tiêu đề: " . $checkTitle]); exit; }
-            
-            $checkDesc = Validator::isNotEmpty($desc);
-            if ($checkDesc !== true) { echo json_encode(["status" => "error", "message" => "Yêu cầu: " . $checkDesc]); exit; }
-
-            $checkDeadline = Validator::isNotEmpty($deadline);
-            if ($checkDeadline !== true) { echo json_encode(["status" => "error", "message" => "Hạn chót: " . $checkDeadline]); exit; }
-
-            // Kiểm tra Thời gian tương lai
-            $checkDate = Validator::checkFuturePastDate($deadline, 'future', 'Y-m-d H:i:s');
-            if ($checkDate !== true) { echo json_encode(["status" => "error", "message" => "Hạn chót: " . $checkDate]); exit; }
-
-            $stmt = $pdo->prepare("INSERT INTO assignments (schedule_id, title, description, deadline, assignment_type) VALUES (?, ?, ?, ?, 'post_class')");
-            $stmt->execute([$sch_id, $title, $desc, $deadline]);
-            echo json_encode(["status" => "success", "message" => "Đã giao bài tập cho lớp!"]);
-            exit;
-        }
+    if ($method !== 'POST') {
+        lessonDetailResponse(405, ['status' => 'error', 'message' => 'Method Not Allowed']);
     }
 
+    $data = json_decode(file_get_contents("php://input"), true);
+    if (!is_array($data)) {
+        lessonDetailResponse(400, ['status' => 'error', 'message' => 'Dữ liệu gửi lên không hợp lệ.']);
+    }
+
+    $action = trim((string) ($data['action'] ?? ''));
+    $scheduleId = isset($data['schedule_id']) ? (int) $data['schedule_id'] : 0;
+    if ($scheduleId <= 0) {
+        lessonDetailResponse(422, ['status' => 'error', 'message' => 'Thiếu schedule_id hợp lệ.']);
+    }
+
+    $schedule = loadScheduleContext($pdo, $scheduleId);
+    if (!$schedule) {
+        lessonDetailResponse(404, ['status' => 'error', 'message' => 'Không tìm thấy buổi học cần cập nhật.']);
+    }
+
+    if ($action === 'add_material') {
+        $title = trim((string) ($data['title'] ?? ''));
+        $fileUrl = trim((string) ($data['file_url'] ?? ''));
+        $materialType = trim((string) ($data['material_type'] ?? 'document'));
+
+        $checkTitle = Validator::isNotEmpty($title);
+        if ($checkTitle !== true) {
+            lessonDetailResponse(422, ['status' => 'error', 'message' => 'Tên tài liệu: ' . $checkTitle]);
+        }
+
+        $checkUrl = Validator::isNotEmpty($fileUrl);
+        if ($checkUrl !== true) {
+            lessonDetailResponse(422, ['status' => 'error', 'message' => 'Link liên kết: ' . $checkUrl]);
+        }
+
+        if (!filter_var($fileUrl, FILTER_VALIDATE_URL) && !str_starts_with($fileUrl, '/backend/uploads/')) {
+            lessonDetailResponse(422, ['status' => 'error', 'message' => 'Link tài liệu không đúng định dạng hợp lệ.']);
+        }
+
+        if (!in_array($materialType, ['document', 'audio', 'video', 'link'], true)) {
+            $materialType = 'document';
+        }
+
+        $stmt = $pdo->prepare("
+            INSERT INTO materials (class_id, schedule_id, title, file_url, material_type)
+            VALUES (?, ?, ?, ?, ?)
+        ");
+        $stmt->execute([
+            (int) $schedule['class_id'],
+            $scheduleId,
+            $title,
+            $fileUrl,
+            $materialType,
+        ]);
+
+        lessonDetailResponse(200, ['status' => 'success', 'message' => 'Tải tài liệu lên thành công.']);
+    }
+
+    if ($action === 'add_assignment') {
+        $title = trim((string) ($data['title'] ?? ''));
+        $description = trim((string) ($data['description'] ?? ''));
+        $deadline = trim((string) ($data['deadline'] ?? ''));
+
+        $checkTitle = Validator::isNotEmpty($title);
+        if ($checkTitle !== true) {
+            lessonDetailResponse(422, ['status' => 'error', 'message' => 'Tiêu đề: ' . $checkTitle]);
+        }
+
+        $checkDescription = Validator::isNotEmpty($description);
+        if ($checkDescription !== true) {
+            lessonDetailResponse(422, ['status' => 'error', 'message' => 'Yêu cầu: ' . $checkDescription]);
+        }
+
+        $checkDeadline = Validator::isNotEmpty($deadline);
+        if ($checkDeadline !== true) {
+            lessonDetailResponse(422, ['status' => 'error', 'message' => 'Hạn chót: ' . $checkDeadline]);
+        }
+
+        $checkDate = Validator::checkFuturePastDate($deadline, 'future', 'Y-m-d H:i:s');
+        if ($checkDate !== true) {
+            lessonDetailResponse(422, ['status' => 'error', 'message' => 'Hạn chót: ' . $checkDate]);
+        }
+
+        $stmt = $pdo->prepare("
+            INSERT INTO assignments (schedule_id, lesson_id, course_id, title, description, deadline, assignment_type)
+            VALUES (?, ?, ?, ?, ?, ?, 'post_class')
+        ");
+        $stmt->execute([
+            $scheduleId,
+            $schedule['lesson_id'] !== null ? (int) $schedule['lesson_id'] : null,
+            (int) $schedule['course_id'],
+            $title,
+            $description,
+            $deadline,
+        ]);
+
+        lessonDetailResponse(200, ['status' => 'success', 'message' => 'Đã giao bài tập cho lớp.']);
+    }
+
+    lessonDetailResponse(422, ['status' => 'error', 'message' => 'Hành động không hợp lệ.']);
 } catch (PDOException $e) {
-    // NẾU SQL BỊ LỖI, IN RA CHÍNH XÁC LỖI GÌ ĐỂ FIX
-    echo json_encode([
-        "status" => "error", 
-        "message" => "Lỗi CSDL: " . $e->getMessage()
-    ]);
-} catch (Exception $e) {
-    echo json_encode([
-        "status" => "error", 
-        "message" => "Lỗi PHP: " . $e->getMessage()
-    ]);
+    lessonDetailResponse(500, ['status' => 'error', 'message' => 'Lỗi CSDL: ' . $e->getMessage()]);
+} catch (Throwable $e) {
+    lessonDetailResponse(500, ['status' => 'error', 'message' => 'Lỗi PHP: ' . $e->getMessage()]);
 }
-?>

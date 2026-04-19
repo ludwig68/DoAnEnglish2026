@@ -20,6 +20,16 @@ const isPublicApiPath = (path) => {
   return normalizedPath.startsWith('public/')
 }
 
+export const getFileUrl = (path) => {
+  if (!path) return '';
+  if (path.startsWith('http')) return path;
+  
+  // Extract base site url from API_BASE_URL
+  const siteUrl = API_BASE_URL.replace(/\/backend\/api\/?$/, '');
+  
+  return siteUrl + (path.startsWith('/') ? path : '/' + path);
+}
+
 export const apiFetch = (path, options = {}) => {
   const headers = new Headers(options.headers || {})
   const token = getAuthToken()
