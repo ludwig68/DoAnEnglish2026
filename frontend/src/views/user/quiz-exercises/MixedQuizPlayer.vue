@@ -280,7 +280,8 @@ const MatchingBlock = defineAsyncComponent(() => import('./blocks/MatchingBlock.
 const WritingBlock = defineAsyncComponent(() => import('./blocks/WritingBlock.vue'))
 
 const props = defineProps({
-  quiz: { type: Object, default: null }
+  quiz: { type: Object, default: null },
+  forceReview: { type: Boolean, default: false }
 })
 const emit = defineEmits(['close', 'submitted'])
 
@@ -363,7 +364,7 @@ const stopTimer = () => {
 
 onMounted(async () => {
   await fetchQuestions()
-  if (!isRevealed.value && !isWritingLocked.value) {
+  if (!isRevealed.value && !isWritingLocked.value && !props.forceReview) {
     startTimer()
   }
 })
@@ -390,17 +391,25 @@ const fetchQuestions = async () => {
       prevSubmission.value = subData
       submittedScore.value = subData.score ?? 0
 
-      // Check if quiz has writing questions → lock resubmission
+      // Check if quiz has writing questions OR we are in force-review mode
       const hasEssay = questions.value.some(q => q.question_type === 'writing' || q.question_type === 'essay')
-      if (hasEssay) {
+      if (hasEssay || props.forceReview) {
         isWritingLocked.value = true
         isRevealed.value = true
         // Restore previous answers for review
         try {
-          const prevAnswers = JSON.parse(subData.answers_json || '{}')
+          const prevAnswers = typeof subData.answers_json === 'string' 
+            ? JSON.parse(subData.answers_json || '{}') 
+            : (subData.answers_json || {})
           userAnswers.value = prevAnswers
-        } catch(e) {}
+        } catch(e) {
+          console.error("Failed to parse answers", e)
+        }
       }
+    } else if (props.forceReview) {
+      // Force review even if no submission found (shouldn't happen with status='completed' but for safety)
+      isRevealed.value = true
+      isWritingLocked.value = true
     }
 
   } catch (err) {

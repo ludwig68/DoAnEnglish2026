@@ -180,7 +180,7 @@ try {
                 $score = null;
 
                 $stmtWrittenSubmission = $pdo->prepare("
-                    SELECT score, submitted_at
+                    SELECT score, feedback, rubric_data, submitted_at
                     FROM submissions
                     WHERE assignment_id = ? AND student_id = ? AND class_id = ?
                     ORDER BY submitted_at DESC
@@ -207,6 +207,8 @@ try {
                     'deadline' => $writtenAssignment['deadline'] ?: $calculatedDeadline,
                     'status' => $status,
                     'score' => $score,
+                    'feedback' => $submission['feedback'] ?? null,
+                    'rubric_data' => $submission['rubric_data'] ? json_decode($submission['rubric_data'], true) : null,
                 ];
             }
 
