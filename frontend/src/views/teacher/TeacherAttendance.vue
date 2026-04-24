@@ -585,7 +585,7 @@ const isAttendanceOpen = (schedule) => {
   const [year, month, day] = schedule.study_date.split('-').map(Number);
 
   const startTime = new Date(year, month - 1, day, startH, startM);
-  const startTimeMinus15 = new Date(startTime.getTime() - 15 * 60000);
+  const startTimeMinus15 = new Date(startTime.getTime() - 1440 * 60000);
 
   const endTime = new Date(year, month - 1, day, endH, endM);
   // Hiểu theo 2 cách, ở đây cấu hình là: Từ trước giờ BẮT ĐẦU 15p đến sau giờ KẾT THÚC 15p. 

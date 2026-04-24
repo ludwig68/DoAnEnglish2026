@@ -8,7 +8,10 @@ header("Access-Control-Allow-Methods: GET, PUT, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type, Authorization");
 header("Content-Type: application/json; charset=UTF-8");
 
-if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') { http_response_code(200); exit; }
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    http_response_code(200);
+    exit;
+}
 
 require_once __DIR__ . '/../../config/db.php';
 require_once __DIR__ . '/../../utils/JwtHelper.php';
@@ -20,7 +23,7 @@ if (($authUser['role'] ?? '') !== 'instructor') {
     exit;
 }
 
-$teacherId = (int)($authUser['sub'] ?? 0);
+$teacherId = (int) ($authUser['sub'] ?? 0);
 
 // ═══════════════════════════════════════════════════════════════
 // GET: Danh sách bài nộp / Chi tiết 1 bài
@@ -35,7 +38,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         try {
             if ($isQuiz) {
                 // Xử lý bài Tự luận nằm trong Quiz
-                $qsId = (int)str_replace('qs_', '', $subIdRaw);
+                $qsId = (int) str_replace('qs_', '', $subIdRaw);
                 $stmt = $pdo->prepare("
                     SELECT qs.id, qs.answers_json, qs.score, qs.feedback, qs.rubric_data, qs.submitted_at, qs.status,
                            u.full_name AS student_name, u.email AS student_email,
@@ -59,7 +62,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
                 $stmtQ = $pdo->prepare("SELECT id, question_text FROM questions WHERE quiz_id = ? AND question_type IN ('writing', 'essay') LIMIT 1");
                 $stmtQ->execute([$sub['quiz_id']]);
                 $essayQ = $stmtQ->fetch(PDO::FETCH_ASSOC);
-                
+
                 $content = '';
                 $prompt = '';
                 if ($essayQ) {
@@ -74,24 +77,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
                 echo json_encode([
                     'status' => 'success',
                     'data' => [
-                        'id'                  => 'qs_' . $sub['id'],
-                        'submission_content'  => $content,
-                        'score'               => $sub['score'] !== null ? (float)$sub['score'] : null,
-                        'feedback'            => $sub['feedback'] ?? '',
-                        'rubric_data'         => $sub['rubric_data'] ? json_decode($sub['rubric_data'], true) : null,
-                        'status'              => $sub['status'] ?? (($sub['score'] !== null) ? 'completed' : 'pending_grading'),
-                        'submitted_at'        => $sub['submitted_at'],
-                        'student_name'        => $sub['student_name'],
-                        'student_email'       => $sub['student_email'],
-                        'assignment_title'    => $sub['assignment_title'] . ' (Tự luận)',
-                        'prompt'              => $prompt,
-                        'class_name'          => $sub['class_name'],
-                        'word_count'          => $wordCount,
+                        'id' => 'qs_' . $sub['id'],
+                        'submission_content' => $content,
+                        'score' => $sub['score'] !== null ? (float) $sub['score'] : null,
+                        'feedback' => $sub['feedback'] ?? '',
+                        'rubric_data' => $sub['rubric_data'] ? json_decode($sub['rubric_data'], true) : null,
+                        'status' => $sub['status'] ?? (($sub['score'] !== null) ? 'completed' : 'pending_grading'),
+                        'submitted_at' => $sub['submitted_at'],
+                        'student_name' => $sub['student_name'],
+                        'student_email' => $sub['student_email'],
+                        'assignment_title' => $sub['assignment_title'] . ' (Tự luận)',
+                        'prompt' => $prompt,
+                        'class_name' => $sub['class_name'],
+                        'word_count' => $wordCount,
                     ]
                 ]);
             } else {
                 // Xử lý bài luận thông thường (submissions)
-                $subId = (int)$subIdRaw;
+                $subId = (int) $subIdRaw;
                 $stmt = $pdo->prepare("
                     SELECT
                         sub.id, sub.submission_content, sub.score, sub.feedback, sub.rubric_data, sub.submitted_at,
@@ -119,19 +122,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
                 echo json_encode([
                     'status' => 'success',
                     'data' => [
-                        'id'                  => (int)$sub['id'],
-                        'submission_content'  => $sub['submission_content'],
-                        'score'               => $sub['score'] !== null ? (float)$sub['score'] : null,
-                        'feedback'            => $sub['feedback'],
-                        'rubric_data'         => $sub['rubric_data'] ? json_decode($sub['rubric_data'], true) : null,
-                        'submitted_at'        => $sub['submitted_at'],
-                        'student_name'        => $sub['student_name'],
-                        'student_email'       => $sub['student_email'],
-                        'assignment_title'    => $sub['assignment_title'],
-                        'prompt'              => $sub['prompt'],
-                        'class_name'          => $sub['class_name'],
-                        'status'              => ($sub['score'] !== null) ? 'completed' : 'pending_grading',
-                        'word_count'          => $wordCount,
+                        'id' => (int) $sub['id'],
+                        'submission_content' => $sub['submission_content'],
+                        'score' => $sub['score'] !== null ? (float) $sub['score'] : null,
+                        'feedback' => $sub['feedback'],
+                        'rubric_data' => $sub['rubric_data'] ? json_decode($sub['rubric_data'], true) : null,
+                        'submitted_at' => $sub['submitted_at'],
+                        'student_name' => $sub['student_name'],
+                        'student_email' => $sub['student_email'],
+                        'assignment_title' => $sub['assignment_title'],
+                        'prompt' => $sub['prompt'],
+                        'class_name' => $sub['class_name'],
+                        'status' => ($sub['score'] !== null) ? 'completed' : 'pending_grading',
+                        'word_count' => $wordCount,
                     ]
                 ]);
             }
@@ -144,7 +147,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
 
     // ── Danh sách hàng chờ chấm / lịch sử đã chấm ──
     $mode = $_GET['mode'] ?? 'queue'; // queue | history
-    $classId = (int)($_GET['class_id'] ?? 0);
+    $classId = (int) ($_GET['class_id'] ?? 0);
 
     try {
         $formatted = [];
@@ -172,7 +175,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
             SELECT
                 sub.id, sub.score, sub.submitted_at, sub.submission_content,
                 u.full_name AS student_name,
-                a.title AS assignment_title, a.description AS prompt,
+                a.title AS assignment_title, a.description AS prompt, a.deadline,
                 c.class_name
             FROM submissions sub
             JOIN users u ON u.id = sub.student_id
@@ -183,17 +186,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         $stmt->execute($params);
         $rowsSub = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-        foreach($rowsSub as $r) {
+        foreach ($rowsSub as $r) {
             $text = strip_tags($r['submission_content'] ?? '');
             $wc = $text ? count(preg_split('/\s+/', trim($text), -1, PREG_SPLIT_NO_EMPTY)) : 0;
             $formatted[] = [
-                'id'               => (int)$r['id'],
-                'student_name'     => $r['student_name'],
-                'class_name'       => $r['class_name'],
+                'id' => (int) $r['id'],
+                'student_name' => $r['student_name'],
+                'class_name' => $r['class_name'],
                 'assignment_title' => $r['assignment_title'],
-                'prompt'           => $r['prompt'],
-                'score'            => $r['score'] !== null ? (float)$r['score'] : null,
-                'submitted_at'     => $r['submitted_at'],
+                'prompt' => $r['prompt'],
+                'score' => $r['score'] !== null ? (float) $r['score'] : null,
+                'submitted_at' => $r['submitted_at'],
+                'deadline' => $r['deadline'],
                 'approx_word_count' => $wc,
             ];
         }
@@ -209,8 +213,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         ");
         $stmtStats->execute([$teacherId]);
         $statsRow = $stmtStats->fetch(PDO::FETCH_ASSOC);
-        $pendingCount += (int)($statsRow['pending'] ?? 0);
-        $gradedCount += (int)($statsRow['graded'] ?? 0);
+        $pendingCount += (int) ($statsRow['pending'] ?? 0);
+        $gradedCount += (int) ($statsRow['graded'] ?? 0);
 
         // --- FETCH QUIZ SUBMISSIONS WITH ESSAYS ---
         $qsConditions = ["c.instructor_id = ?"];
@@ -254,13 +258,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
                 $text = strip_tags($content);
                 $wc = $text ? count(preg_split('/\s+/', trim($text), -1, PREG_SPLIT_NO_EMPTY)) : 0;
                 $formatted[] = [
-                    'id'               => 'qs_' . $r['id'],
-                    'student_name'     => $r['student_name'],
-                    'class_name'       => $r['class_name'],
+                    'id' => 'qs_' . $r['id'],
+                    'student_name' => $r['student_name'],
+                    'class_name' => $r['class_name'],
                     'assignment_title' => $r['assignment_title'] . ' (Tự luận)',
-                    'prompt'           => $essayQ['question_text'],
-                    'score'            => ($r['feedback'] || $r['rubric_data']) ? (float)$r['score'] : null,
-                    'submitted_at'     => $r['submitted_at'],
+                    'prompt' => $essayQ['question_text'],
+                    'score' => ($r['feedback'] || $r['rubric_data']) ? (float) $r['score'] : null,
+                    'submitted_at' => $r['submitted_at'],
                     'approx_word_count' => $wc,
                 ];
             }
@@ -288,15 +292,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         $gradedCount += (int) ($statsRowQs['gradedQs'] ?? 0);
 
         // Sort by submitted_at DESC
-        usort($formatted, function($a, $b) {
+        usort($formatted, function ($a, $b) {
             return strtotime($b['submitted_at']) - strtotime($a['submitted_at']);
         });
 
         echo json_encode([
             'status' => 'success',
-            'stats'  => [
+            'stats' => [
                 'pending' => $pendingCount,
-                'graded'  => $gradedCount,
+                'graded' => $gradedCount,
             ],
             'data' => $formatted,
         ]);
@@ -314,9 +318,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
 if ($_SERVER['REQUEST_METHOD'] === 'PUT') {
     $payload = json_decode(file_get_contents('php://input'), true) ?? [];
     $subIdRaw = $payload['submission_id'] ?? '';
-    $score    = isset($payload['score']) ? (float)$payload['score'] : null;
+    $score = isset($payload['score']) ? (float) $payload['score'] : null;
     $feedback = trim($payload['feedback'] ?? '');
-    $rubric   = $payload['rubric'] ?? null;
+    $rubric = $payload['rubric'] ?? null;
 
     if (!$subIdRaw) {
         http_response_code(422);
@@ -334,7 +338,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'PUT') {
         $isQuiz = strpos($subIdRaw, 'qs_') === 0;
 
         if ($isQuiz) {
-            $qsId = (int)str_replace('qs_', '', $subIdRaw);
+            $qsId = (int) str_replace('qs_', '', $subIdRaw);
             // Verify permission
             $checkStmt = $pdo->prepare("
                 SELECT qs.id FROM quiz_submissions qs
@@ -369,7 +373,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'PUT') {
                 $notiStmt->execute([$info['student_id'], "Thông báo điểm số", $notiMsg, "/user/assignments"]);
             }
         } else {
-            $subId = (int)$subIdRaw;
+            $subId = (int) $subIdRaw;
             // Verify permission
             $checkStmt = $pdo->prepare("
                 SELECT sub.id FROM submissions sub
@@ -406,7 +410,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'PUT') {
         }
 
         echo json_encode([
-            'status'  => 'success',
+            'status' => 'success',
             'message' => 'Đã chấm điểm thành công.'
         ]);
     } catch (Exception $e) {

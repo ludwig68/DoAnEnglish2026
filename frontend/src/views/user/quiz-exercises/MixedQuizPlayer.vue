@@ -5,7 +5,8 @@
       <div class="px-6 h-14 flex items-center justify-between gap-4">
         <!-- Left: Back Button -->
         <div class="flex items-center gap-4">
-          <button @click="$emit('close')" class="flex items-center gap-2 px-4 py-2 text-[12px] font-black text-slate-500 hover:text-emerald-600 hover:bg-emerald-50 rounded-xl transition-all group">
+          <button @click="$emit('close')"
+            class="flex items-center gap-2 px-4 py-2 text-[12px] font-black text-slate-500 hover:text-emerald-600 hover:bg-emerald-50 rounded-xl transition-all group">
             <i class="fa-solid fa-arrow-left group-hover:-translate-x-1 transition-transform"></i>
             Quay lại
           </button>
@@ -17,7 +18,8 @@
             Câu {{ currentIndex + 1 }} / {{ totalQuestions }}
           </span>
           <div class="flex-1 h-1.5 bg-slate-100 rounded-full overflow-hidden">
-            <div class="h-full bg-gradient-to-r from-emerald-400 to-emerald-600 rounded-full transition-all duration-700"
+            <div
+              class="h-full bg-gradient-to-r from-emerald-400 to-emerald-600 rounded-full transition-all duration-700"
               :style="{ width: progressPercent + '%' }"></div>
           </div>
           <span class="text-[10px] font-black text-emerald-600 shrink-0 whitespace-nowrap">
@@ -27,10 +29,9 @@
 
         <!-- Right: Timer + Submit -->
         <div class="flex items-center gap-4 shrink-0">
-          <div class="flex items-center gap-2"
-            :class="timeLeft < 300 ? 'text-red-500' : 'text-slate-600'">
-            <div class="w-2 h-2 rounded-full"
-              :class="timeLeft < 300 ? 'bg-red-500 animate-pulse' : 'bg-emerald-500'"></div>
+          <div class="flex items-center gap-2" :class="timeLeft < 300 ? 'text-red-500' : 'text-slate-600'">
+            <div class="w-2 h-2 rounded-full" :class="timeLeft < 300 ? 'bg-red-500 animate-pulse' : 'bg-emerald-500'">
+            </div>
             <span class="text-[13px] font-black tabular-nums">{{ formattedTime }}</span>
           </div>
           <button @click="handleSubmitFinal" :disabled="isSubmitting || isRevealed || isWritingLocked"
@@ -61,7 +62,8 @@
           <i class="fa-solid fa-check-circle mr-1"></i> Điểm: {{ prevSubmission.score }}/10
         </span>
       </div>
-      <button @click="$emit('close')" class="text-amber-500 hover:text-amber-700 font-black text-[12px] uppercase tracking-widest">
+      <button @click="$emit('close')"
+        class="text-amber-500 hover:text-amber-700 font-black text-[12px] uppercase tracking-widest">
         Quay lại
       </button>
     </div>
@@ -70,18 +72,15 @@
     <div class="flex-1 flex overflow-hidden relative">
 
       <!-- Left Sidebar (Question Map) -->
-      <aside class="w-[80px] border-r border-slate-100 bg-white flex flex-col items-center py-6 gap-2 shrink-0 overflow-y-auto custom-scrollbar shadow-sm z-20 relative">
+      <aside
+        class="w-[80px] border-r border-slate-100 bg-white flex flex-col items-center py-6 gap-2 shrink-0 overflow-y-auto custom-scrollbar shadow-sm z-20 relative">
         <p class="text-[8px] font-black uppercase tracking-widest text-slate-400 mb-2">Bản đồ</p>
-        <button
-          v-for="(q, idx) in questions"
-          :key="q.id || idx"
-          @click="jumpToQuestion(idx)"
-          class="w-12 h-12 text-[14px] font-black relative"
-          :class="getMapDotClass(idx)"
-        >
+        <button v-for="(q, idx) in questions" :key="q.id || idx" @click="jumpToQuestion(idx)"
+          class="w-12 h-12 text-[14px] font-black relative" :class="getMapDotClass(idx)">
           {{ idx + 1 }}
           <!-- Tiny icon indicating type -->
-          <div class="absolute -bottom-1 -right-1 w-5 h-5 bg-white rounded-md border border-slate-200 flex items-center justify-center text-[8px] text-slate-500">
+          <div
+            class="absolute -bottom-1 -right-1 w-5 h-5 bg-white rounded-md border border-slate-200 flex items-center justify-center text-[8px] text-slate-500">
             <i :class="getTypeIcon(q.question_type)"></i>
           </div>
         </button>
@@ -106,7 +105,8 @@
           <div v-else class="max-w-4xl mx-auto w-full">
             <div class="mb-8 flex items-center justify-between">
               <div>
-                <span class="px-3 py-1 bg-emerald-100 text-emerald-700 rounded-lg text-[10px] font-black uppercase tracking-widest">
+                <span
+                  class="px-3 py-1 bg-emerald-100 text-emerald-700 rounded-lg text-[10px] font-black uppercase tracking-widest">
                   Câu {{ currentIndex + 1 }}
                 </span>
                 <span class="ml-3 text-[12px] font-bold text-slate-500 uppercase tracking-wider">
@@ -122,34 +122,34 @@
             </div>
 
             <keep-alive>
-              <component
-                :is="activeComponentType"
-                :question="currentQuestion"
-                :saved-answer="userAnswers[currentQuestion.id]"
-                :is-answer-revealed="isRevealed"
-                @update-answer="handleUpdateAnswer"
-                :key="currentQuestion.id"
-              />
+              <component :is="activeComponentType" :question="currentQuestion"
+                :saved-answer="userAnswers[currentQuestion.id]" :is-answer-revealed="isRevealed"
+                @update-answer="handleUpdateAnswer" :key="currentQuestion.id" />
             </keep-alive>
 
             <!-- ─ Teacher Feedback Box ─ -->
             <transition name="fade">
-              <div v-if="isRevealed && prevSubmission?.sub_status === 'completed' && (currentQuestion?.question_type === 'writing' || currentQuestion?.question_type === 'essay') && (prevSubmission?.feedback || parsedRubric)" 
+              <div
+                v-if="isRevealed && prevSubmission?.sub_status === 'completed' && (currentQuestion?.question_type === 'writing' || currentQuestion?.question_type === 'essay') && (prevSubmission?.feedback || parsedRubric)"
                 class="mt-10 bg-white rounded-[2.5rem] border border-slate-100 shadow-xl shadow-emerald-500/5 p-8 relative overflow-hidden group">
-                
+
                 <!-- Decorative background elements -->
-                <div class="absolute -right-20 -bottom-20 w-64 h-64 bg-emerald-50 rounded-full blur-3xl opacity-50 group-hover:bg-emerald-100 transition-colors duration-700 pointer-events-none"></div>
+                <div
+                  class="absolute -right-20 -bottom-20 w-64 h-64 bg-emerald-50 rounded-full blur-3xl opacity-50 group-hover:bg-emerald-100 transition-colors duration-700 pointer-events-none">
+                </div>
 
                 <div class="flex flex-col md:flex-row gap-10 relative z-10">
                   <!-- Rubric Details -->
                   <div v-if="parsedRubric" class="flex-1 space-y-6">
-                    <h4 class="text-[11px] font-black uppercase tracking-[0.2em] text-emerald-600 flex items-center gap-2 mb-2">
+                    <h4
+                      class="text-[11px] font-black uppercase tracking-[0.2em] text-emerald-600 flex items-center gap-2 mb-2">
                       <i class="fa-solid fa-chart-pie"></i> Điểm thành phần
                     </h4>
-                    
+
                     <div v-for="(item, idx) in parsedRubric" :key="idx" class="space-y-3">
                       <div class="flex items-end justify-between">
-                        <span class="text-[11px] font-black text-slate-600 uppercase tracking-widest">{{ item.label }}</span>
+                        <span class="text-[11px] font-black text-slate-600 uppercase tracking-widest">{{ item.label
+                          }}</span>
                         <span class="text-xl font-headline font-black transition-colors"
                           :class="item.score >= 7 ? 'text-emerald-500' : item.score >= 5 ? 'text-amber-500' : 'text-red-400'">
                           {{ parseFloat(item.score).toFixed(1) }}
@@ -166,14 +166,17 @@
 
                   <!-- Text Feedback -->
                   <div class="flex-1 relative">
-                    <div v-if="parsedRubric" class="absolute -left-5 top-0 bottom-0 w-px bg-slate-100 hidden md:block"></div>
+                    <div v-if="parsedRubric" class="absolute -left-5 top-0 bottom-0 w-px bg-slate-100 hidden md:block">
+                    </div>
                     <div class="md:pl-5">
-                      <h4 class="text-[11px] font-black uppercase tracking-[0.2em] text-emerald-600 flex items-center gap-2 mb-4">
+                      <h4
+                        class="text-[11px] font-black uppercase tracking-[0.2em] text-emerald-600 flex items-center gap-2 mb-4">
                         <i class="fa-solid fa-comment-dots"></i> Nhận xét từ giảng viên
                       </h4>
-                      <div class="text-[13px] text-slate-700 leading-[1.8] font-bold whitespace-pre-wrap italic bg-emerald-50/50 p-5 rounded-2xl border border-emerald-100/50 relative">
+                      <div
+                        class="text-[13px] text-slate-700 leading-[1.8] font-bold whitespace-pre-wrap italic bg-emerald-50/50 p-5 rounded-2xl border border-emerald-100/50 relative">
                         <i class="fa-solid fa-quote-left absolute -top-3 -left-3 text-2xl text-emerald-200"></i>
-                         {{ prevSubmission?.feedback || 'Chưa có nhận xét chi tiết bằng văn bản.' }}
+                        {{ prevSubmission?.feedback || 'Chưa có nhận xét chi tiết bằng văn bản.' }}
                       </div>
                     </div>
                   </div>
@@ -184,7 +187,8 @@
         </div>
 
         <!-- ═══ BOTTOM NAVIGATION BAR ═══ -->
-        <div v-if="!isLoadingQuestions && questions.length > 0" class="bg-white border-t border-slate-100 shadow-[0_-4px_10px_rgba(0,0,0,0.02)] shrink-0 sticky bottom-0 z-20">
+        <div v-if="!isLoadingQuestions && questions.length > 0"
+          class="bg-white border-t border-slate-100 shadow-[0_-4px_10px_rgba(0,0,0,0.02)] shrink-0 sticky bottom-0 z-20">
           <div class="max-w-4xl mx-auto px-8 h-20 flex items-center justify-between">
             <button @click="prevQuestion" :disabled="currentIndex === 0"
               class="flex items-center gap-2 px-6 py-3 rounded-xl border border-slate-200 bg-white text-[12px] font-black text-slate-500 uppercase tracking-widest hover:bg-slate-50 hover:text-slate-700 disabled:opacity-30 disabled:cursor-not-allowed transition-all group">
@@ -192,8 +196,7 @@
               Câu Trước
             </button>
 
-            <button v-if="currentIndex < totalQuestions - 1"
-              @click="nextQuestion"
+            <button v-if="currentIndex < totalQuestions - 1" @click="nextQuestion"
               class="flex items-center gap-2 px-8 py-3 bg-slate-800 text-white text-[12px] font-black uppercase tracking-widest rounded-xl hover:bg-emerald-600 transition-all shadow-md group">
               Câu Tiếp
               <i class="fa-solid fa-arrow-right text-xs group-hover:translate-x-1 transition-transform"></i>
@@ -211,9 +214,11 @@
 
     <!-- ═══ SUCCESS OVERLAY ═══ -->
     <transition name="fade">
-      <div v-if="showSuccess" class="fixed inset-0 z-[300] bg-black/60 backdrop-blur-md flex items-center justify-center px-6">
+      <div v-if="showSuccess"
+        class="fixed inset-0 z-[300] bg-black/60 backdrop-blur-md flex items-center justify-center px-6">
         <div class="bg-white rounded-[2.5rem] p-12 max-w-md w-full text-center shadow-2xl relative">
-          <button @click="showSuccess = false" class="absolute top-6 right-6 w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 hover:bg-slate-200">
+          <button @click="showSuccess = false"
+            class="absolute top-6 right-6 w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 hover:bg-slate-200">
             <i class="fa-solid fa-xmark"></i>
           </button>
           <div class="w-20 h-20 bg-emerald-50 rounded-full flex items-center justify-center mx-auto mb-6">
@@ -224,7 +229,8 @@
             <!-- Case 1: All objective questions (No writing) -->
             <template v-if="!hasWritingResponse">
               <div class="text-center">
-                <div class="text-[36px] font-headline font-black leading-none" :class="submittedScore >= (submittedTotal/2) ? 'text-emerald-500' : 'text-red-500'">
+                <div class="text-[36px] font-headline font-black leading-none"
+                  :class="submittedScore >= (submittedTotal / 2) ? 'text-emerald-500' : 'text-red-500'">
                   {{ Math.round(submittedScore) }}<span class="text-[18px] text-slate-300">/{{ submittedTotal }}</span>
                 </div>
                 <div class="text-[9px] font-black uppercase tracking-widest text-slate-400 mt-1">
@@ -233,7 +239,8 @@
               </div>
               <div class="w-px h-10 bg-slate-100"></div>
               <div class="text-center">
-                <div class="text-[36px] font-headline font-black text-slate-700 leading-none">{{ submittedCorrect }}<span class="text-[18px] text-slate-300">/{{ submittedTotal }}</span></div>
+                <div class="text-[36px] font-headline font-black text-slate-700 leading-none">{{ submittedCorrect
+                  }}<span class="text-[18px] text-slate-300">/{{ submittedTotal }}</span></div>
                 <div class="text-[9px] font-black uppercase tracking-widest text-slate-400 mt-1">Câu đúng</div>
               </div>
             </template>
@@ -280,8 +287,7 @@ const MatchingBlock = defineAsyncComponent(() => import('./blocks/MatchingBlock.
 const WritingBlock = defineAsyncComponent(() => import('./blocks/WritingBlock.vue'))
 
 const props = defineProps({
-  quiz: { type: Object, default: null },
-  forceReview: { type: Boolean, default: false }
+  quiz: { type: Object, default: null }
 })
 const emit = defineEmits(['close', 'submitted'])
 
@@ -325,7 +331,7 @@ const parsedRubric = computed(() => {
       label: map[key] || key,
       score: data[key]
     }));
-  } catch(e) {
+  } catch (e) {
     return null;
   }
 })
@@ -343,13 +349,13 @@ const formattedTime = computed(() => {
 
 const startTimer = () => {
   if (isRevealed.value || isWritingLocked.value) return
-  
+
   timerInterval = setInterval(() => {
     if (isRevealed.value || isWritingLocked.value) {
       stopTimer()
       return
     }
-    
+
     if (timeLeft.value > 0) {
       timeLeft.value--
     } else {
@@ -364,7 +370,7 @@ const stopTimer = () => {
 
 onMounted(async () => {
   await fetchQuestions()
-  if (!isRevealed.value && !isWritingLocked.value && !props.forceReview) {
+  if (!isRevealed.value && !isWritingLocked.value) {
     startTimer()
   }
 })
@@ -391,25 +397,17 @@ const fetchQuestions = async () => {
       prevSubmission.value = subData
       submittedScore.value = subData.score ?? 0
 
-      // Check if quiz has writing questions OR we are in force-review mode
+      // Check if quiz has writing questions → lock resubmission
       const hasEssay = questions.value.some(q => q.question_type === 'writing' || q.question_type === 'essay')
-      if (hasEssay || props.forceReview) {
+      if (hasEssay) {
         isWritingLocked.value = true
         isRevealed.value = true
         // Restore previous answers for review
         try {
-          const prevAnswers = typeof subData.answers_json === 'string' 
-            ? JSON.parse(subData.answers_json || '{}') 
-            : (subData.answers_json || {})
+          const prevAnswers = JSON.parse(subData.answers_json || '{}')
           userAnswers.value = prevAnswers
-        } catch(e) {
-          console.error("Failed to parse answers", e)
-        }
+        } catch (e) { }
       }
-    } else if (props.forceReview) {
-      // Force review even if no submission found (shouldn't happen with status='completed' but for safety)
-      isRevealed.value = true
-      isWritingLocked.value = true
     }
 
   } catch (err) {
@@ -453,7 +451,7 @@ const getTypeIcon = (type) => {
 const handleUpdateAnswer = (ans) => {
   if (isRevealed.value) return
   if (!currentQuestion.value) return
-  
+
   // Vue Reactivity Caveat: using object assignment
   userAnswers.value = {
     ...userAnswers.value,
@@ -488,7 +486,7 @@ const isQuestionAnswered = (idx) => {
   const q = questions.value[idx]
   if (!q) return false
   const ans = userAnswers.value[q.id]
-  
+
   if (ans === undefined || ans === null) return false
   if (typeof ans === 'string') return ans.trim().length > 0
   if (Array.isArray(ans)) return ans.some(a => a && String(a).trim().length > 0)
@@ -536,8 +534,8 @@ const getMapDotClass = (idx) => {
   }
 
   // 2. Active highlight
-  const activeStyle = isCurrent 
-    ? 'ring-4 ring-slate-900 ring-offset-2 z-10 scale-110 shadow-xl' 
+  const activeStyle = isCurrent
+    ? 'ring-4 ring-slate-900 ring-offset-2 z-10 scale-110 shadow-xl'
     : 'border-2'
 
   return `${baseStyle} ${activeStyle} rounded-2xl flex items-center justify-center transition-all duration-300`
@@ -547,7 +545,7 @@ const handleSubmitFinal = async () => {
   if (isRevealed.value || isWritingLocked.value) return
   isSubmitting.value = true
   submitError.value = ''
-  
+
   try {
     const res = await apiFetch('user/quiz_submissions.php', {
       method: 'POST',
@@ -593,12 +591,31 @@ const handleSubmitFinal = async () => {
 
 <style scoped>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Manrope:wght@600;700;800;900&display=swap');
-.font-headline { font-family: 'Manrope', sans-serif; }
-.font-body { font-family: 'Inter', sans-serif; }
 
-.custom-scrollbar::-webkit-scrollbar { display: none; }
-.custom-scrollbar { scrollbar-width: none; -ms-overflow-style: none; }
+.font-headline {
+  font-family: 'Manrope', sans-serif;
+}
 
-.fade-enter-active, .fade-leave-active { transition: opacity 0.3s; }
-.fade-enter-from, .fade-leave-to { opacity: 0; }
+.font-body {
+  font-family: 'Inter', sans-serif;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.custom-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
 </style>

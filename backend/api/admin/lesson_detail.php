@@ -78,18 +78,26 @@ try {
         $stmtMaterials->execute([$scheduleId]);
 
         $stmtAssignments = $pdo->prepare("
-            SELECT *
-            FROM assignments
-            WHERE schedule_id = ?
-            ORDER BY created_at DESC, id DESC
+            SELECT a.*, 
+                   (SELECT COUNT(*) FROM submissions s WHERE s.assignment_id = a.id) as sub_count,
+                   (SELECT COUNT(*) FROM submissions s WHERE s.assignment_id = a.id AND s.score IS NOT NULL) as graded_count
+            FROM assignments a
+            WHERE a.schedule_id = ?
+            ORDER BY a.created_at DESC, a.id DESC
         ");
         $stmtAssignments->execute([$scheduleId]);
+
+        // Fetch total student count for the class
+        $stmtStats = $pdo->prepare("SELECT COUNT(*) FROM enrollments WHERE class_id = ? AND status = 'active'");
+        $stmtStats->execute([$schedule['class_id']]);
+        $totalStudents = (int)$stmtStats->fetchColumn();
 
         lessonDetailResponse(200, [
             'status' => 'success',
             'schedule' => $schedule,
             'materials' => $stmtMaterials->fetchAll(PDO::FETCH_ASSOC),
             'assignments' => $stmtAssignments->fetchAll(PDO::FETCH_ASSOC),
+            'total_students' => $totalStudents
         ]);
     }
 

@@ -297,9 +297,9 @@
               <!-- Top Row Info -->
               <div class="flex items-center gap-4 mb-5">
                 <!-- Course Level Badge -->
-                <span class="px-3 py-1.5 text-[9px] font-black uppercase tracking-[0.15em] rounded-lg"
-                  :class="getTypeBadgeClass(assignment.type)">
-                  {{ assignment.status === 'completed' ? 'Hoàn thành' : getTypeLabel(assignment.type) }}
+                <span class="px-3 py-1.5 text-[9px] font-black uppercase tracking-[0.15em] rounded-lg border"
+                  :class="assignment.status === 'completed' ? 'bg-slate-50 text-slate-400 border-slate-100' : 'bg-emerald-50 text-emerald-600 border-emerald-100/50'">
+                  {{ selectedLessonCourse?.level || 'IELTS ACADEMIC' }}
                 </span>
                 
                 <!-- Status/Deadline Text -->
@@ -309,10 +309,6 @@
                 <span v-else-if="assignment.status === 'in_progress'" class="text-[11px] font-bold text-red-500 flex items-center gap-1.5">
                   <span class="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse"></span>
                   Cần nộp trước {{ formatTime(assignment.deadline) }}
-                </span>
-                <span v-else-if="isOverdue(assignment.deadline)" class="text-[11px] font-bold text-rose-500 flex items-center gap-1.5">
-                  <i class="fa-solid fa-clock-rotate-left"></i>
-                  Quá hạn ({{ formatDate(assignment.deadline) }})
                 </span>
                 <span v-else class="text-[11px] font-bold text-slate-400">
                   Hạn nộp: {{ formatDate(assignment.deadline) }}
@@ -351,7 +347,7 @@
 
               <!-- Nút bấm -->
               <button v-if="assignment.status === 'completed' || assignment.status === 'pending_grading'" @click="launchExercise(assignment)" class="px-8 py-3.5 bg-emerald-50 text-emerald-700 border border-emerald-100 rounded-[1.25rem] text-[13px] font-black hover:bg-emerald-100 hover:text-emerald-800 transition-colors shadow-sm">
-                {{ assignment.status === 'pending_grading' ? 'Xem lại bài' : 'Xem kết quả' }}
+                {{ assignment.status === 'pending_grading' ? 'Xem lại bài' : 'Làm lại' }}
               </button>
               <button v-else @click="launchExercise(assignment)" class="px-10 py-3.5 text-[13px] font-black tracking-widest text-white bg-emerald-500 hover:bg-emerald-600 shadow-lg shadow-emerald-500/25 hover:shadow-emerald-500/35 hover:-translate-y-0.5 transition-all duration-300 rounded-[1.25rem] outline-none">
                 Làm bài ngay
@@ -363,63 +359,10 @@
       </div>
     </div>
 
-    <!-- ═══ MODAL: Xem phản hồi của Giảng viên (Cho bài Written Assignment) ═══ -->
-    <div v-if="viewingFeedback" class="fixed inset-0 z-[110] flex items-center justify-center bg-black/40 px-4 py-8 backdrop-blur-md" @click.self="viewingFeedback = null">
-      <div class="w-full max-w-2xl rounded-[2.5rem] bg-white shadow-2xl flex flex-col animate-in fade-in zoom-in duration-300 overflow-hidden relative">
-        <div class="px-10 py-10">
-          <div class="flex items-center justify-between mb-8">
-            <h3 class="text-2xl font-headline font-black text-slate-800">Phản hồi từ Giảng viên</h3>
-            <button @click="viewingFeedback = null" class="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 hover:text-red-500 transition-colors">
-              <i class="fa-solid fa-xmark"></i>
-            </button>
-          </div>
-
-          <!-- Score Card -->
-          <div class="bg-emerald-50 rounded-3xl p-6 flex items-center justify-between mb-8 border border-emerald-100/50">
-            <div>
-              <p class="text-[10px] font-black text-emerald-600 uppercase tracking-widest mb-1">Điểm đánh giá</p>
-              <div class="flex items-baseline gap-1">
-                <span class="text-4xl font-headline font-black text-emerald-600">{{ viewingFeedback.score }}</span>
-                <span class="text-emerald-400 font-bold">/10.0</span>
-              </div>
-            </div>
-            <div class="w-16 h-16 bg-white rounded-2xl flex items-center justify-center shadow-sm text-emerald-500">
-               <i class="fa-solid fa-medal text-3xl"></i>
-            </div>
-          </div>
-
-          <!-- Component Scores (Rubric) -->
-          <div v-if="viewingFeedback.parsedRubric?.length" class="space-y-6 mb-8">
-             <h4 class="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400">Điểm thành phần</h4>
-             <div v-for="(item, idx) in viewingFeedback.parsedRubric" :key="idx" class="space-y-3">
-                <div class="flex items-end justify-between">
-                  <span class="text-[11px] font-black text-slate-600 uppercase tracking-widest">{{ item.label }}</span>
-                  <span class="text-sm font-black text-slate-800">{{ item.score }}/10</span>
-                </div>
-                <div class="h-1.5 bg-slate-50 rounded-full overflow-hidden border border-slate-100">
-                  <div class="h-full bg-emerald-500 rounded-full transition-all duration-1000" :style="{ width: `${item.score * 10}%` }"></div>
-                </div>
-             </div>
-          </div>
-
-          <!-- Text Feedback -->
-          <div class="space-y-3">
-             <h4 class="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400">Nhận xét chi tiết</h4>
-             <div class="bg-slate-50 rounded-2xl p-6 border border-slate-100 text-[13px] text-slate-700 leading-relaxed font-medium whitespace-pre-wrap italic">
-                {{ viewingFeedback.feedback || 'Chưa có nhận xét chi tiết bằng văn bản.' }}
-             </div>
-          </div>
-
-          <button @click="viewingFeedback = null" class="mt-10 w-full py-4 bg-slate-900 text-white rounded-2xl text-[12px] font-black uppercase tracking-widest hover:bg-emerald-600 transition-all shadow-lg">Đóng cửa sổ</button>
-        </div>
-      </div>
-    </div>
-
     <!-- ═══ EXERCISE OVERLAY: Dispatch to MixedQuizPlayer ═══ -->
     <MixedQuizPlayer
       v-if="activeExercise"
       :quiz="activeExercise.quiz"
-      :force-review="activeExercise.forceReview"
       @close="closeExercise"
       @submitted="closeExercise"
     />
@@ -459,8 +402,7 @@ const selectedCourseId = ref(null)
 const selectedLesson = ref(null)
 const selectedLessonCourse = ref(null)
 const activeFilter = ref('all')
-const activeExercise = ref(null) // { quiz, courseName, forceReview }
-const viewingFeedback = ref(null)
+const activeExercise = ref(null) // { quiz, courseName }
 
 // ── Computed ──
 const userName = computed(() => props.user?.full_name || 'Học viên')
@@ -470,9 +412,9 @@ const filteredAssignments = computed(() => {
   if (!selectedLesson.value) return []
   const list = selectedLesson.value.assignments || []
   if (activeFilter.value === 'all') return list
-  if (activeFilter.value === 'completed') return list.filter(a => a.status === 'completed' || a.status === 'pending_grading')
-  if (activeFilter.value === 'upcoming') return list.filter(a => a.status !== 'completed' && a.status !== 'pending_grading' && !isOverdue(a.deadline))
-  if (activeFilter.value === 'overdue') return list.filter(a => a.status !== 'completed' && a.status !== 'pending_grading' && isOverdue(a.deadline))
+  if (activeFilter.value === 'completed') return list.filter(a => a.status === 'completed')
+  if (activeFilter.value === 'upcoming') return list.filter(a => a.status === 'in_progress')
+  if (activeFilter.value === 'overdue') return list.filter(a => a.status === 'locked')
   return list
 })
 
@@ -486,14 +428,8 @@ const formatTime = (datetime) => {
 const formatDate = (datetime) => {
   if (!datetime) return '22 Th10'
   const d = new Date(datetime)
-  const day = d.getDate()
   const month = d.getMonth() + 1
-  return `${day} Th${month}`
-}
-
-const isOverdue = (deadline) => {
-  if (!deadline) return false
-  return new Date(deadline) < new Date()
+  return d.getDate() + ' Th' + month
 }
 
 // ── Mock Data: Leaderboard (giữ nguyên) ──
@@ -540,7 +476,7 @@ const fetchAssignments = async () => {
       if (Array.isArray(result.data.leaderboard)) {
         leaderboardData.value = result.data.leaderboard.map(s => ({
           ...s,
-          is_current: Number(s.id) === Number(props.user?.id)
+          is_current: String(s.full_name) === String(userName.value) // Fallback check since we don't have user.id in props here easily
         }))
       }
     } else {
@@ -568,22 +504,7 @@ const closeDetail = () => {
 const launchExercise = (assignment) => {
   if (String(assignment.id).startsWith('wa_')) {
     if (assignment.status === 'completed') {
-      const rubricMap = {
-        grammar: 'Ngữ pháp',
-        cohesion: 'Mạch lạc & Liên kết',
-        lexical: 'Từ vựng',
-        task: 'Hoàn thành yêu cầu'
-      }
-      const parsedRubric = assignment.rubric_data ? Object.keys(assignment.rubric_data).map(key => ({
-        label: rubricMap[key] || key,
-        score: assignment.rubric_data[key]
-      })) : []
-
-      viewingFeedback.value = {
-        score: assignment.score,
-        feedback: assignment.feedback,
-        parsedRubric
-      }
+      notifySuccess(`Giảng viên đã chấm bài của bạn với số điểm: ${assignment.score || 0}`, 'Đã có kết quả')
     } else if (assignment.status === 'pending_grading') {
       notifyWarning('Bài luận của bạn đã được nộp và đang chờ giảng viên chấm điểm.', 'Chờ chấm bài')
     } else {
@@ -591,12 +512,10 @@ const launchExercise = (assignment) => {
     }
     return
   }
-  
   activeExercise.value = {
     quiz: assignment,
     courseName: selectedLessonCourse.value?.course_title || 'Khóa học',
-    lessonTitle: selectedLesson.value?.title || 'Bài học',
-    forceReview: assignment.status === 'completed' || assignment.status === 'pending_grading'
+    lessonTitle: selectedLesson.value?.title || 'Bài học'
   }
 }
 
