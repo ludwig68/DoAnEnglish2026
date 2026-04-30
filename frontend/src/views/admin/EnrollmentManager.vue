@@ -110,11 +110,11 @@
     <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden flex-1">
       <div class="px-6 py-3.5 border-b border-slate-100 bg-slate-50/50 flex items-center justify-between">
         <div class="flex items-center gap-2 text-sm font-bold text-slate-700">
-          <i class="fa-solid fa-table-list text-[#16a34a]"></i>
-          Danh sách Nhóm Ca học
+          <i class="fa-solid fa-calendar-days text-[#16a34a]"></i>
+          Chi tiết Ca học
           <span class="ml-1 px-2 py-0.5 rounded-full text-xs bg-slate-100 text-slate-500 font-bold">{{ filteredRows.length }}</span>
         </div>
-        <span class="text-xs text-slate-400">Chọn hàng để ghi danh học viên đã chọn</span>
+        <span class="text-xs text-slate-400">Chọn ca học phù hợp để ghi danh học viên đã chọn</span>
       </div>
 
       <div class="overflow-x-auto custom-scrollbar">
@@ -122,18 +122,18 @@
           <thead>
             <tr class="bg-slate-50/80 border-b border-slate-100 text-xs uppercase tracking-wider text-slate-500 font-bold">
               <th class="px-5 py-3.5">Khóa học</th>
-              <th class="px-5 py-3.5">Tên lớp</th>
-              <th class="px-5 py-3.5">Nhóm ca / Lịch học</th>
-              <th class="px-5 py-3.5">Hình thức</th>
+              <th class="px-5 py-3.5">Tên lớp / Nhóm ca</th>
+              <th class="px-5 py-3.5">Ngày học</th>
               <th class="px-5 py-3.5">Khung giờ</th>
-              <th class="px-5 py-3.5">Khai giảng</th>
-              <th class="px-5 py-3.5">Kết thúc</th>
-              <th class="px-5 py-3.5">Sĩ số</th>
+              <th class="px-5 py-3.5">Hình thức</th>
+              <th class="px-5 py-3.5">Giảng viên</th>
+              <th class="px-5 py-3.5">Sĩ số (nhóm)</th>
+              <th class="px-5 py-3.5">Trạng thái</th>
               <th class="px-5 py-3.5 text-center w-32">Thao tác</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-slate-50 text-sm text-slate-700">
-            <tr v-for="row in paginatedRows" :key="row.detail_id"
+            <tr v-for="row in paginatedRows" :key="row.schedule_id"
               class="hover:bg-slate-50/60 transition-colors group"
               :class="row.current_students >= row.max_students ? 'opacity-60' : ''">
 
@@ -146,21 +146,23 @@
                 </div>
               </td>
 
-              <!-- Tên lớp -->
-              <td class="px-5 py-3.5">
-                <span class="font-black text-slate-700 text-sm">{{ row.class_name }}</span>
-              </td>
-
-              <!-- Nhóm ca -->
+              <!-- Tên lớp / Nhóm ca -->
               <td class="px-5 py-3.5">
                 <div class="flex flex-col gap-1">
-                  <!-- Chỉ hiển thị phần Ca (Sáng/Chiều/Tối), ẩn phần ngày vì đã có bên dưới -->
-                  <span class="font-bold text-slate-800 text-sm">{{ shiftOnly(row.detail_name, row.class_name) }}</span>
-                  <span v-if="daysLabel(row.detail_name)" class="text-xs text-emerald-600 font-medium flex items-center gap-1">
-                    <i class="fa-solid fa-calendar-days text-[10px]"></i>
-                    {{ daysLabel(row.detail_name) }}
-                  </span>
+                  <span class="font-black text-slate-700 text-sm">{{ row.class_name }}</span>
+                  <span class="text-xs text-emerald-600 font-medium">{{ row.detail_name || '—' }}</span>
                 </div>
+              </td>
+
+              <!-- Ngày học -->
+              <td class="px-5 py-3.5 text-sm font-bold text-slate-700 whitespace-nowrap">
+                {{ fmtDate(row.study_date) }}
+              </td>
+
+              <!-- Khung giờ -->
+              <td class="px-5 py-3.5 text-xs font-mono font-bold text-slate-700 whitespace-nowrap">
+                <span v-if="row.start_time && row.end_time">{{ fmtTime(row.start_time) }} – {{ fmtTime(row.end_time) }}</span>
+                <span v-else class="text-slate-300">—</span>
               </td>
 
               <!-- Hình thức -->
@@ -175,19 +177,16 @@
                 <span v-else class="text-slate-300 text-xs">—</span>
               </td>
 
-              <!-- Khung giờ -->
-              <td class="px-5 py-3.5 text-xs font-mono font-bold text-slate-700 whitespace-nowrap">
-                <span v-if="row.start_time && row.end_time">{{ fmtTime(row.start_time) }} – {{ fmtTime(row.end_time) }}</span>
-                <span v-else class="text-slate-300">—</span>
+              <!-- Giảng viên -->
+              <td class="px-5 py-3.5 text-xs text-slate-600">
+                <span v-if="row.teacher_name" class="flex items-center gap-1.5">
+                  <i class="fa-solid fa-chalkboard-user text-slate-400 text-[10px]"></i>
+                  {{ row.teacher_name }}
+                </span>
+                <span v-else class="text-slate-300">Chưa xếp</span>
               </td>
 
-              <!-- Khai giảng -->
-              <td class="px-5 py-3.5 text-xs text-slate-600 whitespace-nowrap">{{ fmtDate(row.start_date) }}</td>
-
-              <!-- Kết thúc -->
-              <td class="px-5 py-3.5 text-xs text-slate-600 whitespace-nowrap">{{ fmtDate(row.end_date) }}</td>
-
-              <!-- Sĩ số -->
+              <!-- Sĩ số (nhóm) -->
               <td class="px-5 py-3.5">
                 <div class="flex flex-col gap-1.5">
                   <div class="flex items-center gap-1.5">
@@ -206,11 +205,19 @@
                 </div>
               </td>
 
+              <!-- Trạng thái ca học -->
+              <td class="px-5 py-3.5">
+                <span class="inline-flex items-center gap-1 text-xs font-bold px-2.5 py-1 rounded-lg border"
+                  :class="scheduleStatusClass(row.schedule_status)">
+                  {{ scheduleStatusLabel(row.schedule_status) }}
+                </span>
+              </td>
+
               <!-- Action -->
               <td class="px-5 py-3.5 text-center">
                 <button
                   @click="enrollStudentInRow(row)"
-                  :disabled="!selectedStudentId || row.current_students >= row.max_students || enrollingRowId === row.detail_id"
+                  :disabled="!selectedStudentId || row.current_students >= row.max_students || enrollingRowId === row.schedule_id"
                   class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold transition-all shadow-sm border"
                   :class="!selectedStudentId
                     ? 'bg-slate-50 border-slate-200 text-slate-400 cursor-not-allowed'
@@ -219,16 +226,16 @@
                     : 'text-white shadow-lg shadow-emerald-200 hover:-translate-y-0.5 transition-all duration-300'"
                   :style="selectedStudentId && row.current_students < row.max_students ? 'background: linear-gradient(135deg, #7ae582 0%, #16a34a 100%)' : ''"
                 >
-                  <i :class="enrollingRowId === row.detail_id ? 'fa-solid fa-circle-notch fa-spin' : 'fa-solid fa-user-plus'"></i>
-                  {{ enrollingRowId === row.detail_id ? 'Đang xử lý...' : row.current_students >= row.max_students ? 'Đã đầy' : 'Ghi danh' }}
+                  <i :class="enrollingRowId === row.schedule_id ? 'fa-solid fa-circle-notch fa-spin' : 'fa-solid fa-user-plus'"></i>
+                  {{ enrollingRowId === row.schedule_id ? 'Đang xử lý...' : row.current_students >= row.max_students ? 'Đã đầy' : 'Ghi danh' }}
                 </button>
               </td>
             </tr>
 
             <tr v-if="filteredRows.length === 0">
               <td colspan="9" class="px-6 py-14 text-center text-slate-400">
-                <i class="fa-solid fa-layer-group text-4xl mb-3 block text-slate-200"></i>
-                <p class="text-sm font-medium">Không có nhóm ca học nào{{ tableSearch || selectedCourseId ? ' khớp với bộ lọc' : '' }}.</p>
+                <i class="fa-solid fa-calendar-xmark text-4xl mb-3 block text-slate-200"></i>
+                <p class="text-sm font-medium">Không có ca học nào{{ tableSearch || selectedCourseId ? ' khớp với bộ lọc' : '' }}.</p>
               </td>
             </tr>
           </tbody>
@@ -513,6 +520,13 @@ watch(filteredEnrollments, () => { enrollPage.value = 1 })
 // ── Helpers ───────────────────────────────────────────────────────
 const capPct = (row) => Math.min(Math.round((row.current_students / Math.max(row.max_students, 1)) * 100), 100)
 
+const scheduleStatusLabel = (s) => s === 'completed' ? 'Đã học' : s === 'canceled' ? 'Đã hủy' : 'Sắp học'
+const scheduleStatusClass  = (s) => s === 'completed'
+  ? 'bg-slate-100 text-slate-500 border-slate-200'
+  : s === 'canceled'
+  ? 'bg-red-50 text-red-500 border-red-100'
+  : 'bg-emerald-50 text-emerald-700 border-emerald-100'
+
 const fmtTime = (t) => t ? t.slice(0, 5) : '—'
 
 const fmtDate = (d) => {
@@ -651,16 +665,17 @@ const enrollStudentInRow = async (row) => {
   if (!selectedStudentId.value) { notifyError('Vui lòng chọn học viên trước.'); return }
   if (row.current_students >= row.max_students) { notifyError('Ca học này đã đủ sĩ số.'); return }
 
-  enrollingRowId.value = row.detail_id
+  // Track bằng schedule_id để spinner đúng hàng
+  enrollingRowId.value = row.schedule_id
   errorMessage.value   = ''
 
   try {
     const res = await apiFetch('admin/enrollments.php', {
       method: 'POST',
       body: JSON.stringify({
-        student_id: selectedStudentId.value,
-        class_id: row.class_id,
-        class_detail_id: row.detail_id
+        student_id:      selectedStudentId.value,
+        class_id:        row.class_id,      // tự động từ schedule → class_detail → class
+        class_detail_id: row.detail_id      // nhóm ca chứa ca học này
       })
     })
     if (res.status === 401 || res.status === 403) { redirectToLogin(); return }

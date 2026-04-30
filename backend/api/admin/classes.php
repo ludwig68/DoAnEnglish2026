@@ -215,6 +215,13 @@ switch ($method) {
             classJsonResponse(422, ['status' => 'error', 'message' => 'ID lớp học không hợp lệ.']);
         }
 
+        // BUG-06: Không cho phép xóa lớp còn học viên đang active
+        $activeStmt = $pdo->prepare("SELECT COUNT(*) FROM enrollments WHERE class_id = ? AND status = 'active'");
+        $activeStmt->execute([$id]);
+        if ((int) $activeStmt->fetchColumn() > 0) {
+            classJsonResponse(409, ['status' => 'error', 'message' => 'Không thể xóa lớp học đang có học viên ghi danh. Vui lòng hủy ghi danh hoặc chuyển học viên trước.']);
+        }
+
         $stmt = $pdo->prepare("DELETE FROM classes WHERE id = ?");
         $success = $stmt->execute([$id]);
 

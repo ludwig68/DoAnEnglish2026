@@ -10,6 +10,7 @@
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
 SET time_zone = "+00:00";
+SET FOREIGN_KEY_CHECKS=0;
 
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
@@ -38,7 +39,8 @@ CREATE TABLE IF NOT EXISTS `academic_warnings` (
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   KEY `idx_student` (`student_id`),
-  KEY `idx_class` (`class_id`)
+  KEY `idx_class` (`class_id`),
+  KEY `idx_schedule` (`schedule_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
@@ -266,24 +268,28 @@ CREATE TABLE IF NOT EXISTS `classes` (
   `max_capacity` int NOT NULL DEFAULT '40',
   `start_date` date NOT NULL,
   `end_date` date NOT NULL,
+  `status` enum('upcoming','active','completed','cancelled') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'upcoming',
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   KEY `course_id` (`course_id`),
-  KEY `fk_classes_instructor` (`instructor_id`)
+  KEY `fk_classes_instructor` (`instructor_id`),
+  CONSTRAINT `chk_classes_capacity` CHECK (`max_capacity` > 0),
+  CONSTRAINT `chk_classes_date_range` CHECK (`end_date` >= `start_date`)
 ) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Dumping data for table `classes`
 --
 
-INSERT INTO `classes` (`id`, `course_id`, `instructor_id`, `class_name`, `max_capacity`, `start_date`, `end_date`, `created_at`) VALUES
-(4, 1, 22, 'Cơ bản 01', 40, '2026-03-30', '2026-04-24', '2026-03-30 16:48:09'),
-(7, 1, 3, 'Giao tiếp Cơ bản - Sáng 246', 30, '2026-04-01', '2026-05-30', '2026-04-10 16:59:24'),
-(8, 2, 3, 'English for Office - Tối 246', 25, '2026-04-01', '2026-05-30', '2026-04-10 16:59:24'),
-(9, 3, 3, 'TOEIC Cấp tốc - Tối 357', 40, '2026-04-01', '2026-05-30', '2026-04-10 16:59:24'),
-(10, 4, 3, 'IELTS Masterclass - Sáng 357', 20, '2026-04-01', '2026-05-30', '2026-04-10 16:59:24'),
-(11, 5, 3, 'Ngữ pháp trọn bộ - Cuối tuần', 50, '2026-04-01', '2026-05-30', '2026-04-10 16:59:24'),
-(12, 4, 3, 'IELTS Masterclass - Sáng 2/4/6', 40, '2026-04-20', '2026-05-08', '2026-04-20 03:19:27');
+INSERT INTO `classes` (`id`, `course_id`, `instructor_id`, `class_name`, `max_capacity`, `start_date`, `end_date`, `status`, `created_at`) VALUES
+(2, 4, 3, 'IELTS Masterclass - Lớp dữ liệu cũ', 20, '2026-04-01', '2026-05-30', 'completed', '2026-04-10 16:59:24'),
+(4, 1, 22, 'Cơ bản 01', 40, '2026-03-30', '2026-04-24', 'completed', '2026-03-30 16:48:09'),
+(7, 1, 3, 'Giao tiếp Cơ bản - Sáng 246', 30, '2026-04-01', '2026-05-30', 'active', '2026-04-10 16:59:24'),
+(8, 2, 3, 'English for Office - Tối 246', 25, '2026-04-01', '2026-05-30', 'active', '2026-04-10 16:59:24'),
+(9, 3, 3, 'TOEIC Cấp tốc - Tối 357', 40, '2026-04-01', '2026-05-30', 'active', '2026-04-10 16:59:24'),
+(10, 4, 3, 'IELTS Masterclass - Sáng 357', 20, '2026-04-01', '2026-05-30', 'active', '2026-04-10 16:59:24'),
+(11, 5, 3, 'Ngữ pháp trọn bộ - Cuối tuần', 50, '2026-04-01', '2026-05-30', 'active', '2026-04-10 16:59:24'),
+(12, 4, 3, 'IELTS Masterclass - Sáng 2/4/6', 40, '2026-04-20', '2026-05-08', 'active', '2026-04-20 03:19:27');
 
 -- --------------------------------------------------------
 
@@ -299,8 +305,10 @@ CREATE TABLE IF NOT EXISTS `class_details` (
   `max_students` int NOT NULL DEFAULT '20',
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
-  KEY `class_id` (`class_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=17 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+  UNIQUE KEY `uq_class_details_name` (`class_id`,`detail_name`),
+  KEY `class_id` (`class_id`),
+  CONSTRAINT `chk_class_details_max_students` CHECK (`max_students` > 0)
+) ENGINE=InnoDB AUTO_INCREMENT=17 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Dumping data for table `class_details`
@@ -409,7 +417,8 @@ CREATE TABLE IF NOT EXISTS `courses` (
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   KEY `category_id` (`category_id`),
-  KEY `path_id` (`path_id`)
+  KEY `path_id` (`path_id`),
+  CONSTRAINT `chk_courses_fee` CHECK (`fee` >= 0)
 ) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
@@ -440,12 +449,13 @@ CREATE TABLE IF NOT EXISTS `course_materials` (
   `file_url` varchar(500) COLLATE utf8mb4_unicode_ci NOT NULL,
   `file_size` int DEFAULT '0',
   `original_name` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `uploaded_by` int NOT NULL,
+  `uploaded_by` int DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   KEY `idx_course` (`course_id`),
   KEY `idx_lesson` (`lesson_id`),
-  KEY `idx_schedule` (`schedule_id`)
+  KEY `idx_schedule` (`schedule_id`),
+  KEY `idx_uploaded_by` (`uploaded_by`)
 ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
@@ -470,10 +480,11 @@ CREATE TABLE IF NOT EXISTS `enrollments` (
   `status` enum('active','completed','dropped') COLLATE utf8mb4_unicode_ci DEFAULT 'active',
   `enrollment_date` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
+  UNIQUE KEY `uq_enrollment_student_class` (`student_id`,`class_id`),
   KEY `student_id` (`student_id`),
   KEY `class_id` (`class_id`),
   KEY `fk_enrollments_class_detail` (`class_detail_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=44 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=45 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Dumping data for table `enrollments`
@@ -520,7 +531,8 @@ INSERT INTO `enrollments` (`id`, `student_id`, `class_id`, `class_detail_id`, `s
 (40, 16, 11, NULL, 'active', '2026-04-04 01:00:00'),
 (41, 17, 11, NULL, 'active', '2026-04-04 01:00:00'),
 (42, 18, 11, NULL, 'active', '2026-04-05 01:00:00'),
-(43, 1, 12, NULL, 'active', '2026-04-20 03:23:12');
+(43, 1, 12, NULL, 'active', '2026-04-20 03:23:12'),
+(44, 1, 2, NULL, 'completed', '2026-04-01 01:00:00');
 
 -- --------------------------------------------------------
 
@@ -583,7 +595,9 @@ CREATE TABLE IF NOT EXISTS `leave_requests` (
   `updated_at` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   KEY `idx_student` (`student_id`),
-  KEY `idx_status` (`status`)
+  KEY `idx_class` (`class_id`),
+  KEY `idx_status` (`status`),
+  CONSTRAINT `chk_leave_requests_date_range` CHECK (`end_date` >= `start_date`)
 ) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
@@ -609,6 +623,7 @@ CREATE TABLE IF NOT EXISTS `lessons` (
   `order_number` int DEFAULT '0',
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
+  UNIQUE KEY `uq_lessons_course_order` (`course_id`,`order_number`),
   KEY `course_id` (`course_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=101 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -811,6 +826,7 @@ CREATE TABLE IF NOT EXISTS `questions` (
   `order_num` int DEFAULT '0',
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
+  UNIQUE KEY `uq_questions_quiz_order` (`quiz_id`,`order_num`),
   KEY `quiz_id` (`quiz_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=41 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -965,7 +981,8 @@ CREATE TABLE IF NOT EXISTS `quizzes` (
   `description` text COLLATE utf8mb4_unicode_ci,
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
-  KEY `lesson_id` (`lesson_id`)
+  KEY `lesson_id` (`lesson_id`),
+  CONSTRAINT `chk_quizzes_total_points` CHECK (`total_points` >= 0)
 ) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
@@ -1045,7 +1062,8 @@ CREATE TABLE IF NOT EXISTS `schedules` (
   KEY `fk_schedules_class` (`class_id`),
   KEY `fk_schedules_teacher` (`teacher_id`),
   KEY `fk_schedules_class_detail` (`class_detail_id`),
-  KEY `fk_schedules_lesson` (`lesson_id`)
+  KEY `fk_schedules_lesson` (`lesson_id`),
+  CONSTRAINT `chk_schedules_time_range` CHECK (`end_time` > `start_time`)
 ) ENGINE=InnoDB AUTO_INCREMENT=392 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
@@ -1053,6 +1071,7 @@ CREATE TABLE IF NOT EXISTS `schedules` (
 --
 
 INSERT INTO `schedules` (`id`, `class_id`, `class_detail_id`, `teacher_id`, `lesson_id`, `study_date`, `start_time`, `end_time`, `teaching_type`, `room_info`, `status`, `attendance_checked`, `note`) VALUES
+(336, 2, NULL, 3, 61, '2026-04-16', '10:00:00', '11:30:00', 'offline', 'Phòng 401', 'completed', 1, 'Dữ liệu cũ dùng cho đơn nghỉ học đã duyệt'),
 (337, 4, 5, 23, 1, '2026-03-31', '18:00:00', '19:30:00', 'offline', NULL, 'scheduled', 0, NULL),
 (338, 4, 5, 23, 2, '2026-04-02', '18:00:00', '19:30:00', 'offline', NULL, 'scheduled', 0, NULL),
 (339, 4, 5, 23, 3, '2026-04-04', '18:00:00', '19:30:00', 'offline', NULL, 'scheduled', 0, NULL),
@@ -1321,6 +1340,14 @@ INSERT INTO `website_contents` (`id`, `section_key`, `content_type`, `content_va
 --
 
 --
+-- Constraints for table `academic_warnings`
+--
+ALTER TABLE `academic_warnings`
+  ADD CONSTRAINT `fk_academic_warnings_class` FOREIGN KEY (`class_id`) REFERENCES `classes` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `fk_academic_warnings_schedule` FOREIGN KEY (`schedule_id`) REFERENCES `schedules` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `fk_academic_warnings_student` FOREIGN KEY (`student_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
+
+--
 -- Constraints for table `announcements`
 --
 ALTER TABLE `announcements`
@@ -1339,7 +1366,6 @@ ALTER TABLE `assignments`
 --
 ALTER TABLE `classes`
   ADD CONSTRAINT `classes_ibfk_1` FOREIGN KEY (`course_id`) REFERENCES `courses` (`id`) ON DELETE CASCADE,
-  ADD CONSTRAINT `classes_ibfk_2` FOREIGN KEY (`instructor_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
   ADD CONSTRAINT `fk_classes_instructor` FOREIGN KEY (`instructor_id`) REFERENCES `users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE;
 
 --
@@ -1359,7 +1385,10 @@ ALTER TABLE `courses`
 -- Constraints for table `course_materials`
 --
 ALTER TABLE `course_materials`
-  ADD CONSTRAINT `course_materials_ibfk_1` FOREIGN KEY (`course_id`) REFERENCES `courses` (`id`) ON DELETE CASCADE;
+  ADD CONSTRAINT `course_materials_ibfk_1` FOREIGN KEY (`course_id`) REFERENCES `courses` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `fk_course_materials_lesson` FOREIGN KEY (`lesson_id`) REFERENCES `lessons` (`id`) ON DELETE SET NULL,
+  ADD CONSTRAINT `fk_course_materials_schedule` FOREIGN KEY (`schedule_id`) REFERENCES `schedules` (`id`) ON DELETE SET NULL,
+  ADD CONSTRAINT `fk_course_materials_uploaded_by` FOREIGN KEY (`uploaded_by`) REFERENCES `users` (`id`) ON DELETE SET NULL;
 
 --
 -- Constraints for table `enrollments`
@@ -1368,6 +1397,20 @@ ALTER TABLE `enrollments`
   ADD CONSTRAINT `enrollments_ibfk_1` FOREIGN KEY (`student_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
   ADD CONSTRAINT `enrollments_ibfk_2` FOREIGN KEY (`class_id`) REFERENCES `classes` (`id`) ON DELETE CASCADE,
   ADD CONSTRAINT `fk_enrollments_class_detail` FOREIGN KEY (`class_detail_id`) REFERENCES `class_details` (`id`) ON DELETE SET NULL;
+
+--
+-- Constraints for table `attendance_records`
+--
+ALTER TABLE `attendance_records`
+  ADD CONSTRAINT `fk_attendance_schedule` FOREIGN KEY (`schedule_id`) REFERENCES `schedules` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `fk_attendance_student` FOREIGN KEY (`student_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `leave_requests`
+--
+ALTER TABLE `leave_requests`
+  ADD CONSTRAINT `fk_leave_requests_class` FOREIGN KEY (`class_id`) REFERENCES `classes` (`id`) ON DELETE SET NULL,
+  ADD CONSTRAINT `fk_leave_requests_student` FOREIGN KEY (`student_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `lessons`
@@ -1391,6 +1434,12 @@ ALTER TABLE `materials`
   ADD CONSTRAINT `materials_ibfk_1` FOREIGN KEY (`class_id`) REFERENCES `classes` (`id`) ON DELETE CASCADE;
 
 --
+-- Constraints for table `notifications`
+--
+ALTER TABLE `notifications`
+  ADD CONSTRAINT `fk_notifications_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
+
+--
 -- Constraints for table `questions`
 --
 ALTER TABLE `questions`
@@ -1409,14 +1458,21 @@ ALTER TABLE `quizzes`
   ADD CONSTRAINT `quizzes_ibfk_1` FOREIGN KEY (`lesson_id`) REFERENCES `lessons` (`id`) ON DELETE CASCADE;
 
 --
+-- Constraints for table `quiz_submissions`
+--
+ALTER TABLE `quiz_submissions`
+  ADD CONSTRAINT `fk_quiz_submissions_class` FOREIGN KEY (`class_id`) REFERENCES `classes` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `fk_quiz_submissions_quiz` FOREIGN KEY (`quiz_id`) REFERENCES `quizzes` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `fk_quiz_submissions_student` FOREIGN KEY (`student_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
+
+--
 -- Constraints for table `schedules`
 --
 ALTER TABLE `schedules`
   ADD CONSTRAINT `fk_schedules_class` FOREIGN KEY (`class_id`) REFERENCES `classes` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   ADD CONSTRAINT `fk_schedules_class_detail` FOREIGN KEY (`class_detail_id`) REFERENCES `class_details` (`id`) ON DELETE CASCADE,
   ADD CONSTRAINT `fk_schedules_lesson` FOREIGN KEY (`lesson_id`) REFERENCES `lessons` (`id`) ON DELETE SET NULL,
-  ADD CONSTRAINT `fk_schedules_teacher` FOREIGN KEY (`teacher_id`) REFERENCES `users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
-  ADD CONSTRAINT `schedules_ibfk_1` FOREIGN KEY (`class_id`) REFERENCES `classes` (`id`) ON DELETE CASCADE;
+  ADD CONSTRAINT `fk_schedules_teacher` FOREIGN KEY (`teacher_id`) REFERENCES `users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE;
 
 --
 -- Constraints for table `student_answers`
@@ -1461,6 +1517,171 @@ ALTER TABLE `user_progress`
 ALTER TABLE `vocabularies`
   ADD CONSTRAINT `vocabularies_ibfk_1` FOREIGN KEY (`lesson_id`) REFERENCES `lessons` (`id`) ON DELETE CASCADE;
 COMMIT;
+
+-- ══════════════════════════════════════════════════════════════
+-- SEED DATA: Ghi danh học viên vào các lớp (seed_classes.sql)
+-- ══════════════════════════════════════════════════════════════
+
+-- Lớp 7: Giao tiếp Cơ bản - Sáng 246 (course_id=1)
+INSERT IGNORE INTO enrollments (student_id, class_id, class_detail_id, status, enrollment_date) VALUES
+(1, 7, NULL, 'active', '2026-04-01 08:00:00'),
+(4, 7, NULL, 'active', '2026-04-01 08:00:00'),
+(7, 7, NULL, 'active', '2026-04-01 08:00:00'),
+(9, 7, NULL, 'active', '2026-04-02 08:00:00'),
+(10, 7, NULL, 'active', '2026-04-02 08:00:00'),
+(11, 7, NULL, 'active', '2026-04-03 08:00:00'),
+(12, 7, NULL, 'active', '2026-04-03 08:00:00'),
+(13, 7, NULL, 'active', '2026-04-04 08:00:00');
+
+-- Lớp 8: English for Office - Tối 246 (course_id=2)
+INSERT IGNORE INTO enrollments (student_id, class_id, class_detail_id, status, enrollment_date) VALUES
+(1, 8, NULL, 'active', '2026-04-01 08:00:00'),
+(14, 8, NULL, 'active', '2026-04-01 08:00:00'),
+(15, 8, NULL, 'active', '2026-04-02 08:00:00'),
+(16, 8, NULL, 'active', '2026-04-02 08:00:00'),
+(17, 8, NULL, 'active', '2026-04-03 08:00:00'),
+(18, 8, NULL, 'active', '2026-04-03 08:00:00');
+
+-- Lớp 9: TOEIC Cấp tốc - Tối 357 (course_id=3)
+INSERT IGNORE INTO enrollments (student_id, class_id, class_detail_id, status, enrollment_date) VALUES
+(1, 9, NULL, 'active', '2026-04-01 08:00:00'),
+(7, 9, NULL, 'active', '2026-04-01 08:00:00'),
+(8, 9, NULL, 'active', '2026-04-01 08:00:00'),
+(10, 9, NULL, 'active', '2026-04-02 08:00:00'),
+(11, 9, NULL, 'active', '2026-04-02 08:00:00'),
+(14, 9, NULL, 'active', '2026-04-03 08:00:00'),
+(15, 9, NULL, 'active', '2026-04-03 08:00:00'),
+(16, 9, NULL, 'active', '2026-04-04 08:00:00'),
+(19, 9, NULL, 'active', '2026-04-04 08:00:00');
+
+-- Lớp 10: IELTS Masterclass - Sáng 357 (course_id=4)
+INSERT IGNORE INTO enrollments (student_id, class_id, class_detail_id, status, enrollment_date) VALUES
+(1, 10, NULL, 'active', '2026-04-01 08:00:00'),
+(4, 10, NULL, 'active', '2026-04-01 08:00:00'),
+(9, 10, NULL, 'active', '2026-04-02 08:00:00'),
+(12, 10, NULL, 'active', '2026-04-02 08:00:00'),
+(13, 10, NULL, 'active', '2026-04-03 08:00:00');
+
+-- Lớp 11: Ngữ pháp trọn bộ - Cuối tuần (course_id=5)
+INSERT IGNORE INTO enrollments (student_id, class_id, class_detail_id, status, enrollment_date) VALUES
+(7, 11, NULL, 'active', '2026-04-01 08:00:00'),
+(8, 11, NULL, 'active', '2026-04-01 08:00:00'),
+(9, 11, NULL, 'active', '2026-04-01 08:00:00'),
+(10, 11, NULL, 'active', '2026-04-02 08:00:00'),
+(11, 11, NULL, 'active', '2026-04-02 08:00:00'),
+(12, 11, NULL, 'active', '2026-04-02 08:00:00'),
+(13, 11, NULL, 'active', '2026-04-03 08:00:00'),
+(14, 11, NULL, 'active', '2026-04-03 08:00:00'),
+(15, 11, NULL, 'active', '2026-04-04 08:00:00'),
+(16, 11, NULL, 'active', '2026-04-04 08:00:00'),
+(17, 11, NULL, 'active', '2026-04-04 08:00:00'),
+(18, 11, NULL, 'active', '2026-04-05 08:00:00');
+
+-- Lớp 7: 3 buổi học đã qua
+INSERT IGNORE INTO schedules (class_id, lesson_id, teacher_id, study_date, start_time, end_time, room_info, teaching_type, status, attendance_checked)
+VALUES
+(7, NULL, 3, '2026-04-02', '08:00:00', '09:30:00', 'Phòng 201', 'offline', 'completed', 1),
+(7, NULL, 3, '2026-04-04', '08:00:00', '09:30:00', 'Phòng 201', 'offline', 'completed', 1),
+(7, NULL, 3, '2026-04-07', '08:00:00', '09:30:00', 'Phòng 201', 'offline', 'completed', 1);
+
+-- Lớp 8: 2 buổi đã qua
+INSERT IGNORE INTO schedules (class_id, lesson_id, teacher_id, study_date, start_time, end_time, room_info, teaching_type, status, attendance_checked)
+VALUES
+(8, NULL, 3, '2026-04-02', '18:00:00', '19:30:00', 'Phòng 305', 'offline', 'completed', 1),
+(8, NULL, 3, '2026-04-04', '18:00:00', '19:30:00', 'Phòng 305', 'offline', 'completed', 1);
+
+-- Lớp 9: 3 buổi đã qua
+INSERT IGNORE INTO schedules (class_id, lesson_id, teacher_id, study_date, start_time, end_time, room_info, teaching_type, status, attendance_checked)
+VALUES
+(9, NULL, 3, '2026-04-03', '18:00:00', '19:30:00', 'Phòng 102', 'offline', 'completed', 1),
+(9, NULL, 3, '2026-04-05', '18:00:00', '19:30:00', 'Phòng 102', 'offline', 'completed', 1),
+(9, NULL, 3, '2026-04-08', '18:00:00', '19:30:00', 'Phòng 102', 'offline', 'completed', 1);
+
+-- Lớp 10: 2 buổi đã qua
+INSERT IGNORE INTO schedules (class_id, lesson_id, teacher_id, study_date, start_time, end_time, room_info, teaching_type, status, attendance_checked)
+VALUES
+(10, NULL, 3, '2026-04-03', '08:00:00', '09:30:00', 'Phòng 401', 'offline', 'completed', 1),
+(10, NULL, 3, '2026-04-05', '08:00:00', '09:30:00', 'Phòng 401', 'offline', 'completed', 1);
+
+-- Lớp 11: 2 buổi cuối tuần
+INSERT IGNORE INTO schedules (class_id, lesson_id, teacher_id, study_date, start_time, end_time, room_info, teaching_type, status, attendance_checked)
+VALUES
+(11, NULL, 3, '2026-04-05', '09:00:00', '11:00:00', 'Phòng Hội trường', 'offline', 'completed', 1),
+(11, NULL, 3, '2026-04-12', '09:00:00', '11:00:00', 'Phòng Hội trường', 'offline', 'completed', 1);
+
+-- ══════════════════════════════════════════════════════════════
+-- SEED DATA: Điểm danh (seed_attendance.sql)
+-- ══════════════════════════════════════════════════════════════
+
+-- Lớp 7 (schedule 371, 372, 373) - HV: 1,4,7,9,10,11,12,13
+INSERT IGNORE INTO attendance_records (schedule_id, student_id, status, note) VALUES
+(371, 1, 'present', NULL), (371, 4, 'present', NULL), (371, 7, 'present', NULL),
+(371, 9, 'late', 'Đến trễ 10 phút'), (371, 10, 'present', NULL), (371, 11, 'present', NULL),
+(371, 12, 'absent', NULL), (371, 13, 'present', NULL),
+(372, 1, 'present', NULL), (372, 4, 'present', NULL), (372, 7, 'absent', 'Nghỉ không phép'),
+(372, 9, 'present', NULL), (372, 10, 'present', NULL), (372, 11, 'present', NULL),
+(372, 12, 'present', NULL), (372, 13, 'late', NULL),
+(373, 1, 'present', NULL), (373, 4, 'present', NULL), (373, 7, 'present', NULL),
+(373, 9, 'present', NULL), (373, 10, 'absent', NULL), (373, 11, 'present', NULL),
+(373, 12, 'present', NULL), (373, 13, 'present', NULL);
+
+-- Lớp 8 (schedule 374, 375) - HV: 1,14,15,16,17,18
+INSERT IGNORE INTO attendance_records (schedule_id, student_id, status, note) VALUES
+(374, 1, 'present', NULL), (374, 14, 'present', NULL), (374, 15, 'present', NULL),
+(374, 16, 'late', NULL), (374, 17, 'present', NULL), (374, 18, 'absent', NULL),
+(375, 1, 'present', NULL), (375, 14, 'present', NULL), (375, 15, 'present', NULL),
+(375, 16, 'present', NULL), (375, 17, 'absent', NULL), (375, 18, 'present', NULL);
+
+-- Lớp 9 (schedule 376, 377, 378) - HV: 1,7,8,10,11,14,15,16,19
+INSERT IGNORE INTO attendance_records (schedule_id, student_id, status, note) VALUES
+(376, 1, 'present', NULL), (376, 7, 'present', NULL), (376, 8, 'present', NULL),
+(376, 10, 'present', NULL), (376, 11, 'absent', NULL), (376, 14, 'present', NULL),
+(376, 15, 'present', NULL), (376, 16, 'present', NULL), (376, 19, 'late', NULL),
+(377, 1, 'present', NULL), (377, 7, 'present', NULL), (377, 8, 'late', NULL),
+(377, 10, 'present', NULL), (377, 11, 'present', NULL), (377, 14, 'present', NULL),
+(377, 15, 'absent', NULL), (377, 16, 'present', NULL), (377, 19, 'present', NULL),
+(378, 1, 'present', NULL), (378, 7, 'present', NULL), (378, 8, 'present', NULL),
+(378, 10, 'present', NULL), (378, 11, 'present', NULL), (378, 14, 'absent', NULL),
+(378, 15, 'present', NULL), (378, 16, 'present', NULL), (378, 19, 'present', NULL);
+
+-- Lớp 10 (schedule 379, 380) - HV: 1,4,9,12,13
+INSERT IGNORE INTO attendance_records (schedule_id, student_id, status, note) VALUES
+(379, 1, 'present', NULL), (379, 4, 'present', NULL), (379, 9, 'present', NULL),
+(379, 12, 'late', NULL), (379, 13, 'present', NULL),
+(380, 1, 'present', NULL), (380, 4, 'absent', NULL), (380, 9, 'present', NULL),
+(380, 12, 'present', NULL), (380, 13, 'present', NULL);
+
+-- Lớp 11 (schedule 381, 382) - HV: 7,8,9,10,11,12,13,14,15,16,17,18
+INSERT IGNORE INTO attendance_records (schedule_id, student_id, status, note) VALUES
+(381, 7, 'present', NULL), (381, 8, 'present', NULL), (381, 9, 'present', NULL),
+(381, 10, 'present', NULL), (381, 11, 'late', NULL), (381, 12, 'present', NULL),
+(381, 13, 'present', NULL), (381, 14, 'absent', NULL), (381, 15, 'present', NULL),
+(381, 16, 'present', NULL), (381, 17, 'present', NULL), (381, 18, 'present', NULL),
+(382, 7, 'present', NULL), (382, 8, 'absent', NULL), (382, 9, 'present', NULL),
+(382, 10, 'present', NULL), (382, 11, 'present', NULL), (382, 12, 'present', NULL),
+(382, 13, 'present', NULL), (382, 14, 'present', NULL), (382, 15, 'present', NULL),
+(382, 16, 'late', NULL), (382, 17, 'present', NULL), (382, 18, 'present', NULL);
+
+-- ══════════════════════════════════════════════════════════════
+-- SEED DATA: Bài tập & Bài nộp (seed_assignments.sql)
+-- ══════════════════════════════════════════════════════════════
+
+INSERT IGNORE INTO `assignments` (`id`, `schedule_id`, `lesson_id`, `course_id`, `title`, `description`, `deadline`, `assignment_type`, `created_at`) VALUES
+(1, NULL, NULL, 4, 'IELTS Writing Task 2 - Environment', 'Some people think that environmental problems should be solved on a global scale while others believe it is better to deal with them nationally. Discuss both views and give your opinion. Write at least 250 words.', '2026-04-20 23:59:00', 'post_class', '2026-04-10 08:00:00'),
+(2, NULL, NULL, 4, 'IELTS Writing Task 1 - Bar Chart', 'The bar chart below shows the percentage of Australian men and women in different age groups who did regular physical activity in 2010. Summarise the information by selecting and reporting the main features. Write at least 150 words.', '2026-04-22 23:59:00', 'post_class', '2026-04-12 08:00:00'),
+(3, NULL, NULL, 1, 'Viết đoạn văn giới thiệu bản thân', 'Viết một đoạn văn ngắn (100-150 từ) bằng tiếng Anh giới thiệu về bản thân bạn: tên, tuổi, sở thích, mục tiêu học tiếng Anh.', '2026-04-18 23:59:00', 'post_class', '2026-04-08 08:00:00'),
+(4, NULL, NULL, 2, 'Email Writing - Request for Leave', 'Write a formal email to your manager requesting 3 days of annual leave. Include the reason, dates, and arrangements for your work during your absence. (150-200 words)', '2026-04-25 23:59:00', 'post_class', '2026-04-14 08:00:00'),
+(5, NULL, NULL, 3, 'TOEIC Reading Practice - Email Comprehension', 'Read the given email correspondence between two business partners and answer the 5 comprehension questions below. Write your answers in complete sentences.', '2026-04-21 23:59:00', 'post_class', '2026-04-11 08:00:00');
+
+INSERT IGNORE INTO `submissions` (`id`, `assignment_id`, `student_id`, `class_id`, `submission_content`, `file_url`, `score`, `feedback`, `rubric_data`, `submitted_at`) VALUES
+(1, 1, 1, 2, '<p>Environmental issues have become a major concern in the modern world. While some argue that these problems should be addressed on a global scale, others believe that national-level solutions are more effective. In my view, a combination of both approaches is necessary to tackle environmental challenges comprehensively.</p><p>On one hand, global cooperation is essential because environmental problems transcend national boundaries. Climate change, for instance, affects every country regardless of their individual contributions to greenhouse gas emissions. International agreements like the Paris Agreement demonstrate that collaborative efforts can lead to meaningful commitments and shared technologies. Moreover, developing nations often lack the resources to address environmental issues independently, making global financial support crucial.</p><p>On the other hand, national governments are better positioned to implement policies tailored to their specific environmental challenges. Each country has unique geographical, economic, and social contexts that require customized solutions. For example, deforestation in Brazil requires different strategies compared to air pollution in China. Furthermore, national governments can enforce regulations more effectively within their jurisdictions and hold local industries accountable.</p><p>In conclusion, I believe that a multi-level approach combining both global and national efforts is the most effective way to address environmental problems. While international cooperation provides the framework and resources, national governments should take responsibility for implementation and enforcement.</p>', NULL, NULL, NULL, NULL, '2026-04-14 10:30:00'),
+(2, 1, 8, 2, '<p>Nowadays environmental problems is very big issue in the world. Some people think global solution is better but other people think national solution more good. I will discuss both side in this essay.</p><p>First, global solution is important because pollution go everywhere. If one country make pollution it affect other country too. So all country need work together to solve this problem. For example climate change is global problem need global solution.</p><p>Second, national solution also important because every country have different problem. Some country have water pollution and some country have air pollution. Government can make law for their own country and punish company that make pollution.</p><p>In my opinion I think both global and national solution is needed because environmental problem is very complicated and need everyone to help solve it.</p>', NULL, NULL, NULL, NULL, '2026-04-14 14:20:00'),
+(3, 2, 1, 2, '<p>The bar chart illustrates the proportion of male and female Australians across various age brackets who engaged in regular physical activity during 2010.</p><p>Overall, it is evident that physical activity participation varied significantly between genders and age groups, with older age groups generally showing higher participation rates. Notably, women in most age groups were more likely to exercise regularly than men.</p><p>Looking at the younger demographics, approximately 52.8 percent of males and 47.7 percent of females aged 15-24 participated in regular physical activity. The participation rate dropped for both genders in the 25-34 age group, with males at 42.2 percent and females at 48.9 percent.</p><p>In contrast, the 45-54 and 55-64 age groups showed increasing trends, particularly among women. The highest female participation rate was observed in the 55-64 bracket at 53.3 percent. For males, the peak was in the 65 plus category at 46.5 percent, though this remained lower than the female rate of 47.1 percent in the same group.</p>', NULL, 7.50, 'Bài viết mạch lạc, có cấu trúc tốt. Cần bổ sung thêm so sánh cụ thể giữa các nhóm tuổi.', '{"grammar": 8.0, "cohesion": 7.5, "lexical": 7.0, "task": 7.5}', '2026-04-13 09:15:00'),
+(4, 3, 1, 7, '<p>My name is Hoang Nhat Truong. I am 22 years old and I am a student at the English Training Center. I live in Ho Chi Minh City with my family.</p><p>In my free time, I enjoy reading books and playing football with my friends. I also like watching English movies because it helps me improve my listening skills. My favorite movie is The Shawshank Redemption.</p><p>I started learning English because I want to get a good job in the future. My goal is to achieve an IELTS score of 7.0 so that I can apply for a scholarship to study abroad. I believe that English is an essential skill in today is globalized world.</p><p>I am very excited to join this class and I hope to make many new friends who share the same passion for learning English.</p>', NULL, NULL, NULL, NULL, '2026-04-15 08:00:00'),
+(5, 4, 1, 8, '<p>Subject: Request for Annual Leave - April 21-23, 2026</p><p>Dear Mr. Johnson,</p><p>I am writing to formally request three days of annual leave from Monday, April 21 to Wednesday, April 23, 2026.</p><p>The reason for my request is that I need to attend a family wedding ceremony in Da Nang. As it is a significant family event, my presence is required for the preparations and the ceremony itself.</p><p>To ensure minimal disruption to our workflow during my absence, I have arranged the following: First, I will complete all pending reports before April 18. Second, I have briefed my colleague, Ms. Nguyen, who has kindly agreed to handle any urgent matters. Third, I will remain reachable via email for any critical issues.</p><p>I would be grateful if you could approve my leave request at your earliest convenience. Please do not hesitate to contact me if you need any further information.</p><p>Thank you for your consideration.</p><p>Best regards, Hoang Nhat Truong</p>', NULL, NULL, NULL, NULL, '2026-04-15 11:45:00'),
+(6, 5, 1, 9, '<p>1. The main purpose of the first email is to inform the business partner about a delay in the shipment of electronic components. Mr. Chen explains that due to unexpected supply chain issues, the delivery will be postponed by approximately two weeks.</p><p>2. Ms. Rodriguez responds by expressing her concern about the delay because it will affect their production schedule for the Q3 product launch.</p><p>3. The compromise they reached was to split the order into two partial shipments. The first batch of 500 units would be sent immediately from existing stock, while the remaining 1500 units would arrive within the extended timeline.</p><p>4. Mr. Chen offered a 5 percent discount on the total order value as compensation for the inconvenience caused by the delay.</p><p>5. The tone of the correspondence is professional and collaborative, as both parties work together to find a mutually acceptable solution despite the challenging circumstances.</p>', NULL, NULL, NULL, NULL, '2026-04-16 06:30:00');
+
+SET FOREIGN_KEY_CHECKS=1;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;

@@ -227,7 +227,7 @@ router.beforeEach((to, from, next) => {
     }
   }
 
-  if (to.path.startsWith('/user/dashboard')) {
+  if (to.path.startsWith('/user')) {
     if (!user) {
       return next('/login')
     }

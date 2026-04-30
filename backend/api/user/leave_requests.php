@@ -260,6 +260,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!$reason)  $errors[] = 'Vui lòng nhập lý do nghỉ.';
     if (!$studyDate) $errors[] = 'Vui lòng chọn buổi học.';
 
+    // BUG-12: Không cho gửi đơn nghỉ cho buổi học đã qua
+    if ($studyDate && $studyDate < date('Y-m-d')) {
+        $errors[] = 'Không thể gửi đơn nghỉ cho buổi học đã qua.';
+    }
+
     if (!empty($errors)) {
         http_response_code(422);
         echo json_encode(['status' => 'error', 'message' => implode(' ', $errors)]);

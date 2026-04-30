@@ -30,30 +30,122 @@
             </tr>
           </thead>
           <tbody class="divide-y divide-slate-50 text-sm text-slate-700">
-            <tr v-for="item in filteredClasses" :key="item.id" class="hover:bg-slate-50/50 transition-colors group">
-              <td class="px-6 py-4 font-bold text-slate-500">#{{ item.id }}</td>
-              <td class="px-6 py-4"><span class="font-black text-slate-800 text-base">{{ item.class_name }}</span></td>
-              <td class="px-6 py-4 font-medium text-emerald-600">{{ item.course_name || 'Khóa học đã bị xóa' }}</td>
-              <td class="px-6 py-4">
-                <div class="flex items-center gap-2">
-                  <div class="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-xs"><i class="fa-solid fa-user-tie"></i></div>
-                  <span class="font-bold text-slate-700">{{ item.instructor_name || 'Chưa phân công' }}</span>
-                </div>
-              </td>
-              <td class="px-6 py-4 text-xs font-medium text-slate-500">
-                <div class="flex flex-col gap-1">
-                  <span><i class="fa-regular fa-calendar-check mr-1"></i> BĐ: {{ formatDate(item.start_date) }}</span>
-                  <span><i class="fa-regular fa-calendar-xmark mr-1"></i> KT: {{ formatDate(item.end_date) }}</span>
-                </div>
-              </td>
-              <td class="px-6 py-4 text-right">
-                <div class="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <button @click="openClassDetailsModal(item)" title="Quản lý nhóm ca học" class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white flex items-center justify-center transition-colors"><i class="fa-solid fa-layer-group text-xs"></i></button>
-                  <button @click="openModal('edit', item)" class="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white flex items-center justify-center transition-colors"><i class="fa-solid fa-pen text-xs"></i></button>
-                  <button @click="deleteClass(item.id)" class="w-8 h-8 rounded-lg bg-red-50 text-red-600 hover:bg-red-600 hover:text-white flex items-center justify-center transition-colors"><i class="fa-solid fa-trash-can text-xs"></i></button>
-                </div>
-              </td>
-            </tr>
+            <template v-for="item in filteredClasses" :key="item.id">
+
+              <!-- ── Hàng lớp học ── -->
+              <tr class="hover:bg-slate-50/50 transition-colors group" :class="expandedClassId === item.id ? 'bg-emerald-50/40' : ''">
+                <td class="px-6 py-4 font-bold text-slate-500">#{{ item.id }}</td>
+
+                <!-- Tên lớp + nút sổ xuống -->
+                <td class="px-6 py-4">
+                  <div class="flex items-center gap-2">
+                    <button
+                      @click="toggleExpandClass(item.id)"
+                      :title="expandedClassId === item.id ? 'Ẩn ca học' : 'Xem ca học'"
+                      class="w-6 h-6 rounded-md flex items-center justify-center text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 transition-all flex-shrink-0"
+                    >
+                      <i class="fa-solid text-xs transition-transform duration-200"
+                        :class="expandedClassId === item.id ? 'fa-chevron-up text-emerald-600' : 'fa-chevron-down'"
+                      ></i>
+                    </button>
+                    <span class="font-black text-slate-800 text-base">{{ item.class_name }}</span>
+                    <span v-if="getClassSchedules(item.id).length" class="ml-1 px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-500">
+                      {{ getClassSchedules(item.id).length }} ca
+                    </span>
+                  </div>
+                </td>
+
+                <td class="px-6 py-4 font-medium text-emerald-600">{{ item.course_name || 'Khóa học đã bị xóa' }}</td>
+                <td class="px-6 py-4">
+                  <div class="flex items-center gap-2">
+                    <div class="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-xs"><i class="fa-solid fa-user-tie"></i></div>
+                    <span class="font-bold text-slate-700">{{ item.instructor_name || 'Chưa phân công' }}</span>
+                  </div>
+                </td>
+                <td class="px-6 py-4 text-xs font-medium text-slate-500">
+                  <div class="flex flex-col gap-1">
+                    <span><i class="fa-regular fa-calendar-check mr-1"></i> BĐ: {{ formatDate(item.start_date) }}</span>
+                    <span><i class="fa-regular fa-calendar-xmark mr-1"></i> KT: {{ formatDate(item.end_date) }}</span>
+                  </div>
+                </td>
+                <td class="px-6 py-4 text-right">
+                  <div class="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button @click="openClassDetailsModal(item)" title="Quản lý nhóm ca học" class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white flex items-center justify-center transition-colors"><i class="fa-solid fa-layer-group text-xs"></i></button>
+                    <button @click="openModal('edit', item)" class="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white flex items-center justify-center transition-colors"><i class="fa-solid fa-pen text-xs"></i></button>
+                    <button @click="deleteClass(item.id)" class="w-8 h-8 rounded-lg bg-red-50 text-red-600 hover:bg-red-600 hover:text-white flex items-center justify-center transition-colors"><i class="fa-solid fa-trash-can text-xs"></i></button>
+                  </div>
+                </td>
+              </tr>
+
+              <!-- ── Hàng mở rộng: Chi tiết ca học ── -->
+              <tr v-if="expandedClassId === item.id">
+                <td colspan="6" class="px-6 pb-4 pt-1 bg-emerald-50/30">
+                  <div class="rounded-xl border border-emerald-100 overflow-hidden bg-white shadow-sm">
+
+                    <!-- Header mini -->
+                    <div class="flex items-center justify-between px-4 py-2 bg-emerald-50/60 border-b border-emerald-100">
+                      <span class="text-xs font-black text-emerald-700 flex items-center gap-1.5">
+                        <i class="fa-solid fa-calendar-days"></i>
+                        Ca học của lớp <em class="not-italic">{{ item.class_name }}</em>
+                      </span>
+                      <span class="text-[10px] text-slate-400">{{ getClassSchedules(item.id).length }} ca tổng cộng</span>
+                    </div>
+
+                    <!-- Empty state -->
+                    <div v-if="getClassSchedules(item.id).length === 0" class="px-4 py-5 text-center text-xs text-slate-400 italic">
+                      Chưa có ca học nào được xếp lịch cho lớp này.
+                    </div>
+
+                    <!-- Mini table -->
+                    <table v-else class="w-full text-xs text-left">
+                      <thead>
+                        <tr class="border-b border-slate-100 text-[10px] uppercase tracking-wider text-slate-400 font-bold bg-slate-50/50">
+                          <th class="px-4 py-2">Nhóm học</th>
+                          <th class="px-4 py-2">Ngày học</th>
+                          <th class="px-4 py-2">Khung giờ</th>
+                          <th class="px-4 py-2">Giảng viên</th>
+                          <th class="px-4 py-2">Trạng thái</th>
+                        </tr>
+                      </thead>
+                      <tbody class="divide-y divide-slate-50">
+                        <tr v-for="s in getPaginatedClassSchedules(item.id)" :key="s.id" class="hover:bg-slate-50/60 transition-colors">
+                          <td class="px-4 py-2 font-medium text-slate-600">{{ s.class_detail_name || '—' }}</td>
+                          <td class="px-4 py-2 font-bold text-slate-700 whitespace-nowrap">{{ formatDate(s.study_date) }}</td>
+                          <td class="px-4 py-2 font-mono text-slate-600 whitespace-nowrap">{{ formatTime(s.start_time) }} – {{ formatTime(s.end_time) }}</td>
+                          <td class="px-4 py-2 text-slate-500">{{ s.teacher_name || 'Chưa xếp' }}</td>
+                          <td class="px-4 py-2">
+                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold"
+                              :class="s.status === 'completed' ? 'bg-slate-100 text-slate-500' : s.status === 'canceled' ? 'bg-red-100 text-red-600' : 'bg-emerald-100 text-emerald-700'">
+                              {{ s.status === 'completed' ? 'Đã học' : s.status === 'canceled' ? 'Đã hủy' : 'Sắp học' }}
+                            </span>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+
+                    <!-- Pagination mini -->
+                    <div v-if="getTotalClassSchedulePages(item.id) > 1"
+                      class="flex items-center justify-between px-4 py-2 border-t border-slate-100 bg-white">
+                      <button @click="prevClassSchedulePage(item.id)"
+                        :disabled="(expandedClassPages[item.id] || 1) <= 1"
+                        class="px-3 py-1 rounded-lg text-xs font-bold border border-slate-200 text-slate-600 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition">
+                        Trước
+                      </button>
+                      <span class="text-xs font-bold text-slate-500">
+                        {{ expandedClassPages[item.id] || 1 }} / {{ getTotalClassSchedulePages(item.id) }}
+                      </span>
+                      <button @click="nextClassSchedulePage(item.id)"
+                        :disabled="(expandedClassPages[item.id] || 1) >= getTotalClassSchedulePages(item.id)"
+                        class="px-3 py-1 rounded-lg text-xs font-bold border border-slate-200 text-slate-600 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition">
+                        Sau
+                      </button>
+                    </div>
+
+                  </div>
+                </td>
+              </tr>
+
+            </template>
             <tr v-if="filteredClasses.length === 0"><td colspan="6" class="px-6 py-12 text-center text-slate-500">Không tìm thấy lớp học nào.</td></tr>
           </tbody>
         </table>
@@ -198,6 +290,41 @@ import { notifyError, notifySuccess, notifyWarning } from "../../utils/notify";
 const router = useRouter();
 const classes = ref([]), schedules = ref([]), courses = ref([]), instructors = ref([]), searchQuery = ref(""), isLoading = ref(false), errorMessage = ref("");
 const schedulePage = ref(1), schedulesPerPage = 10;
+
+// ── Expand ca học theo lớp ────────────────────────────────────────
+const expandedClassId    = ref(null);
+const expandedClassPages = ref({});      // { classId: currentPage }
+const CLASS_SCHED_PER_PAGE = 5;
+
+const toggleExpandClass = (classId) => {
+  expandedClassId.value = expandedClassId.value === classId ? null : classId;
+  if (!expandedClassPages.value[classId]) expandedClassPages.value[classId] = 1;
+};
+
+const getClassSchedules = (classId) =>
+  schedules.value
+    .filter(s => Number(s.class_id) === Number(classId))
+    .sort((a, b) => (a.study_date > b.study_date ? -1 : 1));
+
+const getPaginatedClassSchedules = (classId) => {
+  const page  = expandedClassPages.value[classId] || 1;
+  const start = (page - 1) * CLASS_SCHED_PER_PAGE;
+  return getClassSchedules(classId).slice(start, start + CLASS_SCHED_PER_PAGE);
+};
+
+const getTotalClassSchedulePages = (classId) =>
+  Math.max(1, Math.ceil(getClassSchedules(classId).length / CLASS_SCHED_PER_PAGE));
+
+const prevClassSchedulePage = (classId) => {
+  const cur = expandedClassPages.value[classId] || 1;
+  if (cur > 1) expandedClassPages.value[classId] = cur - 1;
+};
+
+const nextClassSchedulePage = (classId) => {
+  const cur   = expandedClassPages.value[classId] || 1;
+  const total = getTotalClassSchedulePages(classId);
+  if (cur < total) expandedClassPages.value[classId] = cur + 1;
+};
 const isModalOpen = ref(false), modalMode = ref("add");
 const isClassDetailsOpen = ref(false), activeClassDetails = ref(null), classDetails = ref([]), isLoadingDetails = ref(false);
 const detailShiftOptions = ["Sáng", "Chiều", "Tối"], detailDayOptions = ["2/4/6", "3/5/7", "T7/CN"];

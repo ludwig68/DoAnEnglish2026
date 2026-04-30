@@ -74,48 +74,50 @@ switch ($method) {
             ");
             $courses = $coursesStmt->fetchAll(PDO::FETCH_ASSOC);
 
+            // Lấy từng ca học cụ thể (schedules), capacity tính theo class_detail
             $rowsStmt = $pdo->query("
                 SELECT
-                    cd.id AS detail_id,
+                    s.id          AS schedule_id,
+                    s.study_date,
+                    s.start_time,
+                    s.end_time,
+                    s.teaching_type,
+                    s.status      AS schedule_status,
+                    s.room_info,
+                    cd.id         AS detail_id,
                     cd.class_id,
                     cd.detail_name,
                     cd.max_students,
-                    COUNT(DISTINCT e.id) AS current_students,
+                    (
+                        SELECT COUNT(*)
+                        FROM enrollments ex
+                        WHERE ex.class_detail_id = cd.id
+                          AND ex.status = 'active'
+                    ) AS current_students,
                     c.class_name,
                     c.start_date,
                     c.end_date,
-                    co.id AS course_id,
-                    co.title AS course_name,
+                    co.id         AS course_id,
+                    co.title      AS course_name,
                     co.level,
-                    MAX(s.teaching_type) AS teaching_type,
-                    MAX(s.start_time) AS start_time,
-                    MAX(s.end_time) AS end_time
-                FROM class_details cd
-                INNER JOIN classes c ON c.id = cd.class_id
-                LEFT JOIN courses co ON co.id = c.course_id
-                LEFT JOIN enrollments e ON e.class_detail_id = cd.id AND e.status = 'active'
-                LEFT JOIN schedules s ON s.class_detail_id = cd.id
-                GROUP BY
-                    cd.id,
-                    cd.class_id,
-                    cd.detail_name,
-                    cd.max_students,
-                    c.class_name,
-                    c.start_date,
-                    c.end_date,
-                    co.id,
-                    co.title,
-                    co.level
-                ORDER BY co.title ASC, c.id DESC, cd.id ASC
+                    COALESCE(u.full_name, iu.full_name) AS teacher_name
+                FROM schedules s
+                INNER JOIN class_details cd ON cd.id = s.class_detail_id
+                INNER JOIN classes c        ON c.id  = cd.class_id
+                LEFT  JOIN courses co       ON co.id = c.course_id
+                LEFT  JOIN users u          ON u.id  = s.teacher_id
+                LEFT  JOIN users iu         ON iu.id = c.instructor_id
+                ORDER BY s.study_date DESC, s.start_time ASC, cd.id ASC
             ");
             $classRows = $rowsStmt->fetchAll(PDO::FETCH_ASSOC);
 
             foreach ($classRows as &$row) {
-                $row['max_students'] = (int) $row['max_students'];
+                $row['schedule_id']      = (int) $row['schedule_id'];
+                $row['detail_id']        = (int) $row['detail_id'];
+                $row['class_id']         = (int) $row['class_id'];
+                $row['course_id']        = (int) ($row['course_id'] ?? 0);
+                $row['max_students']     = (int) $row['max_students'];
                 $row['current_students'] = (int) $row['current_students'];
-                $row['course_id'] = (int) $row['course_id'];
-                $row['class_id'] = (int) $row['class_id'];
-                $row['detail_id'] = (int) $row['detail_id'];
             }
             unset($row);
 
@@ -130,32 +132,23 @@ switch ($method) {
                     u.email AS student_email,
                     c.class_name,
                     cd.detail_name,
-                    cd.max_students,
-                    COUNT(e2.id) AS current_students
+                    COALESCE(cd.max_students, 0) AS max_students,
+                    (
+                        SELECT COUNT(*)
+                        FROM enrollments ex
+                        WHERE ex.class_detail_id = e.class_detail_id
+                          AND ex.status = 'active'
+                    ) AS current_students
                 FROM enrollments e
                 INNER JOIN users u ON u.id = e.student_id
                 INNER JOIN classes c ON c.id = e.class_id
                 LEFT JOIN class_details cd ON cd.id = e.class_detail_id
-                LEFT JOIN enrollments e2
-                    ON e2.class_detail_id = e.class_detail_id
-                   AND e2.status = 'active'
-                GROUP BY
-                    e.id,
-                    e.status,
-                    e.enrollment_date,
-                    e.class_id,
-                    e.class_detail_id,
-                    u.full_name,
-                    u.email,
-                    c.class_name,
-                    cd.detail_name,
-                    cd.max_students
                 ORDER BY e.enrollment_date DESC
             ");
             $enrollments = $enrollStmt->fetchAll(PDO::FETCH_ASSOC);
 
             foreach ($enrollments as &$row) {
-                $row['max_students'] = (int) ($row['max_students'] ?? 0);
+                $row['max_students']     = (int) ($row['max_students']     ?? 0);
                 $row['current_students'] = (int) ($row['current_students'] ?? 0);
             }
             unset($row);

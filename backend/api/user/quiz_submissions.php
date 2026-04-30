@@ -138,7 +138,7 @@ try {
     }
 
     $stmtQuestions = $pdo->prepare("
-        SELECT id, question_type, question_text
+        SELECT id, question_type, question_text, COALESCE(points, 1) AS points
         FROM questions
         WHERE quiz_id = ?
     ");
@@ -146,6 +146,7 @@ try {
     $questions = $stmtQuestions->fetchAll(PDO::FETCH_ASSOC);
 
     $totalQuestions = count($questions);
+    $totalPoints = array_sum(array_column($questions, 'points'));
     $score = 0.0;
     $correctCount = 0;
     $hasWriting = false;
@@ -263,11 +264,12 @@ try {
 
             if ($isCorrect) {
                 $correctCount++;
+                $score += (float) $question['points'];
             }
             $questionResults[$questionId] = $isCorrect;
         }
 
-        $score = (float) $correctCount;
+        // Điểm = tổng points câu đúng (nếu toàn bộ câu có points = 1 thì = số câu đúng)
         $status = $hasWriting ? 'pending_grading' : 'completed';
     }
 
@@ -278,8 +280,6 @@ try {
             score = VALUES(score),
             status = VALUES(status),
             answers_json = VALUES(answers_json),
-            feedback = NULL,
-            rubric_data = NULL,
             submitted_at = NOW()
     ");
     $stmtSave->execute([$studentId, $quizId, $classId, $score, $status, $answersJson]);

@@ -495,6 +495,13 @@ switch ($method) {
                 'message' => 'Đã xóa thành công toàn bộ nhóm lịch dạy.'
             ]);
         } else {
+            // BUG-07: Không cho xóa buổi học đã có điểm danh
+            $attStmt = $pdo->prepare("SELECT COUNT(*) FROM attendance_records WHERE schedule_id = ?");
+            $attStmt->execute([$id]);
+            if ((int) $attStmt->fetchColumn() > 0) {
+                jsonResponse(409, ['status' => 'error', 'message' => 'Buổi học này đã có dữ liệu điểm danh, không thể xóa. Hãy xóa điểm danh trước.']);
+            }
+
             // Mặc định: Chỉ xóa một ca học duy nhất (scope=single)
             $stmt = $pdo->prepare("DELETE FROM schedules WHERE id = ?");
             $success = $stmt->execute([$id]);
