@@ -1,11 +1,11 @@
-<template>
+﻿<template>
   <div class="h-full flex flex-col p-4 md:p-6 animate__animated animate__fadeIn font-sans space-y-6">
     <!-- Header Section -->
     <div class="flex flex-col md:flex-row justify-end items-start md:items-center gap-4">
       <button
         @click="openModal('add')"
-        class="px-5 py-2.5 rounded-xl text-white font-bold flex items-center gap-2 shadow-lg shadow-emerald-200 hover:-translate-y-0.5 transition-all duration-300"
-        style="background: linear-gradient(135deg, #7ae582 0%, #16a34a 100%)"
+        class="px-5 py-2.5 rounded-xl text-white font-bold flex items-center gap-2 hover:-translate-y-0.5 transition-all duration-300"
+        style="background: linear-gradient(135deg, #4ADE80 0%, #16a34a 100%)"
       >
         <i class="fa-solid fa-plus"></i> Lên lịch mới
       </button>
@@ -387,7 +387,7 @@
               <button type="button" @click="closeModal" class="px-5 py-2.5 rounded-xl font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 transition">
                 Đóng
               </button>
-              <button type="submit" class="px-5 py-2.5 rounded-xl font-bold text-white shadow-lg shadow-emerald-200 hover:-translate-y-0.5 transition-all duration-300 flex items-center gap-1" style="background: linear-gradient(135deg, #7ae582 0%, #16a34a 100%)">
+              <button type="submit" class="px-5 py-2.5 rounded-xl font-bold text-white hover:-translate-y-0.5 transition-all duration-300 flex items-center gap-1" style="background: linear-gradient(135deg, #4ADE80 0%, #16a34a 100%)">
                 <i class="fa-solid fa-floppy-disk"></i> Lưu thông tin
               </button>
             </div>

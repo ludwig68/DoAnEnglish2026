@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="h-full flex flex-col p-4 md:p-6 animate__animated animate__fadeIn space-y-6">
 
     <div v-if="isLoading" class="flex-1 flex flex-col justify-center items-center text-slate-400 py-24">
@@ -208,8 +208,8 @@
                 Bài tập Post-class
               </h3>
               <button @click="isAssignmentModalOpen = true"
-                class="px-5 py-2.5 text-white font-bold rounded-xl shadow-lg shadow-emerald-200 hover:-translate-y-0.5 transition-all duration-300 active:scale-95 flex items-center gap-2 w-fit"
-                style="background: linear-gradient(135deg, #7ae582 0%, #16a34a 100%)">
+                class="px-5 py-2.5 text-white font-bold rounded-xl hover:-translate-y-0.5 transition-all duration-300 active:scale-95 flex items-center gap-2 w-fit"
+                style="background: linear-gradient(135deg, #4ADE80 0%, #16a34a 100%)">
                 <i class="fa-solid fa-plus"></i> Giao bài tập
               </button>
             </div>
@@ -279,7 +279,7 @@
         <div class="px-8 py-6 border-b border-slate-100 bg-gradient-to-r from-emerald-50/50 to-teal-50/50">
           <h3 class="text-xl font-black text-slate-800 flex items-center gap-3">
             <div
-              class="w-10 h-10 rounded-2xl bg-gradient-to-br from-emerald-400 to-teal-500 text-white flex items-center justify-center shadow-lg shadow-emerald-200 shrink-0">
+              class="w-10 h-10 rounded-2xl bg-gradient-to-br from-emerald-400 to-teal-500 text-white flex items-center justify-center shrink-0">
               <i class="fa-solid fa-cloud-arrow-up"></i>
             </div>
             Tải tài liệu lên
@@ -365,8 +365,8 @@
             <button type="button" @click="isAssignmentModalOpen = false; modalError = ''"
               class="px-6 py-3 rounded-xl font-bold text-slate-600 bg-white border-2 border-slate-200 hover:border-slate-300 hover:bg-slate-50 transition-all active:scale-95">Hủy</button>
             <button type="submit"
-              class="px-8 py-3 rounded-xl font-bold text-white shadow-lg shadow-emerald-200 hover:-translate-y-0.5 transition-all duration-300 active:scale-95 flex items-center gap-2"
-              style="background: linear-gradient(135deg, #7ae582 0%, #16a34a 100%)">
+              class="px-8 py-3 rounded-xl font-bold text-white hover:-translate-y-0.5 transition-all duration-300 active:scale-95 flex items-center gap-2"
+              style="background: linear-gradient(135deg, #4ADE80 0%, #16a34a 100%)">
               <i class="fa-solid fa-paper-plane"></i> Giao bài
             </button>
           </div>

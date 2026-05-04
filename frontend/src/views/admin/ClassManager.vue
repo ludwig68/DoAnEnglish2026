@@ -1,7 +1,7 @@
-<template>
+﻿<template>
   <div class="h-full flex flex-col p-6 animate__animated animate__fadeIn">
     <div class="flex flex-col md:flex-row justify-end items-start md:items-center mb-6 gap-4">
-      <button @click="openModal('add')" class="px-5 py-2.5 rounded-xl text-white font-bold flex items-center gap-2 shadow-lg shadow-emerald-200 hover:-translate-y-0.5 transition-all duration-300" style="background: linear-gradient(135deg, #7ae582 0%, #16a34a 100%)">
+      <button @click="openModal('add')" class="px-5 py-2.5 rounded-xl text-white font-bold flex items-center gap-2 hover:-translate-y-0.5 transition-all duration-300" style="background: linear-gradient(135deg, #4ADE80 0%, #16a34a 100%)">
         <i class="fa-solid fa-plus"></i> Tạo lớp mới
       </button>
     </div>
@@ -9,7 +9,7 @@
     <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 mb-6">
       <div class="relative w-full md:w-1/2">
         <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
-        <input v-model="searchQuery" type="text" placeholder="Tìm theo tên lớp, khóa học hoặc giảng viên..." class="w-full pl-11 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#7AE582] transition-all" />
+        <input v-model="searchQuery" type="text" placeholder="Tìm theo tên lớp, khóa học hoặc giảng viên..." class="w-full pl-11 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#4ADE80] transition-all" />
       </div>
     </div>
 
@@ -196,16 +196,16 @@
           <button @click="closeModal" class="text-slate-400 hover:text-red-500 transition"><i class="fa-solid fa-xmark text-xl"></i></button>
         </div>
         <form @submit.prevent="saveClass" class="p-6 space-y-4">
-          <div><label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Tên lớp <span class="text-red-500">*</span></label><input v-model="formData.class_name" required type="text" placeholder="VD: IELTS Cơ Bản - K01" class="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#7AE582]" /></div>
-          <div><label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Thuộc khóa học <span class="text-red-500">*</span></label><select v-model="formData.course_id" required class="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#7AE582]"><option value="" disabled>-- Chọn khóa học --</option><option v-for="course in courses" :key="course.id" :value="course.id">{{ course.title }}</option></select></div>
-          <div><label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Giảng viên chủ nhiệm</label><select v-model="formData.instructor_id" class="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#7AE582]"><option value="">-- Chưa phân công --</option><option v-for="teacher in instructors" :key="teacher.id" :value="teacher.id">{{ teacher.full_name }}</option></select></div>
+          <div><label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Tên lớp <span class="text-red-500">*</span></label><input v-model="formData.class_name" required type="text" placeholder="VD: IELTS Cơ Bản - K01" class="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#4ADE80]" /></div>
+          <div><label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Thuộc khóa học <span class="text-red-500">*</span></label><select v-model="formData.course_id" required class="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#4ADE80]"><option value="" disabled>-- Chọn khóa học --</option><option v-for="course in courses" :key="course.id" :value="course.id">{{ course.title }}</option></select></div>
+          <div><label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Giảng viên chủ nhiệm</label><select v-model="formData.instructor_id" class="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#4ADE80]"><option value="">-- Chưa phân công --</option><option v-for="teacher in instructors" :key="teacher.id" :value="teacher.id">{{ teacher.full_name }}</option></select></div>
           <div class="flex gap-4">
-            <div class="w-1/2"><label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Ngày khai giảng <span class="text-red-500">*</span></label><input v-model="formData.start_date" type="date" required class="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#7AE582]" /></div>
-            <div class="w-1/2"><label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Ngày kết thúc dự kiến <span class="text-red-500">*</span></label><input v-model="formData.end_date" type="date" required class="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#7AE582]" /></div>
+            <div class="w-1/2"><label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Ngày khai giảng <span class="text-red-500">*</span></label><input v-model="formData.start_date" type="date" required class="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#4ADE80]" /></div>
+            <div class="w-1/2"><label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Ngày kết thúc dự kiến <span class="text-red-500">*</span></label><input v-model="formData.end_date" type="date" required class="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#4ADE80]" /></div>
           </div>
           <div class="pt-4 flex justify-end gap-3 border-t border-slate-100 mt-6">
             <button type="button" @click="closeModal" class="px-5 py-2.5 rounded-xl font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 transition">Hủy</button>
-            <button type="submit" class="px-5 py-2.5 rounded-xl font-bold text-white shadow-lg shadow-emerald-200 hover:-translate-y-0.5 transition-all duration-300 flex items-center gap-1" style="background: linear-gradient(135deg, #7ae582 0%, #16a34a 100%)"><i class="fa-solid fa-floppy-disk mr-1"></i> Lưu thông tin</button>
+            <button type="submit" class="px-5 py-2.5 rounded-xl font-bold text-white hover:-translate-y-0.5 transition-all duration-300 flex items-center gap-1" style="background: linear-gradient(135deg, #4ADE80 0%, #16a34a 100%)"><i class="fa-solid fa-floppy-disk mr-1"></i> Lưu thông tin</button>
           </div>
         </form>
       </div>
@@ -229,14 +229,14 @@
 
             <form @submit.prevent="saveClassDetail" class="space-y-3 detail-form">
               <div class="grid gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_160px_auto] lg:items-end">
-              <div><label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Ca học <span class="text-red-500">*</span></label><select v-model="detailFormData.shift" required class="w-full px-4 py-2.5 rounded-xl bg-white border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#7AE582]"><option value="" disabled>-- Chọn ca học --</option><option v-for="shift in detailShiftOptions" :key="shift" :value="shift">{{ shift }}</option></select></div>
-              <div><label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Lịch học <span class="text-red-500">*</span></label><select v-model="detailFormData.days" required class="w-full px-4 py-2.5 rounded-xl bg-white border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#7AE582]"><option value="" disabled>-- Chọn lịch học --</option><option v-for="days in detailDayOptions" :key="days" :value="days">{{ days }}</option></select></div>
-              <div><label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Sĩ số tối đa <span class="text-red-500">*</span></label><input v-model="detailFormData.max_students" type="number" min="1" max="500" required class="w-full px-4 py-2.5 rounded-xl bg-white border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#7AE582]" /></div>
+              <div><label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Ca học <span class="text-red-500">*</span></label><select v-model="detailFormData.shift" required class="w-full px-4 py-2.5 rounded-xl bg-white border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#4ADE80]"><option value="" disabled>-- Chọn ca học --</option><option v-for="shift in detailShiftOptions" :key="shift" :value="shift">{{ shift }}</option></select></div>
+              <div><label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Lịch học <span class="text-red-500">*</span></label><select v-model="detailFormData.days" required class="w-full px-4 py-2.5 rounded-xl bg-white border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#4ADE80]"><option value="" disabled>-- Chọn lịch học --</option><option v-for="days in detailDayOptions" :key="days" :value="days">{{ days }}</option></select></div>
+              <div><label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Sĩ số tối đa <span class="text-red-500">*</span></label><input v-model="detailFormData.max_students" type="number" min="1" max="500" required class="w-full px-4 py-2.5 rounded-xl bg-white border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#4ADE80]" /></div>
               <div class="rounded-xl bg-white border border-dashed border-slate-200 px-4 py-3 text-sm text-slate-500"><span class="font-bold text-slate-700">Tên nhóm sẽ lưu:</span> {{ previewDetailName || 'Chọn ca học và lịch học để xem trước' }}</div>
               </div>
               <div class="pt-2 flex justify-end gap-3">
                 <button v-if="detailFormMode === 'edit'" type="button" @click="resetDetailForm" class="px-4 py-2.5 rounded-xl font-bold text-slate-600 bg-slate-200 hover:bg-slate-300 transition">Hủy sửa</button>
-                <button type="submit" class="px-5 py-2.5 rounded-xl font-bold text-white shadow-lg shadow-emerald-200 hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-center gap-2" style="background: linear-gradient(135deg, #7ae582 0%, #16a34a 100%)"><i :class="detailFormMode === 'add' ? 'fa-solid fa-plus' : 'fa-solid fa-floppy-disk'"></i>{{ detailFormMode === 'add' ? 'Thêm nhóm học' : 'Lưu cập nhật' }}</button>
+                <button type="submit" class="px-5 py-2.5 rounded-xl font-bold text-white hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-center gap-2" style="background: linear-gradient(135deg, #4ADE80 0%, #16a34a 100%)"><i :class="detailFormMode === 'add' ? 'fa-solid fa-plus' : 'fa-solid fa-floppy-disk'"></i>{{ detailFormMode === 'add' ? 'Thêm nhóm học' : 'Lưu cập nhật' }}</button>
               </div>
             </form>
           </section>

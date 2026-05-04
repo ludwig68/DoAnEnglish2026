@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="h-full flex flex-col p-6 animate__animated animate__fadeIn gap-5">
 
     <!-- ══ TOOLBAR ══════════════════════════════════════════════════════ -->
@@ -17,7 +17,7 @@
             type="text"
             placeholder="Tìm theo tên, email, SĐT..."
             autocomplete="off"
-            class="w-full pl-10 pr-8 py-2.5 rounded-xl bg-slate-50 border text-sm focus:outline-none focus:ring-2 focus:ring-[#7AE582] transition-all"
+            class="w-full pl-10 pr-8 py-2.5 rounded-xl bg-slate-50 border text-sm focus:outline-none focus:ring-2 focus:ring-[#4ADE80] transition-all"
             :class="selectedStudentId ? 'border-emerald-400 bg-emerald-50/30 font-semibold text-slate-900' : 'border-slate-200'"
           />
           <button v-if="studentSearchText" type="button" @click="clearStudent"
@@ -52,7 +52,7 @@
         <div class="relative">
           <i class="fa-solid fa-book-open absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm pointer-events-none"></i>
           <select v-model="selectedCourseId"
-            class="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#7AE582] cursor-pointer transition-all hover:bg-white">
+            class="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#4ADE80] cursor-pointer transition-all hover:bg-white">
             <option value="">Tất cả khóa học</option>
             <option v-for="c in courses" :key="c.id" :value="c.id">{{ c.title }}</option>
           </select>
@@ -65,7 +65,7 @@
         <div class="relative">
           <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm pointer-events-none"></i>
           <input v-model="tableSearch" type="text" placeholder="Tên lớp, ca học..."
-            class="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#7AE582] transition-all" />
+            class="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#4ADE80] transition-all" />
         </div>
       </div>
 
@@ -90,7 +90,7 @@
     <div v-if="selectedStudentId"
       class="flex items-center gap-4 px-5 py-3 bg-emerald-50 border border-emerald-200 rounded-2xl text-sm font-medium text-emerald-800">
       <div class="w-9 h-9 rounded-full flex items-center justify-center font-black text-base shrink-0"
-        style="background: linear-gradient(135deg,#7ae582,#16a34a); color:white;">
+        style="background: linear-gradient(135deg,#4ADE80,#16a34a); color:white;">
         {{ selectedStudentName?.charAt(0) }}
       </div>
       <div>
@@ -223,8 +223,8 @@
                     ? 'bg-slate-50 border-slate-200 text-slate-400 cursor-not-allowed'
                     : row.current_students >= row.max_students
                     ? 'bg-red-50 border-red-100 text-red-400 cursor-not-allowed'
-                    : 'text-white shadow-lg shadow-emerald-200 hover:-translate-y-0.5 transition-all duration-300'"
-                  :style="selectedStudentId && row.current_students < row.max_students ? 'background: linear-gradient(135deg, #7ae582 0%, #16a34a 100%)' : ''"
+                    : 'text-white hover:-translate-y-0.5 transition-all duration-300'"
+                  :style="selectedStudentId && row.current_students < row.max_students ? 'background: linear-gradient(135deg, #4ADE80 0%, #16a34a 100%)' : ''"
                 >
                   <i :class="enrollingRowId === row.schedule_id ? 'fa-solid fa-circle-notch fa-spin' : 'fa-solid fa-user-plus'"></i>
                   {{ enrollingRowId === row.schedule_id ? 'Đang xử lý...' : row.current_students >= row.max_students ? 'Đã đầy' : 'Ghi danh' }}
@@ -253,7 +253,7 @@
             <button @click="classPage = p"
               class="w-8 h-8 rounded-lg text-xs font-bold transition-colors"
               :class="classPage === p ? 'text-white' : 'text-slate-600 hover:bg-slate-100'"
-              :style="classPage === p ? 'background: linear-gradient(135deg,#7ae582,#16a34a)' : ''">
+              :style="classPage === p ? 'background: linear-gradient(135deg,#4ADE80,#16a34a)' : ''">
               {{ p }}
             </button>
           </template>
@@ -276,7 +276,7 @@
         <div class="relative w-56">
           <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs pointer-events-none"></i>
           <input v-model="enrollSearch" type="text" placeholder="Tìm học viên, lớp..."
-            class="w-full pl-9 pr-4 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-[#7AE582] transition-all" />
+            class="w-full pl-9 pr-4 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-[#4ADE80] transition-all" />
         </div>
       </div>
       <div class="overflow-x-auto custom-scrollbar">
@@ -364,7 +364,7 @@
             <button @click="enrollPage = p"
               class="w-8 h-8 rounded-lg text-xs font-bold transition-colors"
               :class="enrollPage === p ? 'text-white' : 'text-slate-600 hover:bg-slate-100'"
-              :style="enrollPage === p ? 'background: linear-gradient(135deg,#7ae582,#16a34a)' : ''">
+              :style="enrollPage === p ? 'background: linear-gradient(135deg,#4ADE80,#16a34a)' : ''">
               {{ p }}
             </button>
           </template>
@@ -412,8 +412,8 @@
           </div>
           <div class="pt-4 border-t border-slate-100 flex gap-3">
             <button @click="saveEditShift" :disabled="editModal.newDetailId === editModal.oldDetailId || !editModal.newDetailId"
-              class="flex-1 py-3 rounded-xl text-sm font-bold text-white transition-all shadow-lg shadow-emerald-200 hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
-              style="background: linear-gradient(135deg, #7ae582 0%, #16a34a 100%)">
+              class="flex-1 py-3 rounded-xl text-sm font-bold text-white transition-all hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
+              style="background: linear-gradient(135deg, #4ADE80 0%, #16a34a 100%)">
               <i class="fa-solid fa-floppy-disk mr-1"></i> Lưu thay đổi
             </button>
             <button @click="editModal.open = false" class="px-6 py-3 rounded-xl text-sm font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 transition">Hủy</button>

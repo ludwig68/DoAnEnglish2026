@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <section class="rounded-[1.35rem] border border-slate-200 bg-slate-50 p-4">
     <div class="flex flex-wrap items-center justify-between gap-3">
       <div>
@@ -29,7 +29,7 @@
           :value="option.option_text"
           type="text"
           :placeholder="`Nội dung đáp án ${index + 1}`"
-          class="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#7AE582]"
+          class="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#4ADE80]"
           @input="updateOption(index, { option_text: $event.target.value })"
         />
 
@@ -64,7 +64,7 @@
           :value="option.option_text"
           type="text"
           :placeholder="`Vế trái ${index + 1}`"
-          class="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#7AE582]"
+          class="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#4ADE80]"
           @input="updateOption(index, { option_text: $event.target.value })"
         />
 
@@ -72,7 +72,7 @@
           :value="option.match_text"
           type="text"
           :placeholder="`Vế phải ${index + 1}`"
-          class="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#7AE582]"
+          class="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#4ADE80]"
           @input="updateOption(index, { match_text: $event.target.value })"
         />
 
@@ -97,7 +97,7 @@
           :value="question.audio_url"
           type="url"
           placeholder="https://example.com/audio.mp3"
-          class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#7AE582]"
+          class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#4ADE80]"
           @input="patchQuestion({ audio_url: $event.target.value })"
         />
       </div>
@@ -108,7 +108,7 @@
           :value="singleAnswerOption.option_text"
           type="text"
           placeholder="Nhập đáp án cần chấm đúng tuyệt đối"
-          class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#7AE582]"
+          class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#4ADE80]"
           @input="setSingleAnswer($event.target.value)"
         />
       </div>

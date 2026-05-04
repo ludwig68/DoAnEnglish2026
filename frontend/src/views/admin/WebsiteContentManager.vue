@@ -1,10 +1,10 @@
-<template>
+﻿<template>
   <div class="h-full flex flex-col p-6 animate__animated animate__fadeIn">
     <div class="flex flex-col md:flex-row justify-end items-start md:items-center mb-6 gap-4">
       <button
         @click="openModal('add')"
-        class="px-5 py-2.5 rounded-xl text-white font-bold flex items-center gap-2 shadow-lg shadow-emerald-200 hover:-translate-y-0.5 transition-all duration-300"
-        style="background: linear-gradient(135deg, #7ae582 0%, #16a34a 100%)"
+        class="px-5 py-2.5 rounded-xl text-white font-bold flex items-center gap-2 hover:-translate-y-0.5 transition-all duration-300"
+        style="background: linear-gradient(135deg, #4ADE80 0%, #16a34a 100%)"
       >
         <i class="fa-solid fa-plus"></i> Thêm nội dung
       </button>
@@ -72,13 +72,13 @@
           v-model="searchQuery"
           type="text"
           placeholder="Tìm theo tên vị trí, mã kỹ thuật hoặc nội dung..."
-          class="w-full pl-11 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#7AE582] transition-all"
+          class="w-full pl-11 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#4ADE80] transition-all"
         />
       </div>
 
       <select
         v-model="filterType"
-        class="bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#7AE582] text-slate-700 font-medium min-w-[220px]"
+        class="bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#4ADE80] text-slate-700 font-medium min-w-[220px]"
       >
         <option value="all">Tất cả loại nội dung</option>
         <option value="text">Văn bản thường</option>
@@ -200,7 +200,7 @@
               <select
                 v-if="modalMode === 'add'"
                 v-model="selectedPresetKey"
-                class="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#7AE582]"
+                class="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#4ADE80]"
               >
                 <option :value="CUSTOM_SECTION_KEY">Tự nhập mã kỹ thuật khác</option>
                 <optgroup v-for="group in pageContentGroups" :key="group.key" :label="group.title">
@@ -237,7 +237,7 @@
                 type="text"
                 required
                 placeholder="VD: hero_title, footer_address..."
-                class="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-[#7AE582]"
+                class="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-[#4ADE80]"
               />
               <p class="text-[0.65rem] text-slate-400 mt-1">Dành cho trường hợp đặc biệt. Nên dùng danh sách vị trí có sẵn ở trên.</p>
             </div>
@@ -249,7 +249,7 @@
               <select
                 v-model="formData.content_type"
                 :disabled="Boolean(currentDefinition)"
-                class="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#7AE582] disabled:bg-slate-100 disabled:text-slate-500"
+                class="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#4ADE80] disabled:bg-slate-100 disabled:text-slate-500"
               >
                 <option value="text">Văn bản thường</option>
                 <option value="html">Văn bản có định dạng HTML</option>
@@ -292,7 +292,7 @@
                   type="text"
                   required
                   placeholder="Dán đường dẫn ảnh tại đây..."
-                  class="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#7AE582]"
+                  class="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#4ADE80]"
                 />
 
                 <div v-else class="rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-4">
@@ -301,7 +301,7 @@
                       <p class="text-sm font-bold text-slate-800">Chọn ảnh từ máy tính</p>
                       <p class="mt-1 text-xs text-slate-500">Hỗ trợ JPG, PNG, WEBP, GIF. Tối đa 5MB. Ảnh sẽ được tải lên khi bấm Lưu.</p>
                     </div>
-                    <label class="inline-flex cursor-pointer items-center justify-center gap-2 rounded-xl text-white px-4 py-2 text-sm font-bold shadow-lg shadow-emerald-200 focus:outline-none hover:-translate-y-0.5 transition-all duration-300" style="background: linear-gradient(135deg, #7ae582 0%, #16a34a 100%)">
+                    <label class="inline-flex cursor-pointer items-center justify-center gap-2 rounded-xl text-white px-4 py-2 text-sm font-bold focus:outline-none hover:-translate-y-0.5 transition-all duration-300" style="background: linear-gradient(135deg, #4ADE80 0%, #16a34a 100%)">
                       <i class="fa-solid fa-image"></i> Chọn ảnh
                       <input type="file" accept="image/*" class="hidden" @change="handleImageFileChange" />
                     </label>
@@ -329,7 +329,7 @@
                 type="text"
                 required
                 placeholder="Dán đường dẫn liên kết tại đây..."
-                class="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#7AE582]"
+                class="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#4ADE80]"
               />
 
               <textarea
@@ -338,7 +338,7 @@
                 rows="6"
                 required
                 placeholder="<p>Nhập nội dung HTML tại đây...</p>"
-                class="w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-700 text-emerald-400 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-[#7AE582]"
+                class="w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-700 text-emerald-400 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-[#4ADE80]"
               ></textarea>
 
               <textarea
@@ -347,7 +347,7 @@
                 rows="4"
                 required
                 placeholder="Nhập nội dung văn bản..."
-                class="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#7AE582]"
+                class="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#4ADE80]"
               ></textarea>
 
               <div v-if="currentEditorType === 'image' && previewImageUrl" class="mt-3">
@@ -364,8 +364,8 @@
             <button
               type="submit"
               :disabled="isUploadingImage"
-              class="px-5 py-2.5 rounded-xl font-bold text-white shadow-lg shadow-emerald-200 hover:-translate-y-0.5 transition-all duration-300 disabled:cursor-not-allowed disabled:opacity-60"
-              style="background: linear-gradient(135deg, #7ae582 0%, #16a34a 100%)"
+              class="px-5 py-2.5 rounded-xl font-bold text-white hover:-translate-y-0.5 transition-all duration-300 disabled:cursor-not-allowed disabled:opacity-60"
+              style="background: linear-gradient(135deg, #4ADE80 0%, #16a34a 100%)"
             >
               <i :class="isUploadingImage ? 'fa-solid fa-spinner fa-spin mr-1' : 'fa-solid fa-floppy-disk mr-1'"></i>
               {{ isUploadingImage ? 'Đang tải ảnh...' : 'Lưu thông tin' }}

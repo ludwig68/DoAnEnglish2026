@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="min-h-screen bg-[#f4f8fb] text-slate-900">
     <div class="flex min-h-screen flex-col xl:flex-row">
       <aside

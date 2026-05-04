@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <article class="overflow-hidden rounded-[1.6rem] border border-slate-200 bg-white shadow-sm">
     <div class="border-b border-slate-100 bg-slate-50 px-5 py-4">
       <div class="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
@@ -16,7 +16,7 @@
           <select
             :value="question.question_type"
             @change="handleTypeChange($event.target.value)"
-            class="rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#7AE582]"
+            class="rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#4ADE80]"
           >
             <option v-for="type in questionTypes" :key="type.value" :value="type.value">
               {{ type.label }}
@@ -41,7 +41,7 @@
           :value="question.question_text"
           rows="3"
           placeholder="Nhập nội dung câu hỏi..."
-          class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#7AE582]"
+          class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#4ADE80]"
           @input="patchQuestion({ question_text: $event.target.value })"
         ></textarea>
       </div>
@@ -53,7 +53,7 @@
             :value="question.hint"
             type="text"
             placeholder="Gợi ý ngắn cho học viên"
-            class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#7AE582]"
+            class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#4ADE80]"
             @input="patchQuestion({ hint: $event.target.value })"
           />
         </div>
@@ -64,7 +64,7 @@
             :value="question.explanation"
             type="text"
             placeholder="Giải thích sau khi làm xong"
-            class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#7AE582]"
+            class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#4ADE80]"
             @input="patchQuestion({ explanation: $event.target.value })"
           />
         </div>

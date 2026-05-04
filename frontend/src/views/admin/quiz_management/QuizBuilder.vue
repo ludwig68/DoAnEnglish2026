@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="flex h-full min-h-0 flex-col gap-6 p-6 animate__animated animate__fadeIn">
     <div v-if="isBootstrapping" class="flex flex-1 items-center justify-center rounded-3xl border border-slate-100 bg-white">
       <div class="text-center text-slate-500">
@@ -32,7 +32,7 @@
               v-model="searchQuery"
               type="text"
               placeholder="Tìm theo bài tập, khóa học hoặc bài học..."
-              class="w-full rounded-2xl border border-slate-200 bg-slate-50 py-2.5 pl-11 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-[#7AE582]"
+              class="w-full rounded-2xl border border-slate-200 bg-slate-50 py-2.5 pl-11 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-[#4ADE80]"
             />
           </div>
         </div>
@@ -130,8 +130,8 @@
                 type="button"
                 @click="saveQuiz"
                 :disabled="isSaving"
-                class="inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-bold text-white shadow-lg shadow-emerald-200 hover:-translate-y-0.5 transition-all duration-300 disabled:cursor-not-allowed disabled:opacity-60"
-                style="background: linear-gradient(135deg, #7ae582 0%, #16a34a 100%)"
+                class="inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-bold text-white hover:-translate-y-0.5 transition-all duration-300 disabled:cursor-not-allowed disabled:opacity-60"
+                style="background: linear-gradient(135deg, #4ADE80 0%, #16a34a 100%)"
               >
                 <i :class="isSaving ? 'fa-solid fa-spinner animate-spin' : 'fa-solid fa-floppy-disk'"></i>
                 {{ isSaving ? "Đang lưu..." : form.id ? "Cập nhật" : "Lưu bài tập" }}
@@ -172,7 +172,7 @@
                     v-model="form.title"
                     type="text"
                     placeholder="Ví dụ: Bài kiểm tra Unit 3"
-                    class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#7AE582]"
+                    class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#4ADE80]"
                   />
                 </div>
 
@@ -180,7 +180,7 @@
                   <label class="mb-1 block text-xs font-bold uppercase tracking-[0.18em] text-slate-500">Danh mục</label>
                   <select
                     v-model="form.category"
-                    class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#7AE582]"
+                    class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#4ADE80]"
                   >
                     <option value="">Chọn danh mục</option>
                     <option v-for="category in quizCategories" :key="category.value" :value="category.value">
@@ -195,7 +195,7 @@
                     v-model.number="form.total_points"
                     type="number"
                     min="1"
-                    class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#7AE582]"
+                    class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#4ADE80]"
                   />
                 </div>
               </div>
@@ -206,7 +206,7 @@
                   <label class="mb-1 block text-xs font-bold uppercase tracking-[0.18em] text-slate-500">Khóa học</label>
                   <select
                     :value="selectedCourseId"
-                    class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#7AE582]"
+                    class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#4ADE80]"
                     @change="handleCourseChange($event.target.value)"
                   >
                     <option value="">Chọn khóa học</option>
@@ -221,7 +221,7 @@
                   <select
                     :value="form.lesson_id"
                     :disabled="!selectedCourseId"
-                    class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm disabled:cursor-not-allowed disabled:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-[#7AE582]"
+                    class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm disabled:cursor-not-allowed disabled:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-[#4ADE80]"
                     @change="handleLessonChange($event.target.value)"
                   >
                     <option value="">{{ selectedCourseId ? "Chọn bài học" : "Chọn khóa học trước" }}</option>
@@ -242,7 +242,7 @@
                   v-model="form.description"
                   rows="3"
                   placeholder="Mô tả ngắn cho bài tập này..."
-                  class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#7AE582]"
+                  class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#4ADE80]"
                 ></textarea>
               </div>
 
@@ -313,8 +313,8 @@
               <button
                 type="submit"
                 :disabled="isSaving"
-                class="inline-flex items-center justify-center gap-2 rounded-xl px-5 py-3 text-sm font-bold text-white shadow-lg shadow-emerald-200 hover:-translate-y-0.5 transition-all duration-300 disabled:cursor-not-allowed disabled:opacity-60"
-                style="background: linear-gradient(135deg, #7ae582 0%, #16a34a 100%)"
+                class="inline-flex items-center justify-center gap-2 rounded-xl px-5 py-3 text-sm font-bold text-white hover:-translate-y-0.5 transition-all duration-300 disabled:cursor-not-allowed disabled:opacity-60"
+                style="background: linear-gradient(135deg, #4ADE80 0%, #16a34a 100%)"
               >
                 <i :class="isSaving ? 'fa-solid fa-spinner animate-spin' : 'fa-solid fa-floppy-disk'"></i>
                 {{ isSaving ? "Đang lưu..." : form.id ? "Lưu thay đổi" : "Tạo bài tập" }}

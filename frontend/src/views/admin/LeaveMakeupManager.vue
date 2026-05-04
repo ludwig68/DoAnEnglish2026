@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="p-6 lg:p-10">
     
 
@@ -143,8 +143,8 @@
                   <div class="flex items-center gap-2" v-if="isPending(req)">
                     <button 
                       @click="approveRequest(req)"
-                      class="px-4 py-2 text-white text-[10px] font-black uppercase tracking-widest rounded-xl shadow-lg shadow-emerald-200 hover:-translate-y-0.5 transition-all duration-300"
-                      style="background: linear-gradient(135deg, #7ae582 0%, #16a34a 100%)"
+                      class="px-4 py-2 text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:-translate-y-0.5 transition-all duration-300"
+                      style="background: linear-gradient(135deg, #4ADE80 0%, #16a34a 100%)"
                     >
                       Duyệt
                     </button>

@@ -1,12 +1,12 @@
-<template>
+﻿<template>
   <div class="h-full flex flex-col p-6 animate__animated animate__fadeIn">
     <div
       class="flex flex-col md:flex-row justify-end items-start md:items-center mb-6 gap-4"
     >
       <button
         @click="openModal('add')"
-        class="px-5 py-2.5 rounded-xl text-white font-bold flex items-center gap-2 shadow-lg shadow-emerald-200 hover:-translate-y-0.5 transition-all duration-300"
-        style="background: linear-gradient(135deg, #7ae582 0%, #16a34a 100%)"
+        class="px-5 py-2.5 rounded-xl text-white font-bold flex items-center gap-2 hover:-translate-y-0.5 transition-all duration-300"
+        style="background: linear-gradient(135deg, #4ADE80 0%, #16a34a 100%)"
       >
         <i class="fa-solid fa-plus"></i> Thêm tư vấn mới
       </button>
@@ -23,7 +23,7 @@
           v-model="searchQuery"
           type="text"
           placeholder="Tìm kiếm nhanh khách hàng theo tên, số điện thoại..."
-          class="w-full pl-11 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#7AE582] transition-all"
+          class="w-full pl-11 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#4ADE80] transition-all"
         />
       </div>
     </div>
@@ -264,7 +264,7 @@
                   v-model="formData.full_name"
                   type="text"
                   required
-                  class="w-full pl-10 pr-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#7AE582] transition-colors"
+                  class="w-full pl-10 pr-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#4ADE80] transition-colors"
                 />
               </div>
             </div>
@@ -282,7 +282,7 @@
                   v-model="formData.phone"
                   type="text"
                   required
-                  class="w-full pl-10 pr-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-sm font-bold text-emerald-700 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#7AE582] transition-colors"
+                  class="w-full pl-10 pr-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-sm font-bold text-emerald-700 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#4ADE80] transition-colors"
                 />
               </div>
             </div>
@@ -300,7 +300,7 @@
                   v-model="formData.email"
                   type="email"
                   placeholder="Trống"
-                  class="w-full pl-10 pr-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#7AE582] transition-colors"
+                  class="w-full pl-10 pr-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#4ADE80] transition-colors"
                 />
               </div>
             </div>
@@ -392,8 +392,8 @@
               </button>
               <button
                 type="submit"
-                class="px-6 py-3 rounded-xl font-bold text-white shadow-lg shadow-emerald-200 hover:-translate-y-0.5 transition-all duration-300"
-                style="background: linear-gradient(135deg, #7ae582 0%, #16a34a 100%)"
+                class="px-6 py-3 rounded-xl font-bold text-white hover:-translate-y-0.5 transition-all duration-300"
+                style="background: linear-gradient(135deg, #4ADE80 0%, #16a34a 100%)"
               >
                 <i class="fa-solid fa-floppy-disk mr-1"></i> Lưu thông tin
               </button>

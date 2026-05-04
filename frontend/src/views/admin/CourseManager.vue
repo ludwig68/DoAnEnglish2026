@@ -1,12 +1,12 @@
-<template>
+﻿<template>
   <div class="h-full flex flex-col p-6 animate__animated animate__fadeIn">
     <div
       class="flex flex-col md:flex-row justify-end items-start md:items-center mb-6 gap-4"
     >
       <button
         @click="openModal('add')"
-        class="px-5 py-2.5 rounded-xl text-white font-bold flex items-center gap-2 shadow-lg shadow-emerald-200 hover:-translate-y-0.5 transition-all duration-300"
-        style="background: linear-gradient(135deg, #7ae582 0%, #16a34a 100%)"
+        class="px-5 py-2.5 rounded-xl text-white font-bold flex items-center gap-2 hover:-translate-y-0.5 transition-all duration-300"
+        style="background: linear-gradient(135deg, #4ADE80 0%, #16a34a 100%)"
       >
         <i class="fa-solid fa-book-medical"></i> Thêm khóa học mới
       </button>
@@ -23,13 +23,13 @@
           v-model="searchQuery"
           type="text"
           placeholder="Tìm theo tên khóa học hoặc trình độ..."
-          class="w-full pl-11 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#7AE582] transition-all"
+          class="w-full pl-11 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#4ADE80] transition-all"
         />
       </div>
 
       <select
         v-model="filterCategory"
-        class="bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#7AE582] text-slate-700 font-medium min-w-[180px]"
+        class="bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#4ADE80] text-slate-700 font-medium min-w-[180px]"
       >
         <option value="all">Tất cả danh mục</option>
         <option
@@ -43,7 +43,7 @@
 
       <select
         v-model="filterFeatured"
-        class="bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#7AE582] text-slate-700 font-medium min-w-[160px]"
+        class="bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#4ADE80] text-slate-700 font-medium min-w-[160px]"
       >
         <option value="all">Tất cả khóa học</option>
         <option value="featured">Khóa học nổi bật</option>
@@ -97,7 +97,7 @@
                       @click="toggleExpand(course)"
                       class="chevron-btn w-7 h-7 rounded-lg flex items-center justify-center transition-all duration-200 shrink-0"
                       :class="expandedCourseId === course.id
-                        ? 'bg-emerald-500 text-white shadow-md shadow-emerald-200 rotate-180-btn'
+                        ? 'bg-emerald-500 text-white shadow-md rotate-180-btn'
                         : 'bg-slate-100 text-slate-500 hover:bg-emerald-100 hover:text-emerald-600'"
                       :title="expandedCourseId === course.id ? 'Thu gọn' : 'Xem bài học'"
                     >
@@ -183,8 +183,8 @@
                       </div>
                       <button
                         @click="openLessonModal(course)"
-                        class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-white text-xs font-bold shadow-lg shadow-emerald-200 hover:-translate-y-0.5 transition-all duration-300"
-                        style="background: linear-gradient(135deg, #7ae582 0%, #16a34a 100%)"
+                        class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-white text-xs font-bold hover:-translate-y-0.5 transition-all duration-300"
+                        style="background: linear-gradient(135deg, #4ADE80 0%, #16a34a 100%)"
                       >
                         <i class="fa-solid fa-plus"></i>
                         Thêm bài học
@@ -337,7 +337,7 @@
                   v-model="formData.title"
                   type="text"
                   required
-                  class="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#7AE582]"
+                  class="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#4ADE80]"
                 />
               </div>
 
@@ -348,7 +348,7 @@
                 >
                 <select
                   v-model="formData.category_id"
-                  class="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#7AE582]"
+                  class="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#4ADE80]"
                 >
                   <option value="">Chưa chọn</option>
                   <option
@@ -368,7 +368,7 @@
                 >
                 <select
                   v-model="formData.path_id"
-                  class="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#7AE582]"
+                  class="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#4ADE80]"
                 >
                   <option value="">Chưa chọn</option>
                   <option
@@ -390,7 +390,7 @@
                   v-model="formData.level"
                   type="text"
                   placeholder="Vi du: A1, B2, IELTS"
-                  class="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#7AE582]"
+                  class="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#4ADE80]"
                 />
               </div>
 
@@ -404,7 +404,7 @@
                   type="number"
                   min="0"
                   step="0.01"
-                  class="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#7AE582]"
+                  class="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#4ADE80]"
                 />
               </div>
 
@@ -417,7 +417,7 @@
                   v-model="formData.description"
                   rows="5"
                   placeholder="Nhập mô tả khóa học..."
-                  class="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#7AE582]"
+                  class="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#4ADE80]"
                 ></textarea>
               </div>
             </div>
@@ -440,7 +440,7 @@
                     class="rounded-full px-4 py-2 text-sm font-semibold transition"
                     :class="
                       imageMode === 'url'
-                        ? 'bg-[#7AE582] text-slate-900'
+                        ? 'bg-[#4ADE80] text-slate-900'
                         : 'text-slate-600'
                     "
                   >
@@ -452,7 +452,7 @@
                     class="rounded-full px-4 py-2 text-sm font-semibold transition"
                     :class="
                       imageMode === 'upload'
-                        ? 'bg-[#7AE582] text-slate-900'
+                        ? 'bg-[#4ADE80] text-slate-900'
                         : 'text-slate-600'
                     "
                   >
@@ -470,7 +470,7 @@
                   v-model="formData.image_url"
                   type="text"
                   placeholder="https://..."
-                  class="w-full px-4 py-2.5 rounded-xl bg-white border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#7AE582]"
+                  class="w-full px-4 py-2.5 rounded-xl bg-white border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#4ADE80]"
                 />
                 <p class="mt-2 text-xs text-slate-500">
                   Bạn có thể dán ảnh từ website khác vào đây.
@@ -538,7 +538,7 @@
             <input
               v-model="formData.is_featured"
               type="checkbox"
-              class="h-4 w-4 rounded border-slate-300 text-[#16a34a] focus:ring-[#7AE582]"
+              class="h-4 w-4 rounded border-slate-300 text-[#16a34a] focus:ring-[#4ADE80]"
             />
             Đánh dấu nếu đây là khóa học nổi bật (sẽ được ưu tiên hiển thị trên trang chủ)
           </label>
@@ -554,8 +554,8 @@
             <button
               type="submit"
               :disabled="isUploadingImage"
-              class="px-5 py-2.5 rounded-xl font-bold text-white shadow-lg shadow-emerald-200 hover:-translate-y-0.5 transition-all duration-300 disabled:opacity-60"
-              style="background: linear-gradient(135deg, #7ae582 0%, #16a34a 100%)"
+              class="px-5 py-2.5 rounded-xl font-bold text-white hover:-translate-y-0.5 transition-all duration-300 disabled:opacity-60"
+              style="background: linear-gradient(135deg, #4ADE80 0%, #16a34a 100%)"
             >
               {{ modalMode === "add" ? "Tạo khóa học" : "Lưu thay đổi" }}
             </button>
@@ -607,7 +607,7 @@
               type="text"
               required
               placeholder="Ví dụ: Bài 1 - Phát âm cơ bản"
-              class="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#7AE582]"
+              class="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#4ADE80]"
             />
           </div>
 
@@ -620,7 +620,7 @@
               v-model="lessonForm.video_url"
               type="text"
               placeholder="https://youtube.com/..."
-              class="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#7AE582]"
+              class="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#4ADE80]"
             />
           </div>
 
@@ -635,8 +635,8 @@
             <button
               type="submit"
               :disabled="isSubmittingLesson"
-              class="px-5 py-2.5 rounded-xl font-bold flex items-center gap-2 text-white shadow-lg shadow-emerald-200 hover:-translate-y-0.5 transition-all duration-300 disabled:opacity-60"
-              style="background: linear-gradient(135deg, #7ae582 0%, #16a34a 100%)"
+              class="px-5 py-2.5 rounded-xl font-bold flex items-center gap-2 text-white hover:-translate-y-0.5 transition-all duration-300 disabled:opacity-60"
+              style="background: linear-gradient(135deg, #4ADE80 0%, #16a34a 100%)"
             >
               <i :class="isSubmittingLesson ? 'fa-solid fa-spinner animate-spin' : 'fa-solid fa-floppy-disk'"></i>
               {{ isSubmittingLesson ? 'Đang tạo...' : 'Tạo bài học' }}
@@ -688,7 +688,7 @@
               type="text"
               required
               placeholder="Ví dụ: Bài 1 - Phát âm cơ bản"
-              class="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#7AE582]"
+              class="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#4ADE80]"
             />
           </div>
 
@@ -700,7 +700,7 @@
               v-model="editLessonForm.video_url"
               type="text"
               placeholder="https://youtube.com/..."
-              class="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#7AE582]"
+              class="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#4ADE80]"
             />
           </div>
 

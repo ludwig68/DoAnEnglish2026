@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="min-h-full bg-slate-50/50 p-6 xl:p-8 font-sans animate__animated animate__fadeIn">
     <!-- Header -->
     <div class="mb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
@@ -10,7 +10,7 @@
         <span class="inline-flex items-center gap-2 rounded-xl bg-white px-4 py-2.5 text-sm font-bold text-slate-500 shadow-sm border border-slate-200">
           <i class="fa-regular fa-clock text-slate-400"></i> {{ syncLabel }}
         </span>
-        <button class="inline-flex items-center gap-2 rounded-xl bg-slate-900 px-5 py-2.5 text-sm font-bold text-white shadow-md hover:bg-emerald-500 transition-colors hover:shadow-emerald-200">
+        <button class="inline-flex items-center gap-2 rounded-xl bg-slate-900 px-5 py-2.5 text-sm font-bold text-white shadow-md hover:bg-emerald-500 transition-colors hover:">
           <i class="fa-solid fa-cloud-arrow-down"></i> Báo cáo
         </button>
       </div>
@@ -19,7 +19,7 @@
     <!-- Loader -->
     <div v-if="isLoading" class="flex min-h-[400px] items-center justify-center rounded-3xl bg-white shadow-sm border border-slate-100">
        <div class="text-center">
-         <div class="w-12 h-12 border-4 border-slate-100 border-t-[#7AE582] rounded-full animate-spin mx-auto mb-4"></div>
+         <div class="w-12 h-12 border-4 border-slate-100 border-t-[#4ADE80] rounded-full animate-spin mx-auto mb-4"></div>
          <p class="text-slate-500 font-medium text-sm">Đang tải dữ liệu...</p>
        </div>
     </div>

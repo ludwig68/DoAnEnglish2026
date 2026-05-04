@@ -1,12 +1,12 @@
-<template>
+﻿<template>
   <div class="h-full flex flex-col p-6 animate__animated animate__fadeIn">
     <div
       class="flex flex-col md:flex-row justify-end items-end md:items-center mb-6 gap-4"
     >
       <button
         @click="openModal('add')"
-        class="px-5 py-2.5 rounded-xl text-white font-bold flex items-center gap-2 shadow-lg shadow-emerald-200 hover:-translate-y-0.5 transition-all duration-300"
-        style="background: linear-gradient(135deg, #7ae582 0%, #16a34a 100%)"
+        class="px-5 py-2.5 rounded-xl text-white font-bold flex items-center gap-2 hover:-translate-y-0.5 transition-all duration-300"
+        style="background: linear-gradient(135deg, #4ADE80 0%, #16a34a 100%)"
       >
         <i class="fa-solid fa-user-plus"></i> Thêm tài khoản mới
       </button>
@@ -23,12 +23,12 @@
           v-model="searchQuery"
           type="text"
           placeholder="Tìm kiếm theo tên hoặc email..."
-          class="w-full pl-11 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#7AE582] transition-all"
+          class="w-full pl-11 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#4ADE80] transition-all"
         />
       </div>
       <select
         v-model="filterRole"
-        class="bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#7AE582] text-slate-700 font-medium min-w-[150px]"
+        class="bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#4ADE80] text-slate-700 font-medium min-w-[150px]"
       >
         <option value="all">Tất cả vai trò</option>
         <option value="admin">Quản trị viên (Admin)</option>
@@ -145,7 +145,7 @@
             <i class="fa-solid fa-angle-left"></i>
           </button>
           <button
-            class="w-8 h-8 rounded-lg bg-[#7AE582] text-slate-900 font-bold flex items-center justify-center"
+            class="w-8 h-8 rounded-lg bg-[#4ADE80] text-slate-900 font-bold flex items-center justify-center"
           >
             1
           </button>
@@ -191,7 +191,7 @@
               v-model="formData.full_name"
               type="text"
               required
-              class="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#7AE582]"
+              class="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#4ADE80]"
             />
           </div>
 
@@ -205,7 +205,7 @@
               type="email"
               required
               :disabled="modalMode === 'edit'"
-              class="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#7AE582] disabled:opacity-60"
+              class="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#4ADE80] disabled:opacity-60"
             />
           </div>
 
@@ -218,7 +218,7 @@
               v-model="formData.password"
               type="password"
               required
-              class="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#7AE582]"
+              class="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#4ADE80]"
             />
           </div>
 
@@ -230,7 +230,7 @@
               >
               <select
                 v-model="formData.role"
-                class="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#7AE582]"
+                class="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#4ADE80]"
               >
                 <option value="student">Học viên</option>
                 <option value="instructor">Giảng viên</option>
@@ -244,7 +244,7 @@
               >
               <select
                 v-model="formData.status"
-                class="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#7AE582]"
+                class="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#4ADE80]"
               >
                 <option value="active">Hoạt động</option>
                 <option value="blocked">Khóa</option>
@@ -262,8 +262,8 @@
             </button>
             <button
               type="submit"
-              class="px-5 py-2.5 rounded-xl font-bold text-white shadow-lg shadow-emerald-200 hover:-translate-y-0.5 transition-all duration-300"
-              style="background: linear-gradient(135deg, #7ae582 0%, #16a34a 100%)"
+              class="px-5 py-2.5 rounded-xl font-bold text-white hover:-translate-y-0.5 transition-all duration-300"
+              style="background: linear-gradient(135deg, #4ADE80 0%, #16a34a 100%)"
             >
               {{ modalMode === "add" ? "Tạo tài khoản" : "Lưu thay đổi" }}
             </button>

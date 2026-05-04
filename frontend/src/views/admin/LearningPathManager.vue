@@ -1,10 +1,10 @@
-<template>
+﻿<template>
   <div class="h-full flex flex-col p-6 animate__animated animate__fadeIn">
     <div class="flex flex-col md:flex-row justify-end items-start md:items-center mb-6 gap-4">
       <button
         @click="openModal('add')"
-        class="px-5 py-2.5 rounded-xl text-white font-bold flex items-center gap-2 shadow-lg shadow-emerald-200 hover:-translate-y-0.5 transition-all duration-300"
-        style="background: linear-gradient(135deg, #7ae582 0%, #16a34a 100%)"
+        class="px-5 py-2.5 rounded-xl text-white font-bold flex items-center gap-2 hover:-translate-y-0.5 transition-all duration-300"
+        style="background: linear-gradient(135deg, #4ADE80 0%, #16a34a 100%)"
       >
         <i class="fa-solid fa-route"></i> Thêm lộ trình mới
       </button>
@@ -17,7 +17,7 @@
           v-model="searchQuery"
           type="text"
           placeholder="Tìm theo tên lộ trình, mô tả hoặc đối tượng mục tiêu..."
-          class="w-full pl-11 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#7AE582] transition-all"
+          class="w-full pl-11 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#4ADE80] transition-all"
         />
       </div>
     </div>
@@ -119,7 +119,7 @@
                 type="text"
                 required
                 placeholder="VD: Lộ trình mất gốc 3 tháng"
-                class="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#7AE582]"
+                class="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#4ADE80]"
               />
             </div>
 
@@ -132,7 +132,7 @@
                 type="text"
                 required
                 placeholder="VD: Người đi làm, sinh viên năm cuối"
-                class="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#7AE582]"
+                class="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#4ADE80]"
               />
             </div>
 
@@ -144,7 +144,7 @@
                 v-model="formData.description"
                 rows="4"
                 placeholder="Nhập mô tả cho lộ trình này..."
-                class="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#7AE582]"
+                class="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#4ADE80]"
               ></textarea>
             </div>
           </div>
@@ -159,8 +159,8 @@
             </button>
             <button
               type="submit"
-              class="px-5 py-2.5 rounded-xl font-bold text-white shadow-lg shadow-emerald-200 hover:-translate-y-0.5 transition-all duration-300"
-              style="background: linear-gradient(135deg, #7ae582 0%, #16a34a 100%)"
+              class="px-5 py-2.5 rounded-xl font-bold text-white hover:-translate-y-0.5 transition-all duration-300"
+              style="background: linear-gradient(135deg, #4ADE80 0%, #16a34a 100%)"
             >
               {{ modalMode === "add" ? "Tạo lộ trình" : "Lưu thay đổi" }}
             </button>

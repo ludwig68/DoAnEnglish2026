@@ -1,12 +1,12 @@
-<template>
+﻿<template>
   <div class="h-full flex flex-col p-6 animate__animated animate__fadeIn">
     <div
       class="flex flex-col md:flex-row justify-end items-start md:items-center mb-6 gap-4"
     >
       <button
         @click="openModal('add')"
-        class="px-5 py-2.5 rounded-xl text-white font-bold flex items-center gap-2 shadow-lg shadow-emerald-200 hover:-translate-y-0.5 transition-all duration-300"
-        style="background: linear-gradient(135deg, #7ae582 0%, #16a34a 100%)"
+        class="px-5 py-2.5 rounded-xl text-white font-bold flex items-center gap-2 hover:-translate-y-0.5 transition-all duration-300"
+        style="background: linear-gradient(135deg, #4ADE80 0%, #16a34a 100%)"
       >
         <i class="fa-solid fa-plus"></i> Thêm liên hệ thủ công
       </button>
@@ -23,13 +23,13 @@
           v-model="searchQuery"
           type="text"
           placeholder="Tìm theo tên hoặc email người gửi..."
-          class="w-full pl-11 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#7AE582] transition-all"
+          class="w-full pl-11 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#4ADE80] transition-all"
         />
       </div>
 
       <select
         v-model="filterStatus"
-        class="bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#7AE582] text-slate-700 font-medium min-w-[200px]"
+        class="bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#4ADE80] text-slate-700 font-medium min-w-[200px]"
       >
         <option value="all">Tất cả thư liên hệ</option>
         <option value="pending">Chưa phản hồi</option>
@@ -181,7 +181,7 @@
                 type="text"
                 required
                 :readonly="modalMode === 'edit'"
-                class="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#7AE582] read-only:bg-slate-100 read-only:text-slate-500"
+                class="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#4ADE80] read-only:bg-slate-100 read-only:text-slate-500"
               />
             </div>
 
@@ -196,7 +196,7 @@
                   type="email"
                   required
                   :readonly="modalMode === 'edit'"
-                  class="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#7AE582] read-only:bg-slate-100 read-only:text-slate-500"
+                  class="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#4ADE80] read-only:bg-slate-100 read-only:text-slate-500"
                 />
 
                 <a
@@ -222,7 +222,7 @@
                 required
                 :readonly="modalMode === 'edit'"
                 placeholder="Nhập nội dung thư..."
-                class="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#7AE582] read-only:bg-blue-50/50 read-only:italic read-only:border-blue-100 read-only:text-slate-700"
+                class="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#4ADE80] read-only:bg-blue-50/50 read-only:italic read-only:border-blue-100 read-only:text-slate-700"
               ></textarea>
             </div>
           </div>
@@ -234,7 +234,7 @@
               <input
                 v-model="formData.is_replied"
                 type="checkbox"
-                class="h-5 w-5 rounded border-slate-300 text-[#16a34a] focus:ring-[#7AE582]"
+                class="h-5 w-5 rounded border-slate-300 text-[#16a34a] focus:ring-[#4ADE80]"
               />
               <div>
                 <p
@@ -267,8 +267,8 @@
             </button>
             <button
               type="submit"
-              class="px-5 py-2.5 rounded-xl font-bold text-white shadow-lg shadow-emerald-200 hover:-translate-y-0.5 transition-all duration-300 flex items-center gap-1"
-              style="background: linear-gradient(135deg, #7ae582 0%, #16a34a 100%)"
+              class="px-5 py-2.5 rounded-xl font-bold text-white hover:-translate-y-0.5 transition-all duration-300 flex items-center gap-1"
+              style="background: linear-gradient(135deg, #4ADE80 0%, #16a34a 100%)"
             >
               <i class="fa-solid fa-floppy-disk mr-1"></i> Lưu trạng thái
             </button>
