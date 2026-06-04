@@ -11,31 +11,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit;
 }
 
-require_once __DIR__ . '/../../config/db.php';
-require_once __DIR__ . '/../../utils/Validator.php';
-require_once __DIR__ . '/../../utils/JwtHelper.php';
+try {
+    require_once __DIR__ . '/../../config/db.php';
+    require_once __DIR__ . '/../../utils/Validator.php';
+    require_once __DIR__ . '/../../utils/JwtHelper.php';
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $data = json_decode(file_get_contents("php://input"), true);
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        $data = json_decode(file_get_contents("php://input"), true);
 
-    $email = $data['email'] ?? '';
-    $password = $data['password'] ?? '';
+        $email = $data['email'] ?? '';
+        $password = $data['password'] ?? '';
 
-    $emailPattern = '/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/';
-    $emailCheck = Validator::checkRegex($email, $emailPattern, "Định dạng email không hợp lệ.");
-    $passCheck = Validator::checkStringLength($password, 6, 20);
+        $emailPattern = '/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/';
+        $emailCheck = Validator::checkRegex($email, $emailPattern, "Định dạng email không hợp lệ.");
+        $passCheck = Validator::checkStringLength($password, 6, 20);
 
-    if ($emailCheck !== true) {
-        echo json_encode(['status' => 'error', 'message' => $emailCheck]);
-        exit;
-    }
+        if ($emailCheck !== true) {
+            echo json_encode(['status' => 'error', 'message' => $emailCheck]);
+            exit;
+        }
 
-    if ($passCheck !== true) {
-        echo json_encode(['status' => 'error', 'message' => "Mật khẩu: " . $passCheck]);
-        exit;
-    }
+        if ($passCheck !== true) {
+            echo json_encode(['status' => 'error', 'message' => "Mật khẩu: " . $passCheck]);
+            exit;
+        }
 
-    try {
         $stmt = $pdo->prepare("SELECT * FROM users WHERE email = ?");
         $stmt->execute([$email]);
         $user = $stmt->fetch();
@@ -74,12 +74,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             http_response_code(401);
             echo json_encode(['status' => 'error', 'message' => 'Email hoặc mật khẩu không chính xác.']);
         }
-    } catch (PDOException $e) {
-        http_response_code(500);
-        echo json_encode(['status' => 'error', 'message' => 'Lỗi hệ thống: ' . $e->getMessage()]);
+    } else {
+        http_response_code(405);
+        echo json_encode(['status' => 'error', 'message' => 'Method Not Allowed']);
     }
-} else {
-    http_response_code(405);
-    echo json_encode(['status' => 'error', 'message' => 'Method Not Allowed']);
+} catch (Throwable $e) {
+    http_response_code(500);
+    echo json_encode([
+        'status' => 'error',
+        'message' => 'Lỗi hệ thống: ' . $e->getMessage() . ' trong file ' . $e->getFile() . ' dòng ' . $e->getLine()
+    ]);
 }
 ?>
